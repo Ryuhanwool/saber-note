@@ -1,48 +1,135 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc", "import"],
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc",
+    "import"
+  ],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
   },
   "overrides": [
     {
-      "files": ["src/data/**"],
+      "files": [
+        "src/data/**"
+      ],
       "rules": {
-        "no-restricted-imports": ["error", {
-          "paths": [
-            { "name": "react", "message": "data 층은 화면을 모릅니다." },
-            { "name": "react-dom", "message": "data 층은 화면을 모릅니다." }
-          ],
-          "patterns": [
-            { "group": ["**/domain", "**/domain/**", "**/ui", "**/ui/**"], "message": "data 층은 domain·ui를 import할 수 없습니다." }
-          ]
-        }]
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "message": "data 층은 화면을 모릅니다."
+              },
+              {
+                "name": "react-dom",
+                "message": "data 층은 화면을 모릅니다."
+              }
+            ],
+            "patterns": [
+              {
+                "group": [
+                  "**/domain",
+                  "**/domain/**",
+                  "**/ui",
+                  "**/ui/**"
+                ],
+                "message": "data 층은 domain·ui를 import할 수 없습니다."
+              }
+            ]
+          }
+        ]
       }
     },
     {
-      "files": ["src/domain/**"],
+      "files": [
+        "src/domain/**"
+      ],
       "rules": {
-        "no-restricted-imports": ["error", {
-          "paths": [
-            { "name": "react", "message": "domain 층은 순수 함수만 둡니다." },
-            { "name": "react-dom", "message": "domain 층은 순수 함수만 둡니다." }
-          ],
-          "patterns": [
-            { "group": ["**/ui", "**/ui/**"], "message": "domain 층은 ui를 import할 수 없습니다." },
-            { "group": ["**/data/**", "!**/data/types", "!**/data/types.ts"], "message": "domain 층은 data/types만 import할 수 있습니다. 리그 어댑터에 의존하지 마세요." }
-          ]
-        }]
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "message": "domain 층은 순수 함수만 둡니다."
+              },
+              {
+                "name": "react-dom",
+                "message": "domain 층은 순수 함수만 둡니다."
+              }
+            ],
+            "patterns": [
+              {
+                "group": [
+                  "**/ui",
+                  "**/ui/**"
+                ],
+                "message": "domain 층은 ui를 import할 수 없습니다."
+              },
+              {
+                "group": [
+                  "**/data/**",
+                  "!**/data/types",
+                  "!**/data/types.ts"
+                ],
+                "message": "domain 층은 data/types만 import할 수 있습니다. 리그 어댑터에 의존하지 마세요."
+              }
+            ]
+          }
+        ]
       }
     },
     {
-      "files": ["src/ui/**"],
+      "files": [
+        "src/ui/**"
+      ],
       "rules": {
-        "no-restricted-imports": ["error", {
-          "patterns": [
-            { "group": ["**/data/demo/**", "**/data/mlb/**", "**/data/kbo/**", "**/data/community/**"], "message": "ui는 리그 어댑터를 직접 import하지 말고 data/registry를 거치세요." }
-          ]
-        }]
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/data/demo/**",
+                  "**/data/mlb/**",
+                  "**/data/kbo/**",
+                  "**/data/community/**"
+                ],
+                "message": "ui는 리그 어댑터를 직접 import하지 말고 data/registry를 거치세요."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/domain/**/*.test.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/ui",
+                  "**/ui/**"
+                ],
+                "message": "domain 테스트도 ui를 import할 수 없습니다."
+              }
+            ]
+          }
+        ]
       }
     }
   ]
