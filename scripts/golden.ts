@@ -26,17 +26,26 @@ const COLLECT = `(() => {
     return [out, nan];
   };
   const [avgH, nanH] = avgOf('H', poolH), [avgP, nanP] = avgOf('P', poolP);
+  const metrics = Object.fromEntries(players.map((p) => [p.id, Object.fromEntries(
+    metricKeys.filter((k) => p[k] !== undefined)
+      .map((k) => [k, { fmt: fmt(k, p[k]), pctl: M[k].neutral ? null : pctl(p, k) }])
+  )]));
+  // 데모 fmt는 반올림해서 0인 값에도 부호를 붙인다(-0.04 → "-0.0", 0.04 → "+0.0").
+  // 새 앱은 부호 없는 0으로 표시하므로(일부러 다른 부분) 해당 항목을 모두 남긴다.
+  const signedZero = (s) => {
+    const num = (s.match(/^[+-]?[0-9.,]+/) || [''])[0];
+    return /^[+-]/.test(num) && Number(num.replace(/,/g, '')) === 0;
+  };
+  const signedZeroFmt = Object.entries(metrics).flatMap(([id, ms]) =>
+    Object.entries(ms).filter(([, x]) => signedZero(x.fmt)).map(([key, x]) => ({ id: +id, key, fmt: x.fmt })));
   return {
     constants: { seed: 20261017, W, WSCALE, LG_RPA, POSADJ, RUN_SB, RUN_CS, POSF, poolMinPA: 300 },
     league: plain(LG),
     pools: { H: poolH.map((p) => p.id), P: poolP.map((p) => p.id) },
     players: players.map(plain),
-    metrics: Object.fromEntries(players.map((p) => [p.id, Object.fromEntries(
-      metricKeys.filter((k) => p[k] !== undefined)
-        .map((k) => [k, { fmt: fmt(k, p[k]), pctl: M[k].neutral ? null : pctl(p, k) }])
-    )])),
+    metrics,
     lgAvg: { H: avgH, P: avgP },
-    demoQuirks: { lgAvgNaN: { H: nanH, P: nanP } },
+    demoQuirks: { lgAvgNaN: { H: nanH, P: nanP }, signedZeroFmt },
     battedBalls: Object.fromEntries(H_.map((p) => [p.id, battedBalls(p)])),
   };
 })()`
@@ -48,7 +57,10 @@ export type Golden = {
   players: Array<Record<string, unknown> & { id: number; type: 'H' | 'P' }>
   metrics: Record<string, Record<string, { fmt: string; pctl: number | null }>>
   lgAvg: { H: Record<string, number>; P: Record<string, number> }
-  demoQuirks: { lgAvgNaN: { H: string[]; P: string[] } }
+  demoQuirks: {
+    lgAvgNaN: { H: string[]; P: string[] }
+    signedZeroFmt: Array<{ id: number; key: string; fmt: string }>
+  }
   battedBalls: Record<string, Array<{ ev: number; la: number; hit: boolean }>>
 }
 

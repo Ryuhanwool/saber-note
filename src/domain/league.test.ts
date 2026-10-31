@@ -17,6 +17,8 @@ const RENAMED: Record<string, string> = { raw: 'fipCore' }
 // 데모 버그로 골든 값이 틀린 항목: 지명타자의 fpct가 undefined인데 데모 pctl이 분모에 넣었다.
 // 새 계산이 값 있는 선수만 세는지는 percentile.test.ts에서 따로 확인한다.
 const GOLDEN_PCTL_WRONG = new Set(['fpct'])
+// 데모와 일부러 다른 표시: 반올림해서 0인 값에 데모는 부호를 붙였다("-0.0", "+0.0"). 새 앱은 "0.0"
+const SIGNED_ZERO = new Set(golden.demoQuirks.signedZeroFmt.map((q) => `demo:${q.id} ${q.key}`))
 
 /** === 비교 (0과 -0은 같게 본다. JSON 저장 시 -0이 0이 되기 때문) */
 const same = (a: unknown, b: unknown) => a === b
@@ -59,13 +61,25 @@ describe('domain: 데모와 같은 지표 계산', () => {
       for (const [k, want] of Object.entries(goldenMetrics[p.id.split(':')[1]])) {
         const key = k as MetricKey
         const fmt = formatMetric(key, metricValue(p, key))
-        if (fmt !== want.fmt) mismatches.push(`${p.id} ${k} 표시: ${want.fmt} → ${fmt}`)
+        // 부호 붙은 0은 데모 표시에서 부호만 뗀 값이어야 한다
+        const expected = SIGNED_ZERO.has(`${p.id} ${k}`) ? want.fmt.slice(1) : want.fmt
+        if (fmt !== expected) mismatches.push(`${p.id} ${k} 표시: ${want.fmt} → ${fmt}`)
         if (GOLDEN_PCTL_WRONG.has(k)) continue
         const pc = percentile(league, p, key)
         if (pc !== want.pctl) mismatches.push(`${p.id} ${k} 백분위: ${want.pctl} → ${pc}`)
       }
     }
     expect(mismatches).toEqual([])
+  })
+
+  it('데모의 부호 붙은 0 표시(-0.0, +0.0)가 실제로 있었고, 새 표시에는 없다', () => {
+    const keys = golden.demoQuirks.signedZeroFmt
+    expect(keys.some((q) => q.fmt.startsWith('-'))).toBe(true)
+    expect(keys.some((q) => q.fmt.startsWith('+'))).toBe(true)
+    for (const q of keys) {
+      const p = league.byId.get(`demo:${q.id}`)!
+      expect(formatMetric(q.key as MetricKey, metricValue(p, q.key as MetricKey)), `${p.id} ${q.key}`).toMatch(/^0\.0+$/)
+    }
   })
 
   it('리그 평균이 데모와 같다', () => {

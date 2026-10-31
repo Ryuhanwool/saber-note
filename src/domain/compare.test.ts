@@ -55,4 +55,22 @@ describe('표시 형식', () => {
     expect(formatInnings(370)).toBe('123⅓이닝')
     expect(formatInnings(369)).toBe('123이닝')
   })
+
+  it('반올림한 결과가 0이면 부호 없이 0으로 표시한다', () => {
+    // 음수·양수 모두 (데모는 "-0.0", "+0.0")
+    expect(formatMetric('bsr', -0.04)).toBe('0.0')
+    expect(formatMetric('bsr', 0.04)).toBe('0.0')
+    expect(formatMetric('bsr', -0)).toBe('0.0')
+    expect(formatMetric('bsr', 0)).toBe('0.0')
+    // 반올림해서 0이 아니면 부호를 유지한다
+    expect(formatMetric('bsr', 0.06)).toBe('+0.1')
+    expect(formatMetric('bsr', -0.06)).toBe('-0.1')
+    // 자릿수·종류가 달라도 같은 규칙
+    expect(formatMetric('WAR', -0.004)).toBe('0.00')
+    expect(formatMetric('drs', -0.4)).toBe('0')
+    expect(formatMetric('drs', 0.4)).toBe('0')
+    expect(formatMetric('bbp', -0.0004)).toBe('0.0%')
+    expect(formatMetric('ops', -0.0004)).toBe('.000')
+    expect(formatMetric('spin', -0.4)).toBe('0 rpm')
+  })
 })
