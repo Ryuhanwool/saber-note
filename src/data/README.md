@@ -4,3 +4,4 @@
 
 - domain·ui·react를 import하지 않습니다 (`.oxlintrc.json`에서 강제).
 - ui는 어댑터를 직접 부르지 않고 `registry.ts`를 거칩니다.
+- 출처는 `meta.available`로 기록 필드 하나하나의 있음/없음을 알린다. 없다고 한 필드는 모든 선수에게 null이어야 한다 (`unavailableButPresent`로 검사). 단위는 km/h·m/s·0~1 비율로 바꿔서 넘긴다.

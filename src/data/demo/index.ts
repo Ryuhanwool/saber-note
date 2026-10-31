@@ -1,3 +1,4 @@
+import { ALL_AVAILABLE } from '../availability'
 import type { LeagueDataSource } from '../source'
 import type { LeagueConstants, RawDataset } from '../types'
 import { demoBattedBalls } from './battedBalls'
@@ -36,8 +37,8 @@ export const demoSource: LeagueDataSource = {
         asOf: null,
         source: `가상 데이터 (시드 ${DEMO_SEED})`,
         notice: '모든 선수, 팀, 기록은 화면 구현을 보여 주기 위해 만든 가상 데이터입니다. 실제 서비스에서는 이 자리에 스탯티즈 기준으로 계산한 실제 기록이 들어갑니다.',
-        hasFielding: true,
-        hasTracking: true,
+        // 데모는 모든 기록을 만든다
+        available: ALL_AVAILABLE,
       },
       constants: DEMO_CONSTANTS,
       hitters,

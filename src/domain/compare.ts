@@ -22,10 +22,14 @@ export function rowWinner(key: MetricKey, a: Num, b: Num): Side | null {
   return (better === 'higher' ? a > b : a < b) ? 'a' : 'b'
 }
 
-export function comparePlayers(A: Player, B: Player): CompareResult {
+/**
+ * isAvailable: 데이터 출처가 주지 않는 지표는 비교 줄에서 뺀다 (예: MLB에는 DRS가 없다).
+ * 보통 `(k) => metricAvailable(league, k)`를 넘긴다.
+ */
+export function comparePlayers(A: Player, B: Player, isAvailable: (key: MetricKey) => boolean = () => true): CompareResult {
   if (A.type !== B.type) return { ok: false, reason: 'type-mismatch' }
   if (A.id === B.id) return { ok: false, reason: 'same-player' }
-  const rows = COMPARE_KEYS[A.type].map((key) => {
+  const rows = COMPARE_KEYS[A.type].filter(isAvailable).map((key) => {
     const a = metricValue(A, key), b = metricValue(B, key)
     return { key, a, b, winner: rowWinner(key, a, b) }
   })

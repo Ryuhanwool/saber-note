@@ -3,6 +3,7 @@
 // 출처가 원래 주는 값(원시 기록, 수비 구성 점수, DRS·OAA·ZR, 트래킹)만 만들고,
 // wOBA·wRC+·FIP·UZR 합계·WAR 같은 계산은 domain이 한다.
 import type { FieldPosition, PitcherRole, PlayerId, RawFielding, RawHitter, RawPitcher, RawRating } from '../types'
+import { emptyFielding } from '../records'
 import { clamp, gaussian, mulberry32, pick } from './random'
 
 export const DEMO_SEED = 20261017
@@ -33,15 +34,6 @@ export type DemoLeague = {
   pitchers: RawPitcher[]
   hitterRates: Map<PlayerId, HitterRates>
   pitcherRates: Map<PlayerId, PitcherRates>
-}
-
-/** 지명타자처럼 수비에 나서지 않는 선수의 수비 기록: 모든 항목이 null */
-export function emptyFielding(): RawFielding {
-  return {
-    inn: null, TC: null, E: null, DP: null, A_OF: null,
-    rngR: null, errR: null, dpR: null, armR: null, frmR: null, blkR: null, csR: null, csp: null,
-    drs: null, oaa: null, zr: null, ratings: null,
-  }
 }
 
 /** 생성 중에만 쓰는 숨은 값 (출처 밖으로 나가지 않음) */

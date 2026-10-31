@@ -1,36 +1,33 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import type { PlayerId } from '../../data/types'
+import { availableKeys } from '../../domain/availability'
 import type { MetricKey } from '../../domain/catalog'
 import { formatInnings } from '../../domain/format'
 import type { Player } from '../../domain/players'
 import { useLeague } from '../shared/LeagueContext'
 import { comparePath, positionLabel } from '../shared/labels'
 import MetricRow from '../shared/MetricRow'
+import DefenseTab from './DefenseTab'
+import { HITTER_TABS, PITCHER_TABS, tabAvailable } from './tabs'
+import TrackingTab from './TrackingTab'
 import './player.css'
-
-/** keys가 null인 탭은 아직 열리지 않은 탭 (수비·트래킹: 5단계에서 활성화) */
-type Tab = { label: string; keys: MetricKey[] | null }
-
-const HITTER_TABS: Tab[] = [
-  { label: '타격', keys: ['WAR', 'wrcp', 'ops', 'woba', 'bbp', 'kp', 'babip'] },
-  { label: '주루', keys: ['bsr', 'sb', 'sbp', 'wsb', 'xbt', 'sprint', 'h2f'] },
-  { label: '수비', keys: null },
-  { label: '트래킹', keys: null },
-]
-const PITCHER_TABS: Tab[] = [
-  { label: '투구', keys: ['WAR', 'era', 'fip', 'whip', 'pk', 'pbb'] },
-  { label: '트래킹', keys: null },
-]
 
 function PlayerCard({ player: p }: { player: Player }) {
   const league = useLeague()
   const navigate = useNavigate()
-  const [tab, setTab] = useState(0)
-  const [openKey, setOpenKey] = useState<MetricKey | null>(null)
   const { meta, constants } = league
   const tabs = p.type === 'H' ? HITTER_TABS : PITCHER_TABS
-  const keys = tabs[tab].keys ?? []
+  const enabled = tabs.map((t) => tabAvailable(league, p, t))
+  const [tab, setTab] = useState(() => Math.max(0, enabled.indexOf(true)))
+  const [openKey, setOpenKey] = useState<MetricKey | null>(null)
+  const current = tabs[tab]
+
+  // 출처에 없는 지표 줄은 숨긴다 (값이 null인 줄은 "기록 없음"으로 보인다)
+  const rows = (keys: MetricKey[]) =>
+    availableKeys(league, keys).map((k) => (
+      <MetricRow key={k} player={p} metricKey={k} open={openKey === k} onToggle={() => setOpenKey(openKey === k ? null : k)} />
+    ))
 
   return (
     <>
@@ -64,8 +61,8 @@ function PlayerCard({ player: p }: { player: Player }) {
               key={t.label}
               role="tab"
               aria-selected={i === tab}
-              disabled={!t.keys}
-              title={t.keys ? undefined : '추가 기능 1단계에서 열려요'}
+              disabled={!enabled[i]}
+              title={enabled[i] ? undefined : `${meta.source}에는 이 기록이 없어요`}
               onClick={() => {
                 setTab(i)
                 setOpenKey(null)
@@ -75,10 +72,10 @@ function PlayerCard({ player: p }: { player: Player }) {
             </button>
           ))}
         </div>
-        <div role="tabpanel" aria-label={tabs[tab].label}>
-          {keys.map((k) => (
-            <MetricRow key={k} player={p} metricKey={k} open={openKey === k} onToggle={() => setOpenKey(openKey === k ? null : k)} />
-          ))}
+        <div role="tabpanel" aria-label={current.label}>
+          {current.kind === 'metrics' && rows(current.keys)}
+          {current.kind === 'defense' && p.type === 'H' && <DefenseTab player={p} rows={rows} />}
+          {current.kind === 'tracking' && <TrackingTab player={p} rows={rows} />}
         </div>
       </div>
     </>

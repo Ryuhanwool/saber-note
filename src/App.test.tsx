@@ -4,7 +4,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { createMlbSource } from './data/mlb'
+import { SAMPLE_OPTIONS } from './data/mlb/sample'
 import { getDataSource } from './data/registry'
+import type { LeagueDataSource } from './data/source'
 import { formatMetric } from './domain/format'
 import { buildLeague } from './domain/league'
 import { topByWar } from './domain/search'
@@ -16,10 +19,10 @@ window.scrollTo = () => {}
 const league = buildLeague(await getDataSource('demo').load())
 const enc = encodeURIComponent
 
-function renderAt(path: string) {
+function renderAt(path: string, source?: LeagueDataSource) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <LeagueProvider>
+      <LeagueProvider source={source}>
         <App />
       </LeagueProvider>
     </MemoryRouter>,
@@ -93,13 +96,53 @@ describe('화면 2. 선수 지표 카드', () => {
     expect(screen.queryByText(/리그 평균 100에 맞춘 값/)).toBeNull()
   })
 
-  it('주루 탭으로 바꿀 수 있고, 수비·트래킹 탭은 아직 열리지 않는다', async () => {
+  it('주루 탭으로 바꿀 수 있다', async () => {
     const user = userEvent.setup()
     renderAt(`/player/${enc(hitter.id)}`)
     await user.click(await screen.findByRole('tab', { name: '주루' }))
-    expect(within(screen.getByRole('tabpanel')).getByRole('button', { name: /주루 득점/ })).toBeTruthy()
-    expect((screen.getByRole('tab', { name: '수비' }) as HTMLButtonElement).disabled).toBe(true)
-    expect((screen.getByRole('tab', { name: '트래킹' }) as HTMLButtonElement).disabled).toBe(true)
+    const panel = within(screen.getByRole('tabpanel'))
+    for (const name of [/주루 득점/, /추가 진루율/, /스프린트 스피드/]) expect(panel.getByRole('button', { name })).toBeTruthy()
+  })
+
+  it('수비 탭: 종합 지표 4개 · 세부 구성 · 전통 기록 · 능력치를 보여 준다', async () => {
+    const user = userEvent.setup()
+    const ss = league.pool.H.find((p) => p.raw.pos === 'SS')!
+    renderAt(`/player/${enc(ss.id)}`)
+    await user.click(await screen.findByRole('tab', { name: '수비' }))
+    const panel = within(screen.getByRole('tabpanel'))
+    for (const name of ['DRS', 'UZR', 'OAA', 'ZR', '범위 득점', '병살 득점']) expect(panel.getByRole('button', { name: new RegExp(`^${name}`) })).toBeTruthy()
+    const trad = panel.getByText('전통 기록').nextElementSibling as HTMLElement
+    expect(within(trad).getByText('병살 처리')).toBeTruthy()
+    expect(panel.getAllByRole('img', { name: /점, / })).toHaveLength(ss.raw.fielding.ratings!.length)
+    expect(panel.getByText(/데이터 출처: 가상 데이터/)).toBeTruthy()
+  })
+
+  it('지명타자는 수비 탭에서 수비 지표가 없다고 알려 준다', async () => {
+    const user = userEvent.setup()
+    const dh = league.pool.H.find((p) => p.raw.pos === 'DH')!
+    renderAt(`/player/${enc(dh.id)}`)
+    await user.click(await screen.findByRole('tab', { name: '수비' }))
+    expect(screen.getByText(/지명타자는 수비에 나서지 않아/)).toBeTruthy()
+  })
+
+  it('트래킹 탭: 타구 지표와 타구 40개 분포 그래프', async () => {
+    const user = userEvent.setup()
+    const { container } = renderAt(`/player/${enc(hitter.id)}`)
+    await user.click(await screen.findByRole('tab', { name: '트래킹' }))
+    const panel = within(screen.getByRole('tabpanel'))
+    expect(panel.getByRole('button', { name: /평균 타구 속도/ })).toBeTruthy()
+    expect(await panel.findByRole('img', { name: /타구 속도와 발사각 분포 \(타구 40개\)/ })).toBeTruthy()
+    expect(container.querySelectorAll('circle[data-hit]')).toHaveLength(40)
+  })
+
+  it('투수 트래킹 탭: 구속·회전수·헛스윙과 구종 비율', async () => {
+    const user = userEvent.setup()
+    const pitcher = league.pitchers[0]
+    renderAt(`/player/${enc(pitcher.id)}`)
+    await user.click(await screen.findByRole('tab', { name: '트래킹' }))
+    expect(screen.getByRole('button', { name: /평균 직구 구속/ })).toBeTruthy()
+    expect(screen.getByText('구종 비율')).toBeTruthy()
+    expect(screen.getByText(pitcher.raw.tracking.mix![0].pitch)).toBeTruthy()
   })
 
   it('300타석 미만 타자에게는 백분위가 참고용이라고 알려 준다', async () => {
@@ -156,5 +199,52 @@ describe('상단 메뉴', () => {
     await screen.findByRole('heading', { level: 1 })
     const current = screen.getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page')
     expect(current.map((a) => a.textContent)).toEqual(['선수'])
+  })
+})
+
+describe('MLB 출처: 없는 지표 줄은 숨긴다', () => {
+  const mlbSource = createMlbSource(SAMPLE_OPTIONS)
+  const id = (n: number) => enc(`mlb:${n}`)
+
+  it('수비 탭에는 OAA만 있고 DRS·UZR·ZR·세부 구성·전통 기록·능력치는 없다', async () => {
+    const user = userEvent.setup()
+    renderAt(`/player/${id(9001)}`, mlbSource)
+    await user.click(await screen.findByRole('tab', { name: '수비' }))
+    const panel = within(screen.getByRole('tabpanel'))
+    expect(panel.getByRole('button', { name: /^OAA/ })).toBeTruthy()
+    for (const name of ['DRS', 'UZR', 'ZR', '범위 득점']) expect(panel.queryByRole('button', { name: new RegExp(`^${name}`) }), name).toBeNull()
+    expect(panel.queryByText('전통 기록')).toBeNull()
+    expect(panel.queryByText(/스카우팅 능력치/)).toBeNull()
+    expect(panel.getByText(/데이터 출처: Baseball Savant · 2026.10.01 반영/)).toBeTruthy()
+  })
+
+  it('OAA가 없는 포수는 수비 기록이 없다고 알려 준다', async () => {
+    const user = userEvent.setup()
+    renderAt(`/player/${id(9002)}`, mlbSource)
+    await user.click(await screen.findByRole('tab', { name: '수비' }))
+    expect(screen.getByText('이 선수는 제공되는 수비 기록이 없어요.')).toBeTruthy()
+  })
+
+  it('주루 탭에서 추가 진루율 줄은 숨기고, 스프린트 스피드는 m/s로 보여 준다', async () => {
+    const user = userEvent.setup()
+    renderAt(`/player/${id(9001)}`, mlbSource)
+    await user.click(await screen.findByRole('tab', { name: '주루' }))
+    const panel = within(screen.getByRole('tabpanel'))
+    expect(panel.queryByRole('button', { name: /추가 진루율/ })).toBeNull()
+    expect(panel.getByText(`${(29.5 * 0.3048).toFixed(2)} m/s`)).toBeTruthy()
+  })
+
+  it('트래킹 탭의 타구 속도는 km/h로 보여 준다', async () => {
+    const user = userEvent.setup()
+    renderAt(`/player/${id(9001)}`, mlbSource)
+    await user.click(await screen.findByRole('tab', { name: '트래킹' }))
+    expect(screen.getByText(`${(100 * 1.609344).toFixed(1)} km/h`)).toBeTruthy()
+  })
+
+  it('비교 화면에 DRS 줄이 없다', async () => {
+    renderAt(`/compare?a=${id(9001)}&b=${id(9004)}`, mlbSource)
+    expect(await screen.findByRole('table')).toBeTruthy()
+    expect(screen.getAllByRole('row')).toHaveLength(1 + 7)
+    expect(screen.queryByRole('rowheader', { name: 'DRS' })).toBeNull()
   })
 })

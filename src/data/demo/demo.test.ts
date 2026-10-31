@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import golden from '../../../fixtures/demo-golden.json'
+import { ALL_AVAILABLE, unavailableButPresent } from '../availability'
 import { getDataSource } from '../registry'
 import type { RawHitter, RawPitcher } from '../types'
 import { DEMO_CONSTANTS } from '.'
@@ -76,6 +77,12 @@ describe('값 없음은 언제나 null', () => {
       const v = (p as Record<string, unknown>)[k]
       return v && typeof v === 'object' && !Array.isArray(v) ? [k, Object.keys(v).sort()] : k
     }))
+
+  it('demo는 모든 기록이 있다고 알리고, 그 알림과 실제 값이 어긋나지 않는다', () => {
+    expect(ds.meta.available).toEqual(ALL_AVAILABLE)
+    expect(Object.values(ds.meta.available.fielding).every(Boolean)).toBe(true)
+    expect(unavailableButPresent(ds)).toEqual([])
+  })
 
   it('데이터셋 어디에도 undefined가 없다', () => {
     expect(findUndefined(ds, '$')).toEqual([])

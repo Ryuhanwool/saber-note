@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router'
 import type { PlayerId } from '../../data/types'
+import { metricAvailable } from '../../domain/availability'
 import { metricDef } from '../../domain/catalog'
 import { comparePlayers, type CompareRow } from '../../domain/compare'
 import { formatMetric } from '../../domain/format'
@@ -24,7 +25,9 @@ function PlayerSelect({ id, label, value, onChange }: { id: string; label: strin
 }
 
 function CompareTable({ A, B }: { A: Player; B: Player }) {
-  const result = comparePlayers(A, B)
+  const league = useLeague()
+  // 데이터 출처에 없는 지표는 비교 줄에서 뺀다
+  const result = comparePlayers(A, B, (k) => metricAvailable(league, k))
   if (!result.ok) {
     return (
       <p className="empty">

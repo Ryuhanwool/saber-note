@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react'
+import type { LeagueDataSource } from '../../data/source'
 import type { League } from '../../domain/players'
 
 export type LeagueState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; league: League }
+  | { status: 'ready'; league: League; source: LeagueDataSource }
 
 export const LeagueContext = createContext<LeagueState>({ status: 'loading' })
 
@@ -15,4 +16,11 @@ export function useLeague(): League {
   const state = useContext(LeagueContext)
   if (state.status !== 'ready') throw new Error('리그 데이터가 아직 준비되지 않았습니다.')
   return state.league
+}
+
+/** 리그를 불러온 데이터 출처 (타구 목록처럼 나중에 따로 불러오는 기록용) */
+export function useDataSource(): LeagueDataSource {
+  const state = useContext(LeagueContext)
+  if (state.status !== 'ready') throw new Error('리그 데이터가 아직 준비되지 않았습니다.')
+  return state.source
 }

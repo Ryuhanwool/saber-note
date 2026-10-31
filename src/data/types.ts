@@ -150,8 +150,23 @@ export type DatasetMeta = {
   source: string
   /** 화면 상단 안내 문구. 없으면 null */
   notice: string | null
-  hasFielding: boolean
-  hasTracking: boolean
+  /** 이 출처가 어떤 기록을 제공하는지. 탭·지표 줄을 보여 줄지는 domain이 이 값으로 정한다 */
+  available: DataAvailability
+}
+
+/**
+ * 출처가 제공하는 기록 목록 (필드 하나하나 있음/없음).
+ * - false: 이 출처에는 그 기록이 아예 없다 → 모든 선수의 값이 null이어야 하고, 화면에서 그 지표 줄을 숨긴다.
+ * - true: 기록이 있다. 그래도 해당하지 않는 선수는 null일 수 있다(예: 지명타자의 수비) → 줄은 보이고 "기록 없음"으로 표시.
+ * 타석·안타·이닝 같은 기본 기록은 언제나 있다고 본다.
+ */
+export type DataAvailability = {
+  xbt: boolean
+  fielding: Record<keyof RawFielding, boolean>
+  hitterTracking: Record<keyof RawHitterTracking, boolean>
+  pitcherTracking: Record<keyof RawPitcherTracking, boolean>
+  /** loadBattedBalls가 타구 목록을 주는지 */
+  battedBalls: boolean
 }
 
 export type RawDataset = {
