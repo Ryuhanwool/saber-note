@@ -9,6 +9,8 @@ import { SAMPLE_OPTIONS } from './data/mlb/sample'
 import { getDataSource } from './data/registry'
 import type { LeagueDataSource } from './data/source'
 import { formatMetric } from './domain/format'
+import { dailyBlind } from './domain/games/blind'
+import { dayKeyKST } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
 import { topByWar } from './domain/search'
 import LeagueProvider from './ui/shared/LeagueProvider'
@@ -246,5 +248,75 @@ describe('MLB 출처: 없는 지표 줄은 숨긴다', () => {
     expect(await screen.findByRole('table')).toBeTruthy()
     expect(screen.getAllByRole('row')).toHaveLength(1 + 7)
     expect(screen.queryByRole('rowheader', { name: 'DRS' })).toBeNull()
+  })
+})
+
+describe('화면 6. 미니게임', () => {
+  it('게임 카드 4장과 이번 주 챌린지 배너', async () => {
+    renderAt('/games')
+    for (const name of ['지표 업다운', '블라인드 스탯 퀴즈', '세이버 픽 챌린지', '이 타구, 안타일까?']) {
+      expect(await screen.findByRole('button', { name: new RegExp(name) })).toBeTruthy()
+    }
+    expect(screen.getByText('이번 주 세이버 픽 챌린지')).toBeTruthy()
+  })
+
+  it('지표 업다운: 고르면 오른쪽 값과 결과가 나오고 다음 버튼이 생긴다', async () => {
+    const user = userEvent.setup()
+    renderAt('/games/updown')
+    await user.click(await screen.findByRole('button', { name: '더 높다' }))
+    const status = screen.getByRole('status')
+    expect(status.textContent).toMatch(/정답!|아쉬워요\./)
+    expect(screen.getByRole('button', { name: /다음 선수|다시 시작/ })).toBeTruthy()
+  })
+
+  it('블라인드 퀴즈: 오늘의 문제 정답을 고르면 이긴다', async () => {
+    const user = userEvent.setup()
+    const q = dailyBlind(league.pool.H, dayKeyKST(new Date()))!
+    renderAt('/games/blind')
+    await user.click(await screen.findByRole('button', { name: q.target.name }))
+    expect(screen.getByRole('status').textContent).toMatch(/정답! 힌트 없이 맞혔어요/)
+  })
+
+  it('블라인드 퀴즈: 3번 틀리면 정답을 알려 주고 힌트가 모두 열린다', async () => {
+    const user = userEvent.setup()
+    const q = dailyBlind(league.pool.H, dayKeyKST(new Date()))!
+    renderAt('/games/blind')
+    for (const p of q.options.filter((x) => x !== q.target)) await user.click(await screen.findByRole('button', { name: p.name }))
+    expect(screen.getByRole('status').textContent).toContain(`정답은 ${q.target.name}이었어요`)
+    expect(screen.getByText(`나이: ${q.target.raw.age}세`)).toBeTruthy()
+  })
+
+  it('세이버 픽 챌린지: 5문제를 고르고 제출 → 일주일 진행 → 점수와 근거', async () => {
+    const user = userEvent.setup()
+    renderAt('/games/challenge')
+    const submit = await screen.findByRole('button', { name: '제출하기' })
+    expect((submit as HTMLButtonElement).disabled).toBe(true)
+    const picks = screen.getAllByRole('button', { pressed: false })
+    for (let i = 0; i < picks.length; i += 2) await user.click(picks[i])
+    await user.click(submit)
+    await user.click(screen.getByRole('button', { name: /일주일 경기 진행하기/ }))
+    // 점수: 배너 1개 + 순위표 8명 (가상 참가자 7명 + 나)
+    expect(await screen.findAllByText(/^\d+점$/)).toHaveLength(1 + 8)
+    expect(screen.getAllByText(/^근거:/)).toHaveLength(5)
+    expect(screen.getByText(/가상 참가자, 데모/)).toBeTruthy()
+  })
+
+  it('이 타구, 안타일까?: 10구를 풀면 결과를 보여 준다', async () => {
+    const user = userEvent.setup()
+    renderAt('/games/batted-ball')
+    for (let i = 0; i < 10; i++) {
+      await user.click(await screen.findByRole('button', { name: '안타' }))
+      expect(screen.getByText('최종 안타 확률')).toBeTruthy()
+      await user.click(screen.getByRole('button', { name: i === 9 ? '결과 보기' : '다음 타구' }))
+    }
+    expect(screen.getByRole('status').textContent).toMatch(/10구 중 \d+개를 맞혔어요/)
+  })
+
+  it('MLB 출처에서는 주간 기록이 없어 챌린지 카드가 닫힌다', async () => {
+    renderAt('/games', createMlbSource(SAMPLE_OPTIONS))
+    const card = await screen.findByRole('button', { name: /세이버 픽 챌린지/ })
+    expect((card as HTMLButtonElement).disabled).toBe(true)
+    expect(card.textContent).toContain('주간 기록을 제공하지 않는 데이터 출처예요.')
+    expect(screen.queryByText('이번 주 세이버 픽 챌린지')).toBeNull()
   })
 })

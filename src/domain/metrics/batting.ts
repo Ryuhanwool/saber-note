@@ -1,7 +1,7 @@
 import type { LeagueConstants, RawHitter } from '../../data/types'
 
-/** wOBA 분자: 타격 결과마다 득점 가치를 곱해 더한 값 */
-export function wobaNumerator(h: RawHitter, w: LeagueConstants['woba']): number {
+/** wOBA 분자: 타격 결과마다 득점 가치를 곱해 더한 값 (시즌·주간 기록 모두) */
+export function wobaNumerator(h: Pick<RawHitter, 'BB' | 'HBP' | 'S1' | 'D2' | 'D3' | 'HR'>, w: LeagueConstants['woba']): number {
   return w.bb * h.BB + w.hbp * h.HBP + w.s1 * h.S1 + w.d2 * h.D2 + w.d3 * h.D3 + w.hr * h.HR
 }
 

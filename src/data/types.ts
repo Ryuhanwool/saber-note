@@ -118,6 +118,22 @@ export type RawPitcher = {
 
 export type RawBattedBall = { ev: number; la: number; hit: boolean }
 
+/** 한 주 동안의 타격 기록 (세이버 픽 챌린지 채점용) */
+export type RawWeeklyHitting = {
+  id: PlayerId
+  PA: number; BB: number; HBP: number; SO: number; HR: number; S1: number; D2: number; D3: number
+}
+
+/** 한 주 동안의 투구 기록 (선발 등판 기준) */
+export type RawWeeklyPitching = {
+  id: PlayerId
+  /** 선발 등판 수 */
+  GS: number
+  outs: number; SO: number; BB: number; HBP: number; HR: number
+}
+
+export type RawWeek = { hitters: RawWeeklyHitting[]; pitchers: RawWeeklyPitching[] }
+
 /** 리그·기준마다 다른 계산 상수. domain은 이 값을 받아서만 계산한다. */
 export type LeagueConstants = {
   woba: { bb: number; hbp: number; s1: number; d2: number; d3: number; hr: number }

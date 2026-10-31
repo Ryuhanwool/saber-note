@@ -29,8 +29,8 @@ const hitter = (id: number, name: string, pos: MlbHitterRow['pos'], extra: Parti
 export const SAMPLE_HITTERS: MlbHitterRow[] = [
   hitter(9001, '표본 유격수', 'SS', { exit_velocity_avg: 100, sprint_speed: 29.5, outs_above_average: 12 }),
   hitter(9002, '표본 포수', 'C', { home_run: 15, outs_above_average: null, sprint_speed: 25 }),
-  hitter(9003, '표본 지명타자', 'DH', { home_run: 38, exit_velocity_avg: 94, outs_above_average: null }),
-  hitter(9004, '표본 중견수', 'CF', { sprint_speed: 30, outs_above_average: -4 }),
+  hitter(9003, '표본 지명타자', 'DH', { team: '표본 둘째 팀', home_run: 38, exit_velocity_avg: 94, outs_above_average: null }),
+  hitter(9004, '표본 중견수', 'CF', { team: '표본 둘째 팀', sprint_speed: 30, outs_above_average: -4 }),
 ]
 
 export const SAMPLE_PITCHERS: MlbPitcherRow[] = [

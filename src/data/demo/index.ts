@@ -3,6 +3,7 @@ import type { LeagueDataSource } from '../source'
 import type { LeagueConstants, RawDataset } from '../types'
 import { demoBattedBalls } from './battedBalls'
 import { DEMO_SEED, generateDemoLeague, type DemoLeague } from './generate'
+import { simulateWeek } from './week'
 
 /** 데모 HTML이 쓰던 간이 공식 상수 */
 export const DEMO_CONSTANTS: LeagueConstants = {
@@ -49,5 +50,10 @@ export const demoSource: LeagueDataSource = {
   async loadBattedBalls(id) {
     const h = getLeague().hitters.find((p) => p.id === id)
     return h ? demoBattedBalls(Number(id.split(':')[1]), h.tracking) : []
+  },
+
+  async loadWeek(weekId, ids) {
+    const { hitterRates, pitcherRates } = getLeague()
+    return simulateWeek(weekId, ids, { hitter: hitterRates, pitcher: pitcherRates })
   },
 }
