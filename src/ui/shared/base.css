@@ -1,0 +1,53 @@
+/* 모든 화면이 함께 쓰는 기본 요소 (데모 CSS에서 옮김) */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;color:var(--ink);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:var(--font-body);
+  font-size:16px;line-height:1.6;font-variant-numeric:tabular-nums;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--seam);outline-offset:2px}
+.display{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em}
+
+/* 상단 메뉴 — 데모의 nav button을 링크(a)로 바꿨다 */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{max-width:1040px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.brand{font-size:1.5rem;line-height:1;padding-bottom:12px}
+.brand small{font-family:var(--font-body);font-size:.75rem;color:var(--soft);margin-left:8px;font-weight:500}
+nav{display:flex;gap:4px}
+nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
+nav a[aria-current="page"]{color:var(--ink);font-weight:700}
+nav a[aria-current="page"]::after{
+  content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:4px;
+  background:repeating-linear-gradient(90deg,var(--seam) 0 6px,transparent 6px 10px);
+}
+.notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
+
+main{max-width:1040px;margin:0 auto;padding:8px 20px 64px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.muted{color:var(--soft)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:4px;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.chip{border:1px solid var(--line);background:var(--chip);padding:6px 12px;border-radius:999px;cursor:pointer}
+h2{font-size:1.05rem;margin:0 0 10px}
+.back{background:none;border:0;padding:0;margin-bottom:12px;cursor:pointer;color:var(--soft)}
+.empty{padding:24px 0;color:var(--soft)}
+.tag{font-size:.75rem;padding:1px 6px;border-radius:3px;border:1px solid currentColor;margin-left:6px}
+.sub{font-size:.95rem;margin:22px 0 4px}
+.sub small{font-weight:400;color:var(--soft);margin-left:8px;font-size:.8rem}
+.legend{display:flex;gap:16px;font-size:.8rem;color:var(--soft);flex-wrap:wrap;margin-top:6px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+
+/* 검색 입력 + 자동완성 (선수 검색, 커뮤니티 선수 태그) */
+.search{position:relative;max-width:560px}
+.search input{width:100%;padding:14px 16px;border:2px solid var(--ink);border-radius:6px;background:var(--surface);font-size:1.1rem}
+.ac{position:absolute;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;z-index:4;box-shadow:var(--shadow)}
+.ac button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;padding:8px 10px;border-radius:4px;cursor:pointer}
+.ac button:hover,.ac button:focus-visible,.ac button[aria-selected="true"]{background:var(--chip)}

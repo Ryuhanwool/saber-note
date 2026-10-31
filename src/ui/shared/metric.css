@@ -1,0 +1,28 @@
+/* 지표 한 줄(이름·값·백분위 막대·설명)과 기록 칸 — 선수 카드와 미니게임이 함께 쓴다 */
+.metric{display:grid;grid-template-columns:minmax(120px,170px) 72px 1fr;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.metric:first-of-type{border-top:0}
+.mname{background:none;border:0;padding:0;text-align:left;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px}
+.mname .i{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--soft);font-size:.7rem;color:var(--soft);flex:none}
+.mval{font-weight:700;font-size:1.1rem;text-align:right}
+.pbar{position:relative;height:28px;display:flex;align-items:center;gap:10px}
+.track{position:relative;flex:1;height:6px;background:var(--track);border-radius:3px}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.bub{position:absolute;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;display:grid;place-items:center;color:var(--on-accent);font-size:.75rem;font-weight:700;border:2px solid var(--surface)}
+.ptxt{width:68px;font-size:.8rem;color:var(--soft);text-align:right;flex:none}
+.neutral{font-size:.85rem;color:var(--soft)}
+.explain{grid-column:1/-1;background:var(--chip);border-radius:4px;padding:10px 14px;font-size:.9rem}
+.explain p{margin:0 0 4px}
+.explain p:last-child{margin:0}
+@media (max-width:560px){
+  .metric{grid-template-columns:1fr auto;}
+  .metric .pbar{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:no-preference){
+  .fill{transition:width .5s ease}
+  .bub{transition:left .5s ease}
+}
+
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;background:var(--surface)}
+.stat b{display:block;font-size:1.3rem}
+.stat span{font-size:.8rem;color:var(--soft)}

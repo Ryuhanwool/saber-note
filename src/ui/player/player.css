@@ -1,0 +1,32 @@
+/* 검색 홈 */
+.hero{padding:40px 0 24px}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.1;margin:0 0 20px}
+.popular{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px}
+.rank{list-style:none;margin:0;padding:0}
+.rank li button{display:grid;grid-template-columns:2ch 1fr auto;gap:12px;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:10px 2px;text-align:left;cursor:pointer}
+.rank li:first-child button{border-top:0}
+.rank .n{color:var(--soft)}
+
+/* 선수 지표 카드 */
+.ph{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px}
+.ph h1{font-size:clamp(2rem,5vw,2.8rem);margin:0;line-height:1.1}
+.meta{display:flex;gap:6px 14px;flex-wrap:wrap;color:var(--soft);font-size:.9rem;margin-top:6px}
+.basis{display:inline-block;font-size:.8rem;border:1px dashed var(--seam);color:var(--seam);padding:2px 8px;border-radius:4px;margin-top:8px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:16px 0 8px}
+.tabs button{background:none;border:0;padding:8px 14px;cursor:pointer;color:var(--soft);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+/* 데모에 없던 규칙: 아직 열리지 않은 탭 (수비·트래킹, 5단계에서 활성화) */
+.tabs button:disabled{opacity:.45;cursor:not-allowed}
+
+/* 트래킹 탭 */
+.mix{display:grid;grid-template-columns:80px 1fr 48px;gap:10px;align-items:center;font-size:.9rem;padding:4px 0}
+.mix .track{height:10px}
+
+/* 수비 탭: 스카우팅 능력치 */
+.rt{display:grid;grid-template-columns:90px 32px 1fr 88px;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.scale{position:relative;display:grid;grid-template-columns:repeat(12,1fr);gap:2px;height:14px}
+.scale i{background:var(--track);border-radius:2px}
+.scale i.on{background:var(--ink)}
+.scale::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;border-left:2px dashed var(--seam)}
+@media (max-width:560px){.rt{grid-template-columns:80px 30px 1fr}.rt .w{grid-column:1/-1;margin-top:-6px;font-size:.85rem}}
