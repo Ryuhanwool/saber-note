@@ -126,11 +126,11 @@ describe.each(['memory', 'browser'] as const)('응원 저장소 (%s)', (kind) =>
 
 describe('브라우저 응원 저장소', () => {
   it('다시 열어도(새로고침) 메시지·응원·신고가 남고, 예시 응원의 신고는 유지된다', async () => {
-    const { me, you, indexedDB } = setup('browser', seeds)
+    const { me, you, indexedDB, clock } = setup('browser', seeds)
     await me.postMessage({ playerId: A, text: '남는 응원', caution: false })
     await me.cheer(A)
     await you!.report(seeds.messages[0].id)
-    const again = createBrowserCheer({ indexedDB: indexedDB!, user: ME, seeds })
+    const again = createBrowserCheer({ indexedDB: indexedDB!, user: ME, seeds, now: () => clock.t }) // 실제 시계를 쓰면 날짜에 따라 결과가 바뀐다
     opened.push(again)
     const s = await again.snapshot()
     expect(s.messages.some((m) => m.text === '남는 응원')).toBe(true)
