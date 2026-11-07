@@ -1,4 +1,6 @@
-import type { CommunityPost, CommunityUser, DisplaySettings, LeagueId, MediaRef, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek } from './types'
+import type {
+  CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MediaRef, NewCheerMessage, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
+} from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
 export interface LeagueDataSource {
@@ -46,6 +48,38 @@ export interface CommunityRepository {
    * 이 브라우저에만 저장하는 시연용 저장소에만 있다. 여럿이 함께 쓰는 서버 저장소에는 두지 않는다.
    */
   resetDemoData?(): Promise<void>
+}
+
+/**
+ * 선수 응원방 저장소: 응원 메시지와 「응원하기」 기록. ui는 registry의 openCheerRepository로 연다.
+ * 메시지 작성 제한 검사는 저장소에 넘기기 전에 domain(domain/cheer)이 한다.
+ */
+export interface CheerRepository {
+  /** browser: 이 브라우저에만 저장, memory: 새로고침하면 사라짐, shared: 서버에 저장 */
+  readonly storage: 'browser' | 'memory' | 'shared'
+  currentUser(): Promise<CommunityUser | null>
+  /** 모든 메시지(최신순)와 모든 「응원하기」 기록 */
+  snapshot(): Promise<CheerSnapshot>
+  /** 바뀔 때마다 새 상태를 받는다. 반환값은 구독 해제 */
+  subscribe(listener: (s: CheerSnapshot) => void): () => void
+  postMessage(message: NewCheerMessage): Promise<CheerMessage>
+  /** 현재 사용자가 이 선수를 응원한다. 오늘(이 기기 날짜) 이미 응원했으면 AlreadyCheeredError */
+  cheer(playerId: PlayerId): Promise<void>
+  /** 현재 사용자가 신고한다 (자기 메시지는 안 되고, 한 메시지에 한 번만) */
+  report(messageId: string): Promise<void>
+  /** 자기 메시지만 지울 수 있다 */
+  remove(messageId: string): Promise<void>
+  close?(): void
+  /** 시연 데이터 초기화 (있으면): 내가 쓴 메시지·응원·신고 기록을 지우고 예시 응원을 처음 상태로 되돌린다 */
+  resetDemoData?(): Promise<void>
+}
+
+/** 오늘 이미 이 선수를 응원했을 때 */
+export class AlreadyCheeredError extends Error {
+  constructor() {
+    super('오늘은 이미 이 선수를 응원했습니다.')
+    this.name = 'AlreadyCheeredError'
+  }
 }
 
 /** 저장 공간이 모자라 저장하지 못했을 때 */

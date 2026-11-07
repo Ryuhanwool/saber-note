@@ -15,11 +15,11 @@ export function toggledLikes(p: CommunityPost, userId: string): string[] {
   return p.likes.includes(userId) ? p.likes.filter((x) => x !== userId) : [...p.likes, userId]
 }
 
-export function reportedBy(p: CommunityPost, userId: string): string[] {
+export function reportedBy(p: { authorId: string; reports: string[] }, userId: string): string[] {
   if (p.authorId === userId) throw new Error('자기 글은 신고할 수 없습니다.')
   return p.reports.includes(userId) ? p.reports : [...p.reports, userId]
 }
 
-export function assertAuthor(p: CommunityPost, userId: string) {
+export function assertAuthor(p: { authorId: string }, userId: string) {
   if (p.authorId !== userId) throw new Error('자기 글만 지울 수 있습니다.')
 }

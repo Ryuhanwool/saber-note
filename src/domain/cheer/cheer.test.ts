@@ -100,3 +100,18 @@ describe('이번 주 응원 순위', () => {
     expect(topCheered([], players, NOW)).toEqual([])
   })
 })
+
+describe('예시 응원 메시지', () => {
+  it('모두 작성 제한을 통과하고, 거친 표현 예시는 「주의」 없이 허용 수준이다', async () => {
+    const { demoCheerSeeds } = await import('../../data/cheer/seed')
+    const { getDataSource } = await import('../../data/registry')
+    const { moderate } = await import('../community/moderation')
+    const ds = await getDataSource('demo').load()
+    const all = [...ds.hitters, ...ds.pitchers]
+    const seeds = demoCheerSeeds(ds)
+    for (const m of seeds.messages) {
+      expect(prepareCheerMessage({ text: m.text }, { players: all, lastPostAt: null, now: NOW })).toMatchObject({ ok: true, caution: false })
+    }
+    expect(seeds.messages.filter((m) => moderate(m.text, { names: all.map((p) => p.name) }).level === 'mild')).toHaveLength(1)
+  })
+})
