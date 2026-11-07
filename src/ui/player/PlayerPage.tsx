@@ -8,6 +8,7 @@ import type { Player } from '../../domain/players'
 import { useLeague } from '../shared/LeagueContext'
 import { comparePath, positionLabel } from '../shared/labels'
 import MetricRow from '../shared/MetricRow'
+import PlayerCommunity from '../community/PlayerCommunity'
 import DefenseTab from './DefenseTab'
 import { HITTER_TABS, PITCHER_TABS, tabAvailable } from './tabs'
 import TrackingTab from './TrackingTab'
@@ -78,6 +79,7 @@ function PlayerCard({ player: p }: { player: Player }) {
           {current.kind === 'tracking' && <TrackingTab player={p} rows={rows} />}
         </div>
       </div>
+      <PlayerCommunity player={p} />
     </>
   )
 }

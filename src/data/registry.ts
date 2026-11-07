@@ -1,4 +1,6 @@
-import type { LeagueDataSource } from './source'
+import { createBrowserCommunity } from './community/browser'
+import { createMemoryCommunity } from './community/memory'
+import type { CommunityRepository, LeagueDataSource } from './source'
 import type { LeagueId } from './types'
 import { demoSource } from './demo'
 
@@ -13,4 +15,21 @@ export function getDataSource(league: LeagueId = DEFAULT_LEAGUE): LeagueDataSour
   const source = SOURCES[league]
   if (!source) throw new Error(`${league} 데이터 출처는 아직 구현되지 않았습니다.`)
   return source
+}
+
+/**
+ * 커뮤니티 저장소 열기. 지금은 브라우저 저장(IndexedDB)이고, 쓸 수 없으면(사생활 보호 모드 등) 메모리 저장으로 바꾼다.
+ * Supabase 연결(7-2) 후에는 여기서 서버 저장소를 고른다.
+ */
+export async function openCommunityRepository(): Promise<CommunityRepository> {
+  if (typeof indexedDB !== 'undefined') {
+    const browser = createBrowserCommunity()
+    try {
+      await browser.currentUser() // 저장소를 실제로 열어 본다
+      return browser
+    } catch {
+      browser.close()
+    }
+  }
+  return createMemoryCommunity()
 }

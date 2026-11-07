@@ -191,3 +191,34 @@ export type RawDataset = {
   hitters: RawHitter[]
   pitchers: RawPitcher[]
 }
+
+// ---------- 커뮤니티 ----------
+
+export type MediaKind = '사진' | '움짤' | '영상'
+
+/** 글에 붙은 파일. 파일 자체는 저장소가 따로 보관하고 mediaUrl로 주소를 얻는다 */
+export type MediaRef = { id: string; kind: MediaKind; type: string; name: string }
+
+export type CommunityUser = { id: string; name: string }
+
+export type CommunityPost = {
+  id: string
+  authorId: string
+  /** 게시된 본문 (거친 표현은 이미 ●로 가려진 상태) */
+  text: string
+  /** 선수 태그 (직접 단 태그 + 본문 속 선수 이름 자동 태그) */
+  players: PlayerId[]
+  media: MediaRef[]
+  /** 작성 시각 (ms) */
+  createdAt: number
+  /** 좋아요·신고한 사용자 id */
+  likes: string[]
+  reports: string[]
+  /** 거친 표현 일부를 가렸는지 */
+  masked: boolean
+}
+
+export type NewMedia = { blob: Blob; kind: MediaKind; name: string }
+
+/** 저장소에 넘기는 새 글. 작성 제한 검사·가림·자동 태그는 넘기기 전에 끝낸다 (domain/community) */
+export type NewPost = { text: string; players: PlayerId[]; masked: boolean; files: NewMedia[] }

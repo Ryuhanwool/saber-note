@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { createMemoryCommunity } from './data/community/memory'
 import { createMlbSource } from './data/mlb'
 import { SAMPLE_OPTIONS } from './data/mlb/sample'
 import { getDataSource } from './data/registry'
@@ -13,6 +14,7 @@ import { dailyBlind } from './domain/games/blind'
 import { dayKeyKST } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
 import { topByWar } from './domain/search'
+import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
 
 // jsdom은 scrollTo를 구현하지 않아 경고를 남긴다
@@ -25,7 +27,9 @@ function renderAt(path: string, source?: LeagueDataSource) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <LeagueProvider source={source}>
-        <App />
+        <CommunityProvider repository={createMemoryCommunity()}>
+          <App />
+        </CommunityProvider>
       </LeagueProvider>
     </MemoryRouter>,
   )

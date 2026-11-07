@@ -4,7 +4,7 @@ import type { Player } from '../../domain/players'
 import { topByWar } from '../../domain/search'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
-import SearchBox from './SearchBox'
+import SearchBox from '../shared/SearchBox'
 import './player.css'
 
 function RankList({ title, players, onPick }: { title: string; players: Player[]; onPick: (p: Player) => void }) {
@@ -40,7 +40,12 @@ export default function HomePage() {
     <>
       <section className="hero">
         <h1 className="display">궁금한 선수의 이름을<br />입력해 보세요</h1>
-        <SearchBox placeholder={`예: ${topH[1]?.name ?? '선수 이름'}`} onPick={open} />
+        <SearchBox
+          label="선수 이름 검색"
+          placeholder={`예: ${topH[1]?.name ?? '선수 이름'}`}
+          onPick={open}
+          emptyText={(q) => `“${q}”와 맞는 선수가 없어요. 아래의 많이 찾은 선수부터 눌러 보세요.`}
+        />
         <div className="popular">
           <span className="muted">오늘 많이 찾은 선수</span>
           {popular.map((p) => (
