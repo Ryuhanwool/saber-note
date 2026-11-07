@@ -69,10 +69,11 @@ describe.each(['memory', 'browser'] as const)('응원 저장소 (%s)', (kind) =>
   })
 
   it('메시지를 쓰면 최신순 맨 위에 나오고 구독자에게 알린다', async () => {
-    const { me } = setup(kind)
+    const { me, clock } = setup(kind)
     const seen: number[] = []
     const off = me.subscribe((s) => seen.push(s.messages.length))
     await me.postMessage({ playerId: A, text: '화이팅', caution: false })
+    clock.t += 1000 // 테스트 시계는 멈춰 있어서, 시각이 같으면 순서가 정해지지 않는다
     await me.postMessage({ playerId: B, text: '주의 글', caution: true })
     off()
     const { messages } = await me.snapshot()
