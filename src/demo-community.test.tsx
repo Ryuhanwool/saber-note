@@ -40,7 +40,7 @@ describe('시연 첫 화면: 커뮤니티', () => {
   it('처음 열어도 "데모 게시글" 예시 글이 보이고, 사진 예시가 하나 있다', async () => {
     renderApp('/community')
     const feed = within(await screen.findByLabelText('글 목록'))
-    expect(await feed.findAllByText('데모 게시글')).toHaveLength(6)
+    expect(await feed.findAllByText('데모 게시글')).toHaveLength(7)
     expect(feed.getByText(new RegExp(`${slugger.name} 벌써 홈런 ${slugger.HR}개`))).toBeTruthy()
     expect(await feed.findByRole('img', { name: '사진' })).toBeTruthy()
     expect(feed.queryByRole('button', { name: '삭제' })).toBeNull() // 예시 글은 지울 수 없다
@@ -114,6 +114,6 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
     expect(feed().queryByRole('button', { name: '좋아요 1' })).toBeNull()
     expect(feed().queryByText(/신고가 누적돼 가려진 글이에요/)).toBeNull()
     expect(within(reportedCard()).getByRole('button', { name: '신고' })).toBeTruthy() // 다시 신고 시연을 할 수 있다
-    expect(feed().getAllByText('데모 게시글')).toHaveLength(6)
+    expect(feed().getAllByText('데모 게시글')).toHaveLength(7)
   })
 })

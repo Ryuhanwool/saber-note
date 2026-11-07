@@ -7,9 +7,9 @@ import { createMemoryCommunity } from './memory'
 
 const ME = { id: 'local:me', name: '나' }
 const YOU = { id: 'local:you', name: '나' }
-const text = (t: string): NewPost => ({ text: t, players: [], masked: false, files: [] })
+const text = (t: string): NewPost => ({ text: t, players: [], masked: false, caution: false, files: [] })
 const withFile = (t: string): NewPost => ({
-  text: t, players: ['demo:1'], masked: false,
+  text: t, players: ['demo:1'], masked: false, caution: false,
   files: [{ blob: new Blob(['사진 내용'], { type: 'image/png' }), kind: '사진', name: 'a.png' }],
 })
 

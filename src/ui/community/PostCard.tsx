@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import type { CommunityPost } from '../../data/types'
+import { maskProfanity } from '../../domain/community/moderation'
 import { canDelete, canReport, isHiddenByReports, REPORT_HIDE_THRESHOLD, timeAgo } from '../../domain/community/posts'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
@@ -44,6 +45,7 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
     setError(null)
     action().catch(() => setError('반영하지 못했어요. 잠시 뒤 다시 시도해 주세요.'))
   }
+  const shown = maskProfanity(post.text)
   const liked = me !== null && post.likes.includes(me)
   const reported = me !== null && post.reports.includes(me)
 
@@ -53,9 +55,9 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
         <span className="av ph3" />
         <b>{authorName(post, me)}</b>
         <span className="muted">{timeAgo(post.createdAt, now)}</span>
-        {post.masked && <span className="tag">일부 가림</span>}
+        {(post.masked || shown !== post.text) && <span className="tag">일부 가림</span>}
       </header>
-      {post.text && <p className="ptext">{post.text}</p>}
+      {post.text && <p className="ptext">{shown}</p>}
       <PostMedia media={post.media} />
       {post.players.length > 0 && (
         <div className="ptags">

@@ -15,9 +15,9 @@ afterEach(() => {
 })
 
 describe('시연용 예시 글 만들기', () => {
-  it('리그 기록으로 예시 글 6개를 만들고, 그중 하나에 사진이 붙는다', () => {
-    expect(seeds).toHaveLength(6)
-    expect(new Set(seeds.map((s) => s.id)).size).toBe(6)
+  it('리그 기록으로 예시 글 7개를 만들고, 그중 하나에 사진이 붙는다', () => {
+    expect(seeds).toHaveLength(7)
+    expect(new Set(seeds.map((s) => s.id)).size).toBe(7)
     const withPhoto = seeds.filter((s) => s.media.length)
     expect(withPhoto).toHaveLength(1)
     expect(withPhoto[0].media[0]).toMatchObject({ kind: '사진', type: 'image/svg+xml' })
@@ -79,7 +79,7 @@ describe('예시 글이 든 저장소', () => {
   it('메모리 저장소도 예시 글과 사진 주소를 준다', async () => {
     const repo = createMemoryCommunity({ seeds })
     const posts = await repo.list()
-    expect(posts).toHaveLength(6)
+    expect(posts).toHaveLength(7)
     const photo = posts.find((p) => p.media.length)!.media[0]
     expect(await repo.mediaUrl(photo)).toMatch(/^blob:/)
   })
@@ -100,7 +100,7 @@ describe('신고 시연과 시연 데이터 초기화', () => {
     const repo = kind === 'browser' ? createBrowserCommunity({ indexedDB: new IDBFactory(), user, seeds }) : createMemoryCommunity({ user, seeds })
     const fresh = await repo.list()
     const mine = await repo.create({
-      text: '내 글', players: [], masked: false,
+      text: '내 글', players: [], masked: false, caution: false,
       files: [{ blob: new Blob(['x'], { type: 'image/png' }), kind: '사진', name: 'a.png' }],
     })
     await repo.toggleLike('demo-post-1')
@@ -119,7 +119,7 @@ describe('신고 시연과 시연 데이터 초기화', () => {
 
   it('초기화하면 구독자에게 알린다', async () => {
     const repo = createMemoryCommunity({ seeds })
-    await repo.create({ text: '내 글', players: [], masked: false, files: [] })
+    await repo.create({ text: '내 글', players: [], masked: false, caution: false, files: [] })
     const seen: number[] = []
     repo.subscribe((posts) => seen.push(posts.length))
     await repo.resetDemoData!()

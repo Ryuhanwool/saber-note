@@ -214,14 +214,16 @@ export type CommunityPost = {
   /** 좋아요·신고한 사용자 id */
   likes: string[]
   reports: string[]
-  /** 거친 표현 일부를 가렸는지 */
+  /** 예전 방식(쓸 때 ●로 바꿔 저장)으로 가린 글인지. 지금은 원문을 저장하고 화면에 보일 때 가린다 */
   masked: boolean
+  /** 「주의」: 애매하다는 경고를 받고도 그대로 올린 글 (걸린 표현은 늘 ●●로 가린다) */
+  caution: boolean
 }
 
 export type NewMedia = { blob: Blob; kind: MediaKind; name: string }
 
 /** 저장소에 넘기는 새 글. 작성 제한 검사·가림·자동 태그는 넘기기 전에 끝낸다 (domain/community) */
-export type NewPost = { text: string; players: PlayerId[]; masked: boolean; files: NewMedia[] }
+export type NewPost = { text: string; players: PlayerId[]; masked: boolean; caution: boolean; files: NewMedia[] }
 
 /** 시연용 예시 글("데모 게시글")의 작성자 id. 이 id의 글은 아무도 지울 수 없다 */
 export const DEMO_AUTHOR_ID = 'demo'

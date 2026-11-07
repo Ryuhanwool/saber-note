@@ -48,39 +48,45 @@ export function demoCommunitySeeds(league: { hitters: readonly RawHitter[]; pitc
 
   const seeds: SeedPost[] = [
     {
-      id: 'demo-post-1', ageMs: 25 * MIN, masked: false, reports: [], players: [slugger.id],
+      id: 'demo-post-1', ageMs: 25 * MIN, masked: false, caution: false, reports: [], players: [slugger.id],
       text: `${slugger.name} 벌써 홈런 ${slugger.HR}개! 어제 넘긴 타구 궤적 그려 봤어요. 올해 홈런왕 가능할까요?`,
       media: [{ id: 'demo-media-1', kind: '사진', type: 'image/svg+xml', name: '홈런 궤적.svg', blob: demoPhoto(`${slugger.name} 시즌 ${slugger.HR}호 홈런`) }],
     },
     {
-      id: 'demo-post-2', ageMs: 3 * HOUR, masked: false, reports: [], players: [],
+      id: 'demo-post-2', ageMs: 3 * HOUR, masked: false, caution: false, reports: [], players: [],
       text: 'wRC+ 처음 알았는데 100이 리그 평균이라는 게 제일 이해하기 쉽네요. 선수 카드에서 ⓘ 눌러 보세요.',
       media: [],
     },
     {
+      // 허용되는 수준의 욕 예시: 경기·플레이에 대한 일반 욕설 (거친 표현 가리기를 켜면 ●●로 보인다)
+      id: 'demo-post-7', ageMs: 4 * HOUR, masked: false, caution: false, reports: [], players: [],
+      text: '오늘 수비 진짜 좆같네… 9회에만 실책 두 개라니. 그래도 내일은 이기자',
+      media: [],
+    },
+    {
       // 신고 시연용: 다른 시청자 2명이 이미 신고했다. 한 번 더 신고하면 3번이 되어 가려진다
-      id: 'demo-post-6', ageMs: 5 * HOUR, masked: false, reports: [...DEMO_REPORTERS], players: [],
+      id: 'demo-post-6', ageMs: 5 * HOUR, masked: false, caution: false, reports: [...DEMO_REPORTERS], players: [],
       text: '[신고 시연용] 무료 중계 다시보기 모음 ▶▶ 쪽지 주시면 링크 드려요 ◀◀ (신고가 2번 쌓인 예시 글이에요. 신고를 누르면 3번이 되어 가려져요)',
       media: [],
     },
   ]
   if (runner) {
     seeds.push({
-      id: 'demo-post-3', ageMs: 9 * HOUR, masked: false, reports: [], players: [runner.id],
+      id: 'demo-post-3', ageMs: 9 * HOUR, masked: false, caution: false, reports: [], players: [runner.id],
       text: `${runner.name} 도루 ${runner.SB}개째. 주루 탭에서 주루 득점(BsR)까지 보니까 발로 만든 점수가 꽤 크네요.`,
       media: [],
     })
   }
   if (ace) {
     seeds.push({
-      id: 'demo-post-4', ageMs: 1 * DAY + 2 * HOUR, masked: false, reports: [], players: [ace.id],
+      id: 'demo-post-4', ageMs: 1 * DAY + 2 * HOUR, masked: false, caution: false, reports: [], players: [ace.id],
       text: `${ace.name} 시즌 탈삼진 ${ace.SO}개. ERA보다 FIP를 같이 봐야 투수 실력이 보인다는 게 이런 거군요.`,
       media: [],
     })
   }
   if (runner) {
     seeds.push({
-      id: 'demo-post-5', ageMs: 3 * DAY, masked: false, reports: [], players: [slugger.id, runner.id],
+      id: 'demo-post-5', ageMs: 3 * DAY, masked: false, caution: false, reports: [], players: [slugger.id, runner.id],
       text: `${slugger.name} vs ${runner.name} 비교 화면으로 봤는데, 지표마다 앞서는 쪽이 달라서 재밌어요.`,
       media: [],
     })
@@ -104,5 +110,6 @@ export function seedToPost(seed: SeedPost, now: number, existing?: CommunityPost
     likes: existing?.likes ?? [],
     reports: existing?.reports ?? [...seed.reports],
     masked: seed.masked,
+    caution: seed.caution,
   }
 }

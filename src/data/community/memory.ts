@@ -2,7 +2,7 @@
 import type { CommunityRepository } from '../source'
 import type { CommunityPost, CommunityUser, MediaRef } from '../types'
 import { seedToPost, type SeedPost } from './seed'
-import { assertAuthor, newestFirst, newId, reportedBy, toggledLikes } from './shared'
+import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, toggledLikes } from './shared'
 
 export function createMemoryCommunity(
   opts: { user?: CommunityUser; posts?: CommunityPost[]; seeds?: SeedPost[] } = {},
@@ -14,7 +14,7 @@ export function createMemoryCommunity(
     return seeds.map((s) => seedToPost(s, now))
   }
   const seedBlobs = () => new Map<string, Blob>(seeds.flatMap((s) => s.media.map((m) => [m.id, m.blob] as const)))
-  let posts = [...seedPosts(), ...(opts.posts ?? [])]
+  let posts = [...seedPosts(), ...(opts.posts ?? []).map(normalizePost)]
   let blobs = seedBlobs()
   const urls = new Map<string, string>()
   const listeners = new Set<(p: CommunityPost[]) => void>()
@@ -49,7 +49,7 @@ export function createMemoryCommunity(
       })
       const post: CommunityPost = {
         id: newId(), authorId: user.id, text: input.text, players: input.players, media,
-        createdAt: Date.now(), likes: [], reports: [], masked: input.masked,
+        createdAt: Date.now(), likes: [], reports: [], masked: input.masked, caution: input.caution,
       }
       posts = [post, ...posts]
       emit()
@@ -79,7 +79,7 @@ export function createMemoryCommunity(
       urls.forEach((u) => URL.revokeObjectURL(u))
       urls.clear()
       // 처음 만든 상태로: 예시 글 + 처음에 넣어 준 글(테스트용)
-      posts = [...seedPosts(), ...(opts.posts ?? []).map((p) => ({ ...p }))]
+      posts = [...seedPosts(), ...(opts.posts ?? []).map(normalizePost)]
       blobs = seedBlobs()
       emit()
     },

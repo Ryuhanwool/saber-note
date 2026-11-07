@@ -3,7 +3,7 @@
 import { StorageFullError, type CommunityRepository } from '../source'
 import type { CommunityPost, CommunityUser, MediaRef } from '../types'
 import { seedToPost, type SeedPost } from './seed'
-import { assertAuthor, newestFirst, newId, reportedBy, toggledLikes } from './shared'
+import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, toggledLikes } from './shared'
 
 export const DB_NAME = 'saber-note-community'
 const DB_VERSION = 1
@@ -98,7 +98,7 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
 
   async function all(): Promise<CommunityPost[]> {
     const tx = (await db()).transaction('posts', 'readonly')
-    return newestFirst(await request(tx.objectStore('posts').getAll() as IDBRequest<CommunityPost[]>))
+    return newestFirst((await request(tx.objectStore('posts').getAll() as IDBRequest<CommunityPost[]>)).map(normalizePost))
   }
 
   async function notify(broadcast = true) {
@@ -111,7 +111,7 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     const tx = (await db()).transaction('posts', 'readonly')
     const p = await request(tx.objectStore('posts').get(id) as IDBRequest<CommunityPost | undefined>)
     if (!p) throw new Error('글을 찾을 수 없습니다.')
-    return p
+    return normalizePost(p)
   }
 
   async function putPost(p: CommunityPost) {
@@ -159,7 +159,7 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
       const media: MediaRef[] = files.map(({ id, kind, type, name }) => ({ id, kind, type, name }))
       const post: CommunityPost = {
         id: newId(), authorId: me.id, text: input.text, players: input.players, media,
-        createdAt: Date.now(), likes: [], reports: [], masked: input.masked,
+        createdAt: Date.now(), likes: [], reports: [], masked: input.masked, caution: input.caution,
       }
       try {
         const tx = (await db()).transaction(['posts', 'media'], 'readwrite')

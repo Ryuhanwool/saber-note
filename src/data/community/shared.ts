@@ -5,6 +5,9 @@ export const newId = () =>
 
 export const newestFirst = (posts: CommunityPost[]) => [...posts].sort((a, b) => b.createdAt - a.createdAt)
 
+/** 예전에 저장한 글에 없는 필드(caution 등)를 기본값으로 채운다 */
+export const normalizePost = (p: CommunityPost): CommunityPost => ({ ...p, masked: p.masked ?? false, caution: p.caution ?? false })
+
 // 좋아요·신고·삭제 규칙은 domain/community/posts.ts와 같다.
 // data 층은 domain을 import할 수 없어서, 저장소가 지켜야 할 최소 규칙만 여기 둔다 (서버에서는 접근 정책이 맡는다).
 

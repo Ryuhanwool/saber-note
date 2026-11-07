@@ -37,7 +37,7 @@ function renderAt(path: string, repository: CommunityRepository = createMemoryCo
 
 const otherPost = (over: Partial<CommunityPost> = {}): CommunityPost => ({
   id: 'p1', authorId: 'someone', text: `${kim.name} 오늘 수비 좋았다`, players: [kim.id], media: [],
-  createdAt: Date.now() - 60_000, likes: [], reports: [], masked: false, ...over,
+  createdAt: Date.now() - 60_000, likes: [], reports: [], masked: false, caution: false, ...over,
 })
 
 afterEach(cleanup)
@@ -68,8 +68,8 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
   it('차단 표현은 이유와 표현을 알려 주고 게시 버튼을 막는다 (띄어 쓴 우회 표현 포함)', async () => {
     const user = userEvent.setup()
     renderAt('/community')
-    await write(user, '씨 발 수비')
-    expect(screen.getByText(/욕설에 해당하는 표현\(씨발\)/)).toBeTruthy()
+    await write(user, '니가 씨 발 뭘 알아')
+    expect(screen.getByText(/인신공격\(다른 사용자\): ‘니가’와 ‘씨발’을 함께 썼어요/)).toBeTruthy()
     expect((screen.getByRole('button', { name: '게시하기' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
@@ -77,7 +77,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
     const user = userEvent.setup()
     renderAt('/community')
     await write(user, '존 나 잘한다')
-    expect(screen.getByText(/거친 표현\(존나\)은 게시할 때 ●●로 가려져요/)).toBeTruthy()
+    expect(screen.getByText(/거친 표현\(존나\)은 「거친 표현 가리기」를 켠 사람에게 ●●로 보여요/)).toBeTruthy()
     await user.click(screen.getByRole('button', { name: '게시하기' }))
     const feed = within(screen.getByLabelText('글 목록'))
     expect(await feed.findByText('●●● 잘한다')).toBeTruthy()

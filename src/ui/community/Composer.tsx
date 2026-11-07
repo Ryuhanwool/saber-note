@@ -17,6 +17,9 @@ const STORAGE_NOTE = {
   shared: '여기 올린 글과 사진·영상은 모두에게 보여요.',
 } as const
 
+/** 게시 버튼을 눌렀을 때의 시각 (도배 제한 계산용) */
+const currentTime = () => Date.now()
+
 const previewOf = (file: File) => (typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '')
 const revoke = (f: DraftFile) => f.preview && URL.revokeObjectURL(f.preview)
 
@@ -43,8 +46,8 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
 
   if (state.status !== 'ready') return null
   const { repo, user, posts } = state
-  const mod = moderate(text)
   const players = [...league.hitters, ...league.pitchers]
+  const mod = moderate(text, { names: players.map((p) => p.name) })
   const canPost = !busy && user !== null && mod.level !== 'block' && (text.trim() !== '' || files.length > 0)
 
   function addFiles(list: File[]) {
@@ -63,7 +66,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
     // 도배 제한: 이 사용자가 마지막으로 올린 글 시각 (새로고침해도 저장소에서 알 수 있다)
     const mine = posts.filter((p) => p.authorId === user.id)
     const lastPostAt = mine.length ? Math.max(...mine.map((p) => p.createdAt)) : null
-    const prepared = preparePost({ text, players: tags, fileCount: files.length }, { players, lastPostAt, now: Date.now() })
+    const prepared = preparePost({ text, players: tags, fileCount: files.length }, { players, lastPostAt, now: currentTime() })
     if (!prepared.ok) {
       setNote({ text: prepared.message, warn: true })
       return
@@ -74,14 +77,15 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
       await repo.create({
         text: prepared.text,
         players: prepared.players,
-        masked: prepared.masked,
+        masked: false,
+        caution: prepared.caution,
         files: files.map((f) => ({ blob: f.file, kind: f.kind, name: f.file.name })),
       })
       files.forEach(revoke)
       setText('')
       setTags([])
       setFiles([])
-      setNote({ text: prepared.masked ? '게시했어요. 거친 표현 일부는 가려졌어요.' : '게시했어요.', warn: false })
+      setNote({ text: '게시했어요.', warn: false })
     } catch (e) {
       setNote({
         text: e instanceof StorageFullError
@@ -109,7 +113,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
       />
       <div className={`modmsg ${mod.level === 'ok' ? '' : mod.level}`} aria-live="polite">
         {mod.level === 'block' && <><b>이대로는 올릴 수 없어요.</b> {blockMessage(mod).replace('이대로는 올릴 수 없어요. ', '')}</>}
-        {mod.level === 'mild' && `거친 표현(${mod.found.join(', ')})은 게시할 때 ●●로 가려져요.`}
+        {mod.level === 'mild' && `거친 표현(${mod.found.join(', ')})은 「거친 표현 가리기」를 켠 사람에게 ●●로 보여요.`}
       </div>
       <div className="tagrow">
         <span className="muted" style={{ fontSize: '.85rem' }}>선수 태그</span>
