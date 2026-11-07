@@ -1,5 +1,5 @@
 import type {
-  CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MediaRef, NewCheerMessage, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
+  CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
 } from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
@@ -80,6 +80,29 @@ export class AlreadyCheeredError extends Error {
     super('오늘은 이미 이 선수를 응원했습니다.')
     this.name = 'AlreadyCheeredError'
   }
+}
+
+/**
+ * 굿즈 마켓 저장소: 팬 마켓 판매글(사진 포함)과 장바구니. 공식 스토어 상품은 domain이 리그의 구단으로 만든다.
+ * 판매 규칙·작성 제한 검사는 저장소에 넘기기 전에 domain(domain/market)이 한다. 결제는 시연용이라 저장소에 없다.
+ */
+export interface MarketRepository {
+  readonly storage: 'browser' | 'memory' | 'shared'
+  currentUser(): Promise<CommunityUser | null>
+  /** 모든 판매글(최신순)과 장바구니 */
+  snapshot(): Promise<MarketSnapshot>
+  subscribe(listener: (s: MarketSnapshot) => void): () => void
+  createListing(listing: NewListing): Promise<MarketListing>
+  /** 현재 사용자가 신고한다 (자기 판매글은 안 되고, 한 판매글에 한 번만) */
+  report(listingId: string): Promise<void>
+  /** 자기 판매글만 지울 수 있다. 사진도 함께 지운다 */
+  remove(listingId: string): Promise<void>
+  /** 장바구니를 통째로 저장한다 (담기·빼기 규칙은 domain/market/cart) */
+  saveCart(cart: CartLine[]): Promise<void>
+  mediaUrl(ref: MediaRef): Promise<string | null>
+  close?(): void
+  /** 시연 데이터 초기화 (있으면): 내 판매글·사진·신고와 장바구니를 지우고 예시 판매글을 처음 상태로 되돌린다 */
+  resetDemoData?(): Promise<void>
 }
 
 /** 저장 공간이 모자라 저장하지 못했을 때 */

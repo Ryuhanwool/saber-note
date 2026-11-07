@@ -104,7 +104,8 @@
                   "**/data/kbo/**",
                   "**/data/community/**",
                   "**/data/settings/**",
-                  "**/data/cheer/**"
+                  "**/data/cheer/**",
+                  "**/data/market/**"
                 ],
                 "message": "ui는 리그 어댑터를 직접 import하지 말고 data/registry를 거치세요."
               }

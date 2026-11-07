@@ -190,3 +190,20 @@ describe('장바구니와 주문 확인', () => {
     expect(demoOrderNumber(NOW, 0.0421)).toBe('DEMO-20261107-0421')
   })
 })
+
+describe('예시 판매글', () => {
+  it('마킹 시연 글은 커스텀·마킹 경고만, 사기 경고 시연 글은 세 가지 경고, 나머지는 경고 없이 규칙을 통과한다', async () => {
+    const { demoMarketSeeds } = await import('../../data/market/seed')
+    const { getDataSource } = await import('../../data/registry')
+    const ds = await getDataSource('demo').load()
+    const all = [...ds.hitters, ...ds.pitchers]
+    const seeds = demoMarketSeeds(ds)
+    expect(seeds.map((s) => listingWarnings(s).map((w) => w.kind))).toEqual([
+      ['커스텀·마킹'], ['지나치게 싼 가격', '선입금 요구', '외부 메신저 연락처'], [], [], [],
+    ])
+    for (const s of seeds) {
+      const r = prepareListing({ ...s, photoCount: s.media.length, agreed: true, confirmWarnings: true }, { players: all, lastPostAt: null, now: NOW })
+      expect(r).toMatchObject({ ok: true, caution: false })
+    }
+  })
+})
