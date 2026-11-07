@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PlayerId } from '../../data/types'
 import { StorageFullError } from '../../data/source'
 import { moderate } from '../../domain/community/moderation'
-import { ACCEPTED_TYPES, blockMessage, checkFiles, MAX_FILES, MAX_TEXT_LENGTH, MEDIA_KINDS, preparePost } from '../../domain/community/posts'
+import { ACCEPTED_TYPES, ambiguousMessage, blockMessage, checkFiles, MAX_FILES, MAX_TEXT_LENGTH, MEDIA_KINDS, preparePost } from '../../domain/community/posts'
 import type { MediaKind } from '../../data/types'
 import { useLeague } from '../shared/LeagueContext'
 import SearchBox from '../shared/SearchBox'
@@ -32,6 +32,8 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
   const [files, setFiles] = useState<DraftFile[]>([])
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState<{ text: string; warn: boolean } | null>(null)
+  /** 애매하다는 경고 (게시 버튼을 눌렀을 때). 글을 고치면 사라진다 */
+  const [warning, setWarning] = useState<string | null>(null)
   const textRef = useRef<HTMLTextAreaElement>(null)
   const filesRef = useRef(files)
   useEffect(() => {
@@ -61,16 +63,18 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
     setFiles(files.filter((_, j) => j !== i))
   }
 
-  async function submit() {
+  async function submit(confirmAmbiguous = false) {
     if (!user) return
     // 도배 제한: 이 사용자가 마지막으로 올린 글 시각 (새로고침해도 저장소에서 알 수 있다)
     const mine = posts.filter((p) => p.authorId === user.id)
     const lastPostAt = mine.length ? Math.max(...mine.map((p) => p.createdAt)) : null
-    const prepared = preparePost({ text, players: tags, fileCount: files.length }, { players, lastPostAt, now: currentTime() })
+    const prepared = preparePost({ text, players: tags, fileCount: files.length, confirmAmbiguous }, { players, lastPostAt, now: currentTime() })
     if (!prepared.ok) {
-      setNote({ text: prepared.message, warn: true })
+      if (prepared.reason === 'needs-confirm') setWarning(prepared.message)
+      else setNote({ text: prepared.message, warn: true })
       return
     }
+    setWarning(null)
     setBusy(true)
     setNote({ text: '올리는 중이에요…', warn: false })
     try {
@@ -85,7 +89,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
       setText('')
       setTags([])
       setFiles([])
-      setNote({ text: '게시했어요.', warn: false })
+      setNote({ text: prepared.caution ? '게시했어요. 「주의」 표시가 붙었어요.' : '게시했어요.', warn: false })
     } catch (e) {
       setNote({
         text: e instanceof StorageFullError
@@ -109,12 +113,25 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
         placeholder="선수 이야기, 경기 장면, 지표 분석을 자유롭게 나눠 보세요"
         aria-label="글 내용"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value)
+          setWarning(null)
+        }}
       />
       <div className={`modmsg ${mod.level === 'ok' ? '' : mod.level}`} aria-live="polite">
         {mod.level === 'block' && <><b>이대로는 올릴 수 없어요.</b> {blockMessage(mod).replace('이대로는 올릴 수 없어요. ', '')}</>}
         {mod.level === 'mild' && `거친 표현(${mod.found.join(', ')})은 「거친 표현 가리기」를 켠 사람에게 ●●로 보여요.`}
+        {mod.level === 'ambiguous' && !warning && `${ambiguousMessage(mod).split('. 고쳐 쓰거나')[0]}.`}
       </div>
+      {warning && (
+        <div className="modmsg block" role="alertdialog" aria-label="게시 전 확인">
+          <p style={{ margin: '0 0 8px' }}><b>이대로 올릴까요?</b> {warning}</p>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn ghost" onClick={() => { setWarning(null); textRef.current?.focus() }}>고쳐 쓰기</button>
+            <button className="btn" disabled={busy} onClick={() => void submit(true)}>그래도 올리기</button>
+          </div>
+        </div>
+      )}
       <div className="tagrow">
         <span className="muted" style={{ fontSize: '.85rem' }}>선수 태그</span>
         <span>
@@ -166,7 +183,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
           사진 · 움짤 · 영상 추가
         </label>
         <span className="muted" style={{ fontSize: '.8rem' }}>최대 {MAX_FILES}개, 파일당 20MB</span>
-        <button className="btn" style={{ marginLeft: 'auto' }} disabled={!canPost} onClick={submit}>게시하기</button>
+        <button className="btn" style={{ marginLeft: 'auto' }} disabled={!canPost || warning !== null} onClick={() => void submit()}>게시하기</button>
       </div>
       <p className="muted" role="status" style={{ fontSize: '.8rem', margin: '10px 0 0', color: note?.warn ? 'var(--seam)' : undefined }}>
         {note?.text}

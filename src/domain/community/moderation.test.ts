@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { demoCommunitySeeds } from '../../data/community/seed'
+import { getDataSource } from '../../data/registry'
 import { maskProfanity, moderate } from './moderation'
 import { blockMessage } from './posts'
 
@@ -172,3 +174,20 @@ describe('거친 표현 가리기', () => {
     expect(maskProfanity(text)).toBe(masked)
   })
 })
+
+describe('시연용 예시 글', async () => {
+  const ds = await getDataSource('demo').load()
+  const seeds = demoCommunitySeeds(ds)
+  const names = [...ds.hitters, ...ds.pitchers].map((p) => p.name)
+
+  it('예시 글은 모두 차단·애매함에 걸리지 않는다', () => {
+    for (const s of seeds) expect(['ok', 'mild'], s.id).toContain(moderate(s.text, { names }).level)
+  })
+
+  it('허용되는 수준의 욕이 든 예시 글이 하나 있고, 기본 설정에서는 가려 보인다', () => {
+    const swear = seeds.find((s) => s.id === 'demo-post-7')!
+    expect(moderate(swear.text, { names })).toEqual({ level: 'mild', found: ['좆'] })
+    expect(maskProfanity(swear.text)).toContain('오늘 수비 진짜 ●같네')
+  })
+})
+

@@ -3,8 +3,15 @@ import { isHiddenByReports, playerBuzz, relatedPosts, timeAgo } from '../../doma
 import type { Player } from '../../domain/players'
 import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
-import { authorName } from './labels'
+import type { CommunityPost } from '../../data/types'
+import { authorName, useShownText } from './labels'
 import './community.css'
+
+/** 최근 글 한 줄 미리보기 (가리기 규칙은 피드와 같다) */
+function Preview({ post }: { post: CommunityPost }) {
+  const text = useShownText(post)
+  return <div>{text.slice(0, 90)}{text.length > 90 && '…'}{post.caution && <span className="tag caution">주의</span>}</div>
+}
 
 const communityPath = (q: Record<string, string>) => `/community?${new URLSearchParams(q)}`
 
@@ -39,7 +46,7 @@ export default function PlayerCommunity({ player }: { player: Player }) {
           {isHiddenByReports(x) ? (
             <div className="muted">신고가 누적돼 가려진 글이에요.</div>
           ) : (
-            <div>{x.text.slice(0, 90)}{x.text.length > 90 && '…'}</div>
+            <Preview post={x} />
           )}
           {x.media.length > 0 && <span className="tag" style={{ margin: 0, alignSelf: 'flex-start' }}>사진·영상 {x.media.length}개</span>}
         </div>

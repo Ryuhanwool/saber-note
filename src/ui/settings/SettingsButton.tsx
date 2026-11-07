@@ -96,6 +96,14 @@ export default function SettingsButton() {
             </label>
           </fieldset>
 
+          <fieldset>
+            <legend>커뮤니티</legend>
+            <label className="toggle">
+              <input type="checkbox" checked={settings.maskProfanity} onChange={(e) => update({ maskProfanity: e.target.checked })} />
+              거친 표현 가리기 (허용된 욕도 ●●로 보기)
+            </label>
+          </fieldset>
+
           {!persistent && <p className="muted hint">이 브라우저에서는 설정을 저장할 수 없어 새로고침하면 처음으로 돌아가요.</p>}
           {message && (
             <p className="hint" role="status" style={{ color: message.warn ? 'var(--seam)' : undefined }}>{message.text}</p>

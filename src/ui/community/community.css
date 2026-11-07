@@ -34,3 +34,4 @@ label.btn{display:inline-block}
 .pact button:disabled{opacity:.45;cursor:default}
 .linkbtn{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;cursor:pointer}
 .mini{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem;display:flex;flex-direction:column;gap:2px}
+.tag.caution{color:var(--warn);font-weight:700}
