@@ -41,6 +41,11 @@ export interface CommunityRepository {
   mediaUrl(ref: MediaRef): Promise<string | null>
   /** 연결·파일 주소 정리 (있으면) */
   close?(): void
+  /**
+   * 시연 데이터 초기화 (있으면): 내가 쓴 글과 파일, 좋아요·신고 기록을 모두 지우고 예시 글을 처음 상태로 되돌린다.
+   * 이 브라우저에만 저장하는 시연용 저장소에만 있다. 여럿이 함께 쓰는 서버 저장소에는 두지 않는다.
+   */
+  resetDemoData?(): Promise<void>
 }
 
 /** 저장 공간이 모자라 저장하지 못했을 때 */

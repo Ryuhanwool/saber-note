@@ -8,9 +8,14 @@ export function createMemoryCommunity(
   opts: { user?: CommunityUser; posts?: CommunityPost[]; seeds?: SeedPost[] } = {},
 ): CommunityRepository {
   const user = opts.user ?? { id: `local:${newId()}`, name: '나' }
-  const now = Date.now()
-  let posts = [...(opts.seeds ?? []).map((s) => seedToPost(s, now)), ...(opts.posts ?? [])]
-  const blobs = new Map<string, Blob>((opts.seeds ?? []).flatMap((s) => s.media.map((m) => [m.id, m.blob] as const)))
+  const seeds = opts.seeds ?? []
+  const seedPosts = () => {
+    const now = Date.now()
+    return seeds.map((s) => seedToPost(s, now))
+  }
+  const seedBlobs = () => new Map<string, Blob>(seeds.flatMap((s) => s.media.map((m) => [m.id, m.blob] as const)))
+  let posts = [...seedPosts(), ...(opts.posts ?? [])]
+  let blobs = seedBlobs()
   const urls = new Map<string, string>()
   const listeners = new Set<(p: CommunityPost[]) => void>()
   const emit = () => listeners.forEach((l) => l(newestFirst(posts)))
@@ -68,6 +73,14 @@ export function createMemoryCommunity(
         urls.delete(m.id)
       }
       posts = posts.filter((x) => x.id !== id)
+      emit()
+    },
+    async resetDemoData() {
+      urls.forEach((u) => URL.revokeObjectURL(u))
+      urls.clear()
+      // 처음 만든 상태로: 예시 글 + 처음에 넣어 준 글(테스트용)
+      posts = [...seedPosts(), ...(opts.posts ?? []).map((p) => ({ ...p }))]
+      blobs = seedBlobs()
       emit()
     },
     async mediaUrl(ref) {

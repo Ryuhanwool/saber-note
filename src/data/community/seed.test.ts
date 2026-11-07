@@ -4,7 +4,7 @@ import { getDataSource } from '../registry'
 import { DEMO_AUTHOR_ID } from '../types'
 import { createBrowserCommunity } from './browser'
 import { createMemoryCommunity } from './memory'
-import { demoCommunitySeeds, seedToPost } from './seed'
+import { DEMO_REPORTERS, demoCommunitySeeds, seedToPost } from './seed'
 
 const ds = await getDataSource('demo').load()
 const seeds = demoCommunitySeeds(ds)
@@ -15,9 +15,9 @@ afterEach(() => {
 })
 
 describe('시연용 예시 글 만들기', () => {
-  it('리그 기록으로 예시 글 5개를 만들고, 그중 하나에 사진이 붙는다', () => {
-    expect(seeds).toHaveLength(5)
-    expect(new Set(seeds.map((s) => s.id)).size).toBe(5)
+  it('리그 기록으로 예시 글 6개를 만들고, 그중 하나에 사진이 붙는다', () => {
+    expect(seeds).toHaveLength(6)
+    expect(new Set(seeds.map((s) => s.id)).size).toBe(6)
     const withPhoto = seeds.filter((s) => s.media.length)
     expect(withPhoto).toHaveLength(1)
     expect(withPhoto[0].media[0]).toMatchObject({ kind: '사진', type: 'image/svg+xml' })
@@ -32,6 +32,13 @@ describe('시연용 예시 글 만들기', () => {
         expect(s.text).toContain(byId.get(id)!.name)
       }
     }
+  })
+
+  it('신고 시연용 글 하나는 신고가 2번 쌓인 채로 시작하고, 나머지는 신고가 없다', () => {
+    const reported = seeds.filter((s) => s.reports.length)
+    expect(reported.map((s) => s.id)).toEqual(['demo-post-6'])
+    expect(reported[0].reports).toEqual(DEMO_REPORTERS)
+    expect(reported[0].text).toContain('신고 시연용')
   })
 
   it('타자가 없으면 예시 글을 만들지 않는다', () => {
@@ -72,8 +79,50 @@ describe('예시 글이 든 저장소', () => {
   it('메모리 저장소도 예시 글과 사진 주소를 준다', async () => {
     const repo = createMemoryCommunity({ seeds })
     const posts = await repo.list()
-    expect(posts).toHaveLength(5)
+    expect(posts).toHaveLength(6)
     const photo = posts.find((p) => p.media.length)!.media[0]
     expect(await repo.mediaUrl(photo)).toMatch(/^blob:/)
+  })
+})
+
+describe('신고 시연과 시연 데이터 초기화', () => {
+  it('신고 시연용 글은 내가 한 번 신고하면 3번이 되어 가려진다', async () => {
+    const repo = createBrowserCommunity({ indexedDB: new IDBFactory(), user: { id: 'local:me', name: '나' }, seeds })
+    await repo.report('demo-post-6')
+    const post = (await repo.list()).find((p) => p.id === 'demo-post-6')!
+    expect(post.reports).toEqual([...DEMO_REPORTERS, 'local:me'])
+    expect(post.reports).toHaveLength(3) // 신고 3번이면 가려진다 (domain/community/posts.ts REPORT_HIDE_THRESHOLD)
+    repo.close()
+  })
+
+  it.each(['browser', 'memory'] as const)('%s: 초기화하면 내 글·파일과 좋아요·신고가 지워지고 예시 글이 처음 상태로 돌아간다', async (kind) => {
+    const user = { id: 'local:me', name: '나' }
+    const repo = kind === 'browser' ? createBrowserCommunity({ indexedDB: new IDBFactory(), user, seeds }) : createMemoryCommunity({ user, seeds })
+    const fresh = await repo.list()
+    const mine = await repo.create({
+      text: '내 글', players: [], masked: false,
+      files: [{ blob: new Blob(['x'], { type: 'image/png' }), kind: '사진', name: 'a.png' }],
+    })
+    await repo.toggleLike('demo-post-1')
+    await repo.report('demo-post-6')
+    expect(await repo.list()).toHaveLength(seeds.length + 1)
+
+    await repo.resetDemoData!()
+    const after = await repo.list()
+    expect(after.map((p) => p.id)).toEqual(fresh.map((p) => p.id))
+    expect(after.find((p) => p.id === 'demo-post-1')!.likes).toEqual([])
+    expect(after.find((p) => p.id === 'demo-post-6')!.reports).toEqual(DEMO_REPORTERS)
+    expect(await repo.mediaUrl(mine.media[0])).toBeNull() // 내 파일도 지워졌다
+    expect(await repo.mediaUrl(after.find((p) => p.media.length)!.media[0])).toMatch(/^blob:/) // 예시 사진은 남는다
+    repo.close?.()
+  })
+
+  it('초기화하면 구독자에게 알린다', async () => {
+    const repo = createMemoryCommunity({ seeds })
+    await repo.create({ text: '내 글', players: [], masked: false, files: [] })
+    const seen: number[] = []
+    repo.subscribe((posts) => seen.push(posts.length))
+    await repo.resetDemoData!()
+    expect(seen).toEqual([seeds.length])
   })
 })

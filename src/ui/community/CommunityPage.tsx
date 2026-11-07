@@ -5,6 +5,7 @@ import { useLeague } from '../shared/LeagueContext'
 import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
 import Composer from './Composer'
+import DemoReset from './DemoReset'
 import PostCard from './PostCard'
 import './community.css'
 
@@ -63,6 +64,7 @@ export default function CommunityPage() {
             <p className="empty">{filterPlayer ? '이 선수 이야기는 아직 없어요. 위에서 첫 글을 남겨 보세요.' : '아직 글이 없어요. 첫 글을 남겨 보세요.'}</p>
           )}
         </div>
+        <DemoReset />
       </div>
       <aside className="panel">
         <h2>이번 주 많이 이야기된 선수</h2>

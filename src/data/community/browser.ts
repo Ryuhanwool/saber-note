@@ -54,16 +54,23 @@ export type BrowserCommunityOptions = {
   seeds?: SeedPost[]
 }
 
-/** 예시 글과 그 파일을 저장한다. 이미 있으면 좋아요·신고는 두고 작성 시각만 다시 맞춘다 */
-async function applySeeds(db: IDBDatabase, seeds: SeedPost[]) {
+/**
+ * 예시 글과 그 파일을 저장한다. 이미 있으면 좋아요·신고는 두고 작성 시각만 다시 맞춘다.
+ * fresh면 저장소를 모두 비운 뒤 예시 글을 처음 상태로 넣는다 (시연 데이터 초기화).
+ */
+async function applySeeds(db: IDBDatabase, seeds: SeedPost[], fresh = false) {
   // 파일 읽기(await)는 트랜잭션 전에 끝낸다
   const files = await Promise.all(seeds.flatMap((s) => s.media).map(async (m) => ({ id: m.id, type: m.type, data: await m.blob.arrayBuffer() })))
   const now = Date.now()
   const tx = db.transaction(['posts', 'media'], 'readwrite')
   const posts = tx.objectStore('posts')
+  if (fresh) {
+    posts.clear()
+    tx.objectStore('media').clear()
+  }
   for (const f of files) tx.objectStore('media').put(f satisfies MediaRecord)
   for (const seed of seeds) {
-    const existing = await request(posts.get(seed.id) as IDBRequest<CommunityPost | undefined>)
+    const existing = fresh ? undefined : await request(posts.get(seed.id) as IDBRequest<CommunityPost | undefined>)
     posts.put(seedToPost(seed, now, existing))
   }
   await finished(tx)
@@ -201,6 +208,13 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     },
 
     readMedia,
+
+    async resetDemoData() {
+      await applySeeds(await db(), opts.seeds ?? [], true)
+      urls.forEach((u) => URL.revokeObjectURL(u))
+      urls.clear()
+      await notify()
+    },
 
     close() {
       channel?.close()

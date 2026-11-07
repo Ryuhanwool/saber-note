@@ -1,0 +1,55 @@
+import { useState } from 'react'
+import { useCommunity } from './CommunityContext'
+
+/**
+ * 시연 데이터 초기화: 내가 쓴 글과 좋아요·신고 기록을 지우고 예시 글을 처음 상태로 되돌린다.
+ * 지우는 일이라 무엇이 지워지는지 보여 주고 한 번 더 확인받는다. 저장소가 지원할 때만 보인다.
+ */
+export default function DemoReset() {
+  const state = useCommunity()
+  const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle')
+  const [message, setMessage] = useState<{ text: string; warn: boolean } | null>(null)
+  if (state.status !== 'ready' || !state.repo.resetDemoData) return null
+  const reset = state.repo.resetDemoData.bind(state.repo)
+
+  async function run() {
+    setStep('busy')
+    try {
+      await reset()
+      setMessage({ text: '시연 데이터를 처음 상태로 되돌렸어요.', warn: false })
+    } catch {
+      setMessage({ text: '초기화하지 못했어요. 잠시 뒤 다시 시도해 주세요.', warn: true })
+    } finally {
+      setStep('idle')
+    }
+  }
+
+  return (
+    <section className="panel" aria-label="시연 데이터 초기화" style={{ marginTop: 16 }}>
+      <h2>시연 데이터 초기화</h2>
+      {step === 'idle' ? (
+        <>
+          <p className="muted" style={{ fontSize: '.85rem', margin: '0 0 10px' }}>
+            시연을 다시 시작할 때 써요. 내가 쓴 글과 좋아요·신고 기록을 지우고 예시 글을 처음 상태로 되돌려요.
+          </p>
+          <button className="btn ghost" onClick={() => { setMessage(null); setStep('confirm') }}>시연 데이터 초기화</button>
+        </>
+      ) : (
+        <div role="alertdialog" aria-label="초기화 확인">
+          <p style={{ margin: '0 0 10px' }}>
+            <b>정말 초기화할까요?</b> 이 브라우저에 저장된 내가 쓴 글·사진·영상과 좋아요·신고 기록이 모두 지워지고 되돌릴 수 없어요.
+          </p>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn" disabled={step === 'busy'} onClick={run}>초기화</button>
+            <button className="btn ghost" disabled={step === 'busy'} onClick={() => setStep('idle')}>취소</button>
+          </div>
+        </div>
+      )}
+      {message && (
+        <p className="muted" role="status" style={{ fontSize: '.85rem', margin: '10px 0 0', color: message.warn ? 'var(--seam)' : undefined }}>
+          {message.text}
+        </p>
+      )}
+    </section>
+  )
+}
