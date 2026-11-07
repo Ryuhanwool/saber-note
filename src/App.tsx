@@ -5,6 +5,7 @@ import PlayerPage from './ui/player/PlayerPage'
 import ComparePage from './ui/compare/ComparePage'
 import GamesPage from './ui/games/GamesPage'
 import CommunityPage from './ui/community/CommunityPage'
+import CheerRoomPage from './ui/cheer/CheerRoomPage'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="player/:id" element={<PlayerPage />} />
+        <Route path="player/:id/cheer" element={<CheerRoomPage />} />
         <Route path="compare" element={<ComparePage />} />
         <Route path="games/:game?" element={<GamesPage />} />
         <Route path="community" element={<CommunityPage />} />

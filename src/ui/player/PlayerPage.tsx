@@ -8,6 +8,7 @@ import type { Player } from '../../domain/players'
 import { useLeague } from '../shared/LeagueContext'
 import { comparePath, positionLabel } from '../shared/labels'
 import MetricRow from '../shared/MetricRow'
+import CheerLink from '../cheer/CheerLink'
 import PlayerCommunity from '../community/PlayerCommunity'
 import DefenseTab from './DefenseTab'
 import { HITTER_TABS, PITCHER_TABS, tabAvailable } from './tabs'
@@ -49,7 +50,10 @@ function PlayerCard({ player: p }: { player: Player }) {
               {meta.asOf && ` · ${meta.asOf.replaceAll('-', '.')} 기록 반영`}
             </span>
           </div>
-          <button className="btn ghost" onClick={() => navigate(comparePath(p.id))}>비교하기</button>
+          <div className="row" style={{ gap: 8 }}>
+            <CheerLink player={p} />
+            <button className="btn ghost" onClick={() => navigate(comparePath(p.id))}>비교하기</button>
+          </div>
         </div>
         {p.type === 'H' && !p.qualified && (
           <p className="muted" style={{ margin: 0 }}>

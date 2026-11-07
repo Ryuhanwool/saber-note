@@ -4,6 +4,7 @@ import { relatedPosts, REPORT_HIDE_THRESHOLD, topDiscussed } from '../../domain/
 import { useLeague } from '../shared/LeagueContext'
 import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
+import CheerRanking from '../cheer/CheerRanking'
 import Composer from './Composer'
 import DemoReset from './DemoReset'
 import PostCard from './PostCard'
@@ -86,6 +87,9 @@ export default function CommunityPage() {
         ) : (
           <p className="muted" style={{ fontSize: '.9rem' }}>아직 집계할 글이 없어요.</p>
         )}
+        <div style={{ marginTop: 18 }}>
+          <CheerRanking />
+        </div>
         <h2 style={{ marginTop: 18 }}>작성 규칙</h2>
         <p className="muted" style={{ fontSize: '.85rem', margin: 0 }}>
           경기·플레이·상황에 대한 욕은 괜찮아요. 패드립, 협박, 인신공격(다른 사용자나 선수의 외모·가족·존재 비하), 혐오·비하, 성적 모욕,

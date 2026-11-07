@@ -1,0 +1,6 @@
+/* 선수 응원방 */
+.cheerbox{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.cheerbtn{padding:12px 22px;font-size:1.05rem}
+.cheercount{font-size:1rem}
+.cheercount b{font-size:1.6rem;margin-right:4px}
+.rank li button[aria-current="true"]{font-weight:700}

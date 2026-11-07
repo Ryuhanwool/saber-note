@@ -18,3 +18,4 @@ export function comparePath(a?: PlayerId, b?: PlayerId) {
   const s = q.toString()
   return s ? `/compare?${s}` : '/compare'
 }
+export const cheerPath = (id: PlayerId) => `/player/${encodeURIComponent(id)}/cheer`
