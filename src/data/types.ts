@@ -253,6 +253,45 @@ export type NewCheerMessage = { playerId: PlayerId; text: string; caution: boole
 /** 응원방 전체 상태: 모든 메시지(최신순)와 모든 「응원하기」 기록 */
 export type CheerSnapshot = { messages: CheerMessage[]; cheers: CheerEvent[] }
 
+// ---------- 굿즈 마켓 ----------
+
+/** 상품 종류 (공식 스토어 상품과 팬 마켓 판매글이 같이 쓴다. 기타는 기준 시세가 없다) */
+export type GoodsCategory = 'uniform' | 'towel' | 'cap' | 'stick' | 'keyring' | 'bat' | 'other'
+
+export type ItemCondition = '새 상품' | '아주 좋음' | '좋음' | '사용감 있음'
+
+/** 팬 마켓 판매글 (선수 관련 공식 굿즈 중고 판매) */
+export type MarketListing = {
+  id: string
+  /** 판매자 id (신고·삭제 규칙은 커뮤니티 글과 같다) */
+  authorId: string
+  /** 판매자 표시 이름 (주문 확인에서 판매자별로 묶을 때 쓴다) */
+  sellerName: string
+  title: string
+  category: GoodsCategory
+  players: PlayerId[]
+  /** 원 */
+  price: number
+  condition: ItemCondition
+  /** 설명 원문 */
+  text: string
+  /** 사진 (최대 4장) */
+  media: MediaRef[]
+  createdAt: number
+  reports: string[]
+  /** 「주의」: 애매한 표현 경고를 받고도 그대로 올린 판매글 */
+  caution: boolean
+}
+
+/** 저장소에 넘기는 새 판매글. 판매 규칙·작성 제한 검사는 넘기기 전에 끝낸다 (domain/market) */
+export type NewListing = Pick<MarketListing, 'title' | 'category' | 'players' | 'price' | 'condition' | 'text' | 'caution'> & { files: NewMedia[] }
+
+/** 장바구니 한 줄: 공식 스토어 상품(수량) 또는 팬 마켓 판매글(늘 1개) */
+export type CartLine = { kind: 'store'; productId: string; qty: number } | { kind: 'listing'; listingId: string }
+
+/** 마켓 전체 상태: 판매글(최신순)과 장바구니 */
+export type MarketSnapshot = { listings: MarketListing[]; cart: CartLine[] }
+
 // ---------- 화면 설정 ----------
 
 /** 화면 설정 (이 브라우저에만 저장) */
