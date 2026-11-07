@@ -88,6 +88,14 @@ export default function SettingsButton() {
             <p className="muted hint">PNG·JPG·WEBP, 10MB 이하. 「기본 배경으로」는 내 사진을 지우고 기본 테마로 돌아가요.</p>
           </fieldset>
 
+          <fieldset>
+            <legend>배경 장식</legend>
+            <label className="toggle">
+              <input type="checkbox" checked={settings.decorations} onChange={(e) => update({ decorations: e.target.checked })} />
+              야구공·배트·글러브·베이스·별 무늬를 아주 흐리게 깔기
+            </label>
+          </fieldset>
+
           {!persistent && <p className="muted hint">이 브라우저에서는 설정을 저장할 수 없어 새로고침하면 처음으로 돌아가요.</p>}
           {message && (
             <p className="hint" role="status" style={{ color: message.warn ? 'var(--seam)' : undefined }}>{message.text}</p>

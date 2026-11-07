@@ -4,6 +4,7 @@
 .app-bg{position:fixed;inset:0;z-index:-1;pointer-events:none}
 .app-bg > div{position:absolute;inset:0}
 .app-bg-base{background-color:var(--paper);background-size:cover;background-position:center}
+.app-bg-deco{background-color:var(--seam);opacity:.5;-webkit-mask-repeat:repeat;mask-repeat:repeat}
 .app-bg-overlay{
   background-color:var(--bg-overlay);
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);

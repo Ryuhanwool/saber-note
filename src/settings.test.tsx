@@ -130,3 +130,28 @@ describe('화면 설정: 내 이미지 배경', () => {
     expect(root.style.getPropertyValue('--team-accent-light')).toBe(THEMES.find((t) => t.id === 'blue-white')!.accent.light)
   })
 })
+
+describe('화면 설정: 배경 장식', () => {
+  it('기본값은 켜짐: 기본 테마에서도 막 아래에 장식 무늬가 깔린다', async () => {
+    renderApp(createMemorySettings())
+    const layer = await screen.findByTestId('app-bg')
+    const order = [...layer.children].map((el) => el.className)
+    expect(order).toEqual(['app-bg-base', 'app-bg-deco', 'app-bg-overlay']) // 장식은 반투명 막 아래
+    expect((screen.getByTestId('app-bg-deco') as HTMLElement).style.maskImage).toContain('data:image/svg+xml')
+    expect(root.dataset.bg).toBe('on')
+  })
+
+  it('끄면 무늬가 사라지고, 설정이 저장된다', async () => {
+    const user = userEvent.setup()
+    const store = createMemorySettings()
+    renderApp(store)
+    const panel = await openPanel(user)
+    const toggle = panel.getByRole('checkbox', { name: /야구공·배트·글러브·베이스·별/ })
+    expect((toggle as HTMLInputElement).checked).toBe(true)
+    await user.click(toggle)
+    expect(screen.queryByTestId('app-bg-deco')).toBeNull()
+    expect(screen.queryByTestId('app-bg')).toBeNull() // 기본 테마 + 사진 없음 + 장식 끔 → 배경 층 없음
+    expect((await store.load()).decorations).toBe(false)
+  })
+})
+
