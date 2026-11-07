@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
+import BackgroundLayer from '../settings/BackgroundLayer'
+import SettingsButton from '../settings/SettingsButton'
 import { useLeagueState } from './LeagueContext'
 
 const NAV = [
@@ -21,6 +23,7 @@ export default function Layout() {
 
   return (
     <>
+      <BackgroundLayer />
       <header>
         <div className="bar">
           <div className="brand display">세이버 노트<small>데모</small></div>
@@ -31,6 +34,7 @@ export default function Layout() {
               </Link>
             ))}
           </nav>
+          <SettingsButton />
         </div>
       </header>
       {state.status === 'ready' && state.league.meta.notice && <p className="notice">{state.league.meta.notice}</p>}

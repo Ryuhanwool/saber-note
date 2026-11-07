@@ -1,0 +1,99 @@
+import { useEffect, useId, useRef, useState } from 'react'
+import { BACKGROUND_TYPES } from '../../domain/theme/background'
+import { THEMES } from '../../domain/theme/themes'
+import { useSettings } from './SettingsContext'
+import './settings.css'
+
+/** 상단 메뉴 옆 「화면 설정」 버튼과 설정 창 */
+export default function SettingsButton() {
+  const ctx = useSettings()
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState<{ text: string; warn: boolean } | null>(null)
+  const panelId = useId()
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // Esc나 바깥을 누르면 닫는다
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    const onDown = (e: PointerEvent) => wrapRef.current && !wrapRef.current.contains(e.target as Node) && setOpen(false)
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onDown)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onDown)
+    }
+  }, [open])
+
+  if (!ctx) return null
+  const { settings, backgroundUrl, persistent, update, setBackground, resetBackground } = ctx
+
+  async function pickImage(file: File | undefined) {
+    if (!file) return
+    const problem = await setBackground(file)
+    setMessage(problem ? { text: problem, warn: true } : { text: '내 사진을 배경으로 바꿨어요.', warn: false })
+  }
+
+  return (
+    <div className="settings" ref={wrapRef}>
+      <button
+        className="settings-btn"
+        aria-label="화면 설정"
+        title="화면 설정"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen(!open)}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <circle cx="8.5" cy="10" r="1.6" fill="currentColor" />
+          <circle cx="12" cy="7.5" r="1.6" fill="currentColor" />
+          <circle cx="15.5" cy="10" r="1.6" fill="currentColor" />
+          <path d="M9 15.5c1.8 1.6 4.2 1.6 6 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      </button>
+      {open && (
+        <div className="settings-panel panel" id={panelId} role="dialog" aria-label="화면 설정">
+          <h2>화면 설정</h2>
+
+          <fieldset>
+            <legend>팀 컬러 테마</legend>
+            <div className="swatches">
+              {THEMES.map((t) => (
+                <label key={t.id} className="swatch">
+                  <input type="radio" name="team-theme" value={t.id} checked={settings.themeId === t.id} onChange={() => update({ themeId: t.id })} />
+                  <span
+                    className="swatch-color"
+                    style={t.colors ? { background: `linear-gradient(135deg, ${t.colors[0]} 50%, ${t.colors[1]} 50%)` } : undefined}
+                    aria-hidden="true"
+                  />
+                  <span>{t.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>내 이미지 배경</legend>
+            <div className="bg-row">
+              {backgroundUrl && <img className="bg-thumb" src={backgroundUrl} alt="지금 배경 사진" />}
+              <label className="btn ghost">
+                <input type="file" accept={BACKGROUND_TYPES.join(',')} hidden onChange={(e) => { void pickImage(e.target.files?.[0]); e.target.value = '' }} />
+                사진 고르기
+              </label>
+              <button className="btn ghost" onClick={() => { void resetBackground(); setMessage({ text: '기본 배경으로 되돌렸어요.', warn: false }) }}>
+                기본 배경으로
+              </button>
+            </div>
+            <p className="muted hint">PNG·JPG·WEBP, 10MB 이하. 「기본 배경으로」는 내 사진을 지우고 기본 테마로 돌아가요.</p>
+          </fieldset>
+
+          {!persistent && <p className="muted hint">이 브라우저에서는 설정을 저장할 수 없어 새로고침하면 처음으로 돌아가요.</p>}
+          {message && (
+            <p className="hint" role="status" style={{ color: message.warn ? 'var(--seam)' : undefined }}>{message.text}</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

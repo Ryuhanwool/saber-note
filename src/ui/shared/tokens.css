@@ -2,7 +2,7 @@
    다른 CSS 파일에는 색상 값을 직접 쓰지 말고 여기 변수를 쓴다. */
 :root {
   --paper: #F2F5F0; --surface: #FFFFFF; --ink: #1E2A3A; --soft: #5A6676; --line: #CBD3CC;
-  --grid: rgba(30,42,58,.055); --seam: #C8102E; --field: #2E6B4A; --chip: #E4EAE3; --track: #D9DFDA;
+  --grid: rgba(30,42,58,.055); --seam: var(--team-accent-light, #C8102E); --field: #2E6B4A; --chip: #E4EAE3; --track: #D9DFDA;
   --warn: #9A6A00;
   /* 데모에서 각 규칙에 직접 쓰던 색 */
   --on-accent: #fff;               /* 진한 배경 위 글자 (백분위 숫자 원, 미디어 버튼) */
@@ -12,6 +12,9 @@
   /* 백분위 막대: 하위 파랑 → 중간 회색 → 상위 빨강 (데모 pctColor) */
   --pct-low: rgb(54,97,173); --pct-mid: rgb(160,164,170); --pct-high: rgb(216,33,41);
 
+  /* 응원 팀 배경: 배경(팀 색·내 사진·장식) 위에 덮는 반투명 막. domain/theme/themes.ts OVERLAY_OPACITY와 같은 값 */
+  --bg-overlay: color-mix(in srgb, var(--paper) 85%, transparent);
+
   --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-display: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
   color-scheme: light;
@@ -19,14 +22,22 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #121821; --surface: #1A2230; --ink: #E6EBF0; --soft: #97A3B1; --line: #2E3949;
-    --grid: rgba(230,235,240,.04); --seam: #FF5A6E; --field: #5FBF8A; --chip: #243041; --track: #2E3949;
+    --grid: rgba(230,235,240,.04); --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
     --warn: #E8B64A;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #121821; --surface: #1A2230; --ink: #E6EBF0; --soft: #97A3B1; --line: #2E3949;
-  --grid: rgba(230,235,240,.04); --seam: #FF5A6E; --field: #5FBF8A; --chip: #243041; --track: #2E3949;
+  --grid: rgba(230,235,240,.04); --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
   --warn: #E8B64A;
   color-scheme: dark;
 }
+
+/* 배경을 꾸몄을 때(data-bg="on")의 보조 글자색: 막 아래가 아주 어둡거나 밝아도 4.5:1을 지키도록.
+   domain/theme/themes.ts SOFT_ON_BACKGROUND와 같은 값 */
+:root[data-bg="on"] { --soft: #46505E; }
+@media (prefers-color-scheme: dark) {
+  :root[data-bg="on"]:not([data-theme="light"]) { --soft: #B0BAC6; }
+}
+:root[data-theme="dark"][data-bg="on"] { --soft: #B0BAC6; }
