@@ -1,4 +1,4 @@
-import type { CommunityPost, CommunityUser, LeagueId, MediaRef, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek } from './types'
+import type { CommunityPost, CommunityUser, DisplaySettings, LeagueId, MediaRef, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek } from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
 export interface LeagueDataSource {
@@ -54,4 +54,17 @@ export class StorageFullError extends Error {
     super('저장 공간이 가득 찼습니다.')
     this.name = 'StorageFullError'
   }
+}
+
+/** 화면 설정 저장소: 설정 값과 내 배경 이미지. ui는 registry의 openSettingsStore로 연다 */
+export interface SettingsStore {
+  /** 새로고침해도 남는지 (브라우저 저장소를 쓸 수 없으면 false) */
+  readonly persistent: boolean
+  /** 저장된 설정. 없거나 망가진 값은 기본값으로 채운다 */
+  load(): Promise<DisplaySettings>
+  save(settings: DisplaySettings): Promise<void>
+  /** 내 배경 이미지. 없으면 null */
+  loadBackground(): Promise<Blob | null>
+  /** null이면 내 배경 이미지를 지운다 (기본 배경으로) */
+  saveBackground(image: Blob | null): Promise<void>
 }

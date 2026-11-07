@@ -225,3 +225,17 @@ export type NewPost = { text: string; players: PlayerId[]; masked: boolean; file
 
 /** 시연용 예시 글("데모 게시글")의 작성자 id. 이 id의 글은 아무도 지울 수 없다 */
 export const DEMO_AUTHOR_ID = 'demo'
+
+// ---------- 화면 설정 ----------
+
+/** 화면 설정 (이 브라우저에만 저장) */
+export type DisplaySettings = {
+  /** 팀 컬러 테마 id (domain/theme/themes.ts) */
+  themeId: string
+  /** 야구 소품 배경 장식 */
+  decorations: boolean
+  /** 거친 표현 가리기: 허용된 욕도 ●●로 가려 보기 */
+  maskProfanity: boolean
+}
+
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { themeId: 'default', decorations: true, maskProfanity: true }

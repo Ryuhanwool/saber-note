@@ -1,7 +1,9 @@
 import { createBrowserCommunity } from './community/browser'
 import { createMemoryCommunity } from './community/memory'
 import type { SeedPost } from './community/seed'
-import type { CommunityRepository, LeagueDataSource } from './source'
+import { createBrowserSettings } from './settings/browser'
+import { createMemorySettings } from './settings/memory'
+import type { CommunityRepository, LeagueDataSource, SettingsStore } from './source'
 import type { LeagueId } from './types'
 import { demoSource } from './demo'
 
@@ -37,3 +39,16 @@ export async function openCommunityRepository(opts: { seeds?: SeedPost[] } = {})
 
 /** 시연용 예시 글("데모 게시글")을 리그 기록으로 만든다 */
 export { demoCommunitySeeds, type SeedPost } from './community/seed'
+
+/** 화면 설정 저장소 열기. 브라우저 저장소(localStorage·IndexedDB)를 쓸 수 없으면 메모리 저장으로 바꾼다 */
+export async function openSettingsStore(): Promise<SettingsStore> {
+  try {
+    if (typeof indexedDB === 'undefined' || typeof localStorage === 'undefined') throw new Error('브라우저 저장소 없음')
+    const store = createBrowserSettings()
+    await store.load()
+    await store.loadBackground() // 저장소를 실제로 열어 본다
+    return store
+  } catch {
+    return createMemorySettings()
+  }
+}
