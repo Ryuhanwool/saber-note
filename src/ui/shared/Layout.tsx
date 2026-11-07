@@ -10,6 +10,7 @@ const NAV = [
   { to: '/compare', label: '비교', match: (path: string) => path.startsWith('/compare') },
   { to: '/games', label: '미니게임', match: (path: string) => path.startsWith('/games') },
   { to: '/community', label: '커뮤니티', match: (path: string) => path.startsWith('/community') },
+  { to: '/market', label: '마켓', match: (path: string) => path.startsWith('/market') },
 ]
 
 export default function Layout() {

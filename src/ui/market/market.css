@@ -1,0 +1,41 @@
+/* 굿즈 마켓 */
+.mnav{display:flex;gap:8px;flex-wrap:wrap}
+.mnav a{text-decoration:none;color:inherit}
+.mnav a[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.gcard a{color:inherit}
+.gimg{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.gph{position:relative}
+.gph span{position:absolute;left:6px;bottom:6px;font-size:.7rem;background:var(--overlay);color:var(--on-accent);padding:1px 6px;border-radius:3px}
+.gbody{display:flex;flex-direction:column;gap:4px;padding:10px 12px 12px}
+.gbody .btn{margin-top:6px}
+.rules{margin:0;padding-left:18px;font-size:.88rem;line-height:1.6}
+.listing{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px}
+@media (max-width:700px){.listing{grid-template-columns:1fr}}
+.lphotos{display:grid;gap:6px}
+.lprice{font-size:1.5rem;font-weight:700}
+.ldl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0;font-size:.9rem}
+.ldl dt{color:var(--soft)}
+.ldl dd{margin:0}
+.sell label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;margin-top:10px}
+.sell input:not([type="checkbox"]):not([type="file"]),.sell select{padding:9px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:.95rem}
+.sell label.agree{flex-direction:row;align-items:flex-start;gap:8px;font-size:.9rem;margin-top:14px}
+.sell label.btn{display:inline-block;margin-top:0;font-size:inherit}
+.demopay{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--line);border-radius:6px;background:var(--chip);font-weight:700}
+.cart{list-style:none;margin:0;padding:0}
+.cart li{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.cart li:first-child{border-top:0}
+.cthumb{width:64px;height:64px;overflow:hidden;border-radius:4px}
+.cthumb .gph span{display:none}
+.cinfo{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cinfo a{color:inherit}
+.cqty{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.totals{display:grid;grid-template-columns:1fr auto;gap:4px 16px;margin:14px 0 0;padding-top:10px;border-top:2px solid var(--line)}
+.totals dd{margin:0;text-align:right}
+.ogroup{border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:12px}
+.ogroup h3{margin:0 0 6px;font-size:1rem}
+.ogroup ul{list-style:none;margin:0;padding:0}
+.ogroup li,.osub{display:flex;justify-content:space-between;gap:12px;font-size:.9rem;padding:2px 0}
+.osub{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.mlink{width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left;cursor:pointer;color:inherit;font:inherit}

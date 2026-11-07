@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import App from './App'
 import CheerProvider from './ui/cheer/CheerProvider'
 import CommunityProvider from './ui/community/CommunityProvider'
+import MarketProvider from './ui/market/MarketProvider'
 import SettingsProvider from './ui/settings/SettingsProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
 import './ui/shared/tokens.css'
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')!).render(
         <LeagueProvider>
           <CommunityProvider>
             <CheerProvider>
-              <App />
+              <MarketProvider>
+                <App />
+              </MarketProvider>
             </CheerProvider>
           </CommunityProvider>
         </LeagueProvider>

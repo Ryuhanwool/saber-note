@@ -10,6 +10,7 @@ import { comparePath, positionLabel } from '../shared/labels'
 import MetricRow from '../shared/MetricRow'
 import CheerLink from '../cheer/CheerLink'
 import PlayerCommunity from '../community/PlayerCommunity'
+import PlayerMarket from '../market/PlayerMarket'
 import DefenseTab from './DefenseTab'
 import { HITTER_TABS, PITCHER_TABS, tabAvailable } from './tabs'
 import TrackingTab from './TrackingTab'
@@ -84,6 +85,7 @@ function PlayerCard({ player: p }: { player: Player }) {
         </div>
       </div>
       <PlayerCommunity player={p} />
+      <PlayerMarket player={p} />
     </>
   )
 }

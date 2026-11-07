@@ -5,6 +5,7 @@ import type { PlayerId } from '../../data/types'
 import { cheerCount, cheeredToday, messagesFor } from '../../domain/cheer/cheer'
 import type { Player } from '../../domain/players'
 import DemoReset from '../community/DemoReset'
+import PlayerMarket from '../market/PlayerMarket'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath, positionLabel } from '../shared/labels'
 import { useNow } from '../shared/useNow'
@@ -80,6 +81,7 @@ function CheerRoom({ player: p }: { player: Player }) {
               <p className="empty">아직 응원 메시지가 없어요. 첫 응원을 남겨 보세요.</p>
             ))}
           </section>
+          <PlayerMarket player={p} />
           <DemoReset />
         </div>
         <aside className="panel">
