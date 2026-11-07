@@ -10,9 +10,10 @@ import { useCommunity } from './CommunityContext'
 
 type DraftFile = { file: File; kind: MediaKind; preview: string }
 
+/** 늘 보이는 저장 위치 안내 (이 앱은 시연용이라 서버에 저장하지 않는다) */
 const STORAGE_NOTE = {
-  browser: '지금은 글과 사진·영상이 이 브라우저에만 저장돼요. 새로고침해도 남지만 다른 사람에게는 보이지 않아요.',
-  memory: '이 브라우저에서는 저장소를 쓸 수 없어 새로고침하면 글이 사라져요.',
+  browser: '시연용이라 글이 이 브라우저에만 저장돼요. 새로고침해도 남지만 다른 사람에게는 보이지 않아요.',
+  memory: '시연용이라 글이 이 브라우저에만 저장돼요. 다만 이 브라우저에서는 저장소를 쓸 수 없어 새로고침하면 글이 사라져요.',
   shared: '여기 올린 글과 사진·영상은 모두에게 보여요.',
 } as const
 
@@ -95,7 +96,8 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
 
   return (
     <div className="panel composer">
-      <h1 className="display" style={{ fontSize: '1.8rem', margin: '0 0 10px' }}>커뮤니티</h1>
+      <h1 className="display" style={{ fontSize: '1.8rem', margin: '0 0 4px' }}>커뮤니티</h1>
+      <p className="muted" style={{ fontSize: '.85rem', margin: '0 0 10px' }}>{STORAGE_NOTE[repo.storage]}</p>
       <textarea
         ref={textRef}
         rows={4}
@@ -163,7 +165,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
         <button className="btn" style={{ marginLeft: 'auto' }} disabled={!canPost} onClick={submit}>게시하기</button>
       </div>
       <p className="muted" role="status" style={{ fontSize: '.8rem', margin: '10px 0 0', color: note?.warn ? 'var(--seam)' : undefined }}>
-        {note?.text ?? STORAGE_NOTE[repo.storage]}
+        {note?.text}
       </p>
     </div>
   )

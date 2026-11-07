@@ -1,5 +1,6 @@
 import { createBrowserCommunity } from './community/browser'
 import { createMemoryCommunity } from './community/memory'
+import type { SeedPost } from './community/seed'
 import type { CommunityRepository, LeagueDataSource } from './source'
 import type { LeagueId } from './types'
 import { demoSource } from './demo'
@@ -21,9 +22,9 @@ export function getDataSource(league: LeagueId = DEFAULT_LEAGUE): LeagueDataSour
  * 커뮤니티 저장소 열기. 지금은 브라우저 저장(IndexedDB)이고, 쓸 수 없으면(사생활 보호 모드 등) 메모리 저장으로 바꾼다.
  * Supabase 연결(7-2) 후에는 여기서 서버 저장소를 고른다.
  */
-export async function openCommunityRepository(): Promise<CommunityRepository> {
+export async function openCommunityRepository(opts: { seeds?: SeedPost[] } = {}): Promise<CommunityRepository> {
   if (typeof indexedDB !== 'undefined') {
-    const browser = createBrowserCommunity()
+    const browser = createBrowserCommunity({ seeds: opts.seeds })
     try {
       await browser.currentUser() // 저장소를 실제로 열어 본다
       return browser
@@ -31,5 +32,8 @@ export async function openCommunityRepository(): Promise<CommunityRepository> {
       browser.close()
     }
   }
-  return createMemoryCommunity()
+  return createMemoryCommunity({ seeds: opts.seeds })
 }
+
+/** 시연용 예시 글("데모 게시글")을 리그 기록으로 만든다 */
+export { demoCommunitySeeds, type SeedPost } from './community/seed'

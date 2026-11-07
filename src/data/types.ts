@@ -222,3 +222,6 @@ export type NewMedia = { blob: Blob; kind: MediaKind; name: string }
 
 /** 저장소에 넘기는 새 글. 작성 제한 검사·가림·자동 태그는 넘기기 전에 끝낸다 (domain/community) */
 export type NewPost = { text: string; players: PlayerId[]; masked: boolean; files: NewMedia[] }
+
+/** 시연용 예시 글("데모 게시글")의 작성자 id. 이 id의 글은 아무도 지울 수 없다 */
+export const DEMO_AUTHOR_ID = 'demo'

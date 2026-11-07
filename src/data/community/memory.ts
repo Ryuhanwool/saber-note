@@ -1,12 +1,16 @@
 // 메모리 저장소: 새로고침하면 사라진다. IndexedDB를 쓸 수 없는 브라우저의 대체와 테스트용.
 import type { CommunityRepository } from '../source'
 import type { CommunityPost, CommunityUser, MediaRef } from '../types'
+import { seedToPost, type SeedPost } from './seed'
 import { assertAuthor, newestFirst, newId, reportedBy, toggledLikes } from './shared'
 
-export function createMemoryCommunity(opts: { user?: CommunityUser; posts?: CommunityPost[] } = {}): CommunityRepository {
+export function createMemoryCommunity(
+  opts: { user?: CommunityUser; posts?: CommunityPost[]; seeds?: SeedPost[] } = {},
+): CommunityRepository {
   const user = opts.user ?? { id: `local:${newId()}`, name: '나' }
-  let posts = [...(opts.posts ?? [])]
-  const blobs = new Map<string, Blob>()
+  const now = Date.now()
+  let posts = [...(opts.seeds ?? []).map((s) => seedToPost(s, now)), ...(opts.posts ?? [])]
+  const blobs = new Map<string, Blob>((opts.seeds ?? []).flatMap((s) => s.media.map((m) => [m.id, m.blob] as const)))
   const urls = new Map<string, string>()
   const listeners = new Set<(p: CommunityPost[]) => void>()
   const emit = () => listeners.forEach((l) => l(newestFirst(posts)))

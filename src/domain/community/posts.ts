@@ -1,6 +1,6 @@
 // 커뮤니티 글 규칙: 게시 검사, 도배 제한, 자동 태그, 신고 가리기, 선수별 집계.
 // 서버(7-2)에서도 쓸 수 있게 브라우저 API에 의존하지 않는다.
-import type { CommunityPost, MediaKind, PlayerId } from '../../data/types'
+import { DEMO_AUTHOR_ID, type CommunityPost, type MediaKind, type PlayerId } from '../../data/types'
 import { maskMild, moderate, type ModerationResult } from './moderation'
 
 export const MAX_TEXT_LENGTH = 1000
@@ -91,6 +91,9 @@ export function blockMessage(m: Extract<ModerationResult, { level: 'block' }>): 
 }
 
 // ---------- 신고·좋아요·삭제 ----------
+
+/** 시연용 예시 글("데모 게시글")인지 */
+export const isDemoPost = (p: CommunityPost) => p.authorId === DEMO_AUTHOR_ID
 
 export const isHiddenByReports = (p: CommunityPost) => p.reports.length >= REPORT_HIDE_THRESHOLD
 export const canReport = (p: CommunityPost, userId: string | null) => userId !== null && p.authorId !== userId && !p.reports.includes(userId)

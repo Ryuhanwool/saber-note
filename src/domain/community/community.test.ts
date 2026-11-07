@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { CommunityPost, PlayerId } from '../../data/types'
 import { maskMild, moderate } from './moderation'
 import {
-  autoTag, canDelete, canReport, checkFiles, isHiddenByReports, MAX_FILE_BYTES, playerBuzz, postWaitMs, preparePost,
+  autoTag, canDelete, canReport, checkFiles, isDemoPost, isHiddenByReports, MAX_FILE_BYTES, playerBuzz, postWaitMs, preparePost,
   relatedPosts, timeAgo, topDiscussed,
 } from './posts'
 
@@ -120,6 +120,13 @@ describe('신고·삭제·선수별 집계', () => {
   })
   const kim = { id: 'demo:1' as PlayerId, name: '김도윤' }
   const lee = { id: 'demo:2' as PlayerId, name: '이하준' }
+
+  it('시연용 예시 글은 "데모 게시글"이고 아무도 지울 수 없다', () => {
+    const demo = post('d', { authorId: 'demo' })
+    expect(isDemoPost(demo)).toBe(true)
+    expect(isDemoPost(post('m', {}))).toBe(false)
+    expect(canDelete(demo, 'me')).toBe(false)
+  })
 
   it('신고 3번이면 가린다', () => {
     expect(isHiddenByReports(post('a', { reports: ['x', 'y'] }))).toBe(false)
