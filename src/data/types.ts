@@ -228,6 +228,31 @@ export type NewPost = { text: string; players: PlayerId[]; masked: boolean; caut
 /** 시연용 예시 글("데모 게시글")의 작성자 id. 이 id의 글은 아무도 지울 수 없다 */
 export const DEMO_AUTHOR_ID = 'demo'
 
+// ---------- 응원방 ----------
+
+/** 선수 응원방의 응원 메시지 (글만, 사진 없음) */
+export type CheerMessage = {
+  id: string
+  playerId: PlayerId
+  authorId: string
+  /** 원문 (거친 표현은 화면에 보일 때 가린다) */
+  text: string
+  createdAt: number
+  /** 신고한 사용자 id */
+  reports: string[]
+  /** 「주의」: 애매하다는 경고를 받고도 그대로 올린 메시지 */
+  caution: boolean
+}
+
+/** 「응원하기」 한 번 (한 사람이 선수 한 명에게 하루 1번) */
+export type CheerEvent = { id: string; playerId: PlayerId; userId: string; createdAt: number }
+
+/** 저장소에 넘기는 새 응원 메시지. 작성 제한 검사는 넘기기 전에 끝낸다 (domain/cheer) */
+export type NewCheerMessage = { playerId: PlayerId; text: string; caution: boolean }
+
+/** 응원방 전체 상태: 모든 메시지(최신순)와 모든 「응원하기」 기록 */
+export type CheerSnapshot = { messages: CheerMessage[]; cheers: CheerEvent[] }
+
 // ---------- 화면 설정 ----------
 
 /** 화면 설정 (이 브라우저에만 저장) */

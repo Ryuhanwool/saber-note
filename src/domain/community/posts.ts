@@ -111,11 +111,14 @@ export function ambiguousMessage(m: Extract<ModerationResult, { level: 'ambiguou
 // ---------- 신고·좋아요·삭제 ----------
 
 /** 시연용 예시 글("데모 게시글")인지 */
-export const isDemoPost = (p: CommunityPost) => p.authorId === DEMO_AUTHOR_ID
+/** 신고·삭제·작성자 표시 규칙은 커뮤니티 글과 응원 메시지가 함께 쓴다 */
+type Authored = { authorId: string; reports: readonly string[] }
 
-export const isHiddenByReports = (p: CommunityPost) => p.reports.length >= REPORT_HIDE_THRESHOLD
-export const canReport = (p: CommunityPost, userId: string | null) => userId !== null && p.authorId !== userId && !p.reports.includes(userId)
-export const canDelete = (p: CommunityPost, userId: string | null) => userId !== null && p.authorId === userId
+export const isDemoPost = (p: { authorId: string }) => p.authorId === DEMO_AUTHOR_ID
+
+export const isHiddenByReports = (p: { reports: readonly string[] }) => p.reports.length >= REPORT_HIDE_THRESHOLD
+export const canReport = (p: Authored, userId: string | null) => userId !== null && p.authorId !== userId && !p.reports.includes(userId)
+export const canDelete = (p: Authored, userId: string | null) => userId !== null && p.authorId === userId
 
 // ---------- 선수별 ----------
 
