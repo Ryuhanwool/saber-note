@@ -57,7 +57,7 @@ export function themeBackground(theme: Theme, strength: BackgroundStrength): The
 }
 
 /** 야구 소품 장식 무늬의 불투명도 (ui/settings/settings.css .app-bg-deco opacity와 같은 값) */
-export const DECORATION_OPACITY = 0.5
+export const DECORATION_OPACITY = 1
 
 /**
  * 장식 무늬 색: 팀 테마에서는 중립색(라이트는 패널색 흰색, 다크는 어두운 바탕색)으로 칠해 무늬 자리가 바탕 쪽으로 옅어지게 한다

@@ -6,7 +6,7 @@ import { BASE_COLORS, BASE_SOFT, OVERLAY_OPACITY, SOFT_ON_BACKGROUND, THEMES } f
 
 const settingsCss = readFileSync(resolve(import.meta.dirname, '../src/ui/settings/settings.css'), 'utf8')
 /** domain/theme/surface.ts DECORATION_OPACITY (surface.ts는 확장자 없는 import를 써서 여기서 직접 읽지 않는다) */
-const DECORATION_OPACITY = 0.5
+const DECORATION_OPACITY = 1
 
 const css = readFileSync(resolve(import.meta.dirname, '../src/ui/shared/tokens.css'), 'utf8')
 
