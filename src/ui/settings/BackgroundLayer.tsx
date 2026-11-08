@@ -22,10 +22,14 @@ export default function BackgroundLayer() {
         <div
           className="app-bg-deco"
           data-testid="app-bg-deco"
+          data-on={ctx.backgroundUrl || ctx.settings.themeId === DEFAULT_THEME_ID ? 'plain' : 'theme'}
           style={{ maskImage: decorationUrl(), WebkitMaskImage: decorationUrl(), maskSize: `${TILE_SIZE}px`, WebkitMaskSize: `${TILE_SIZE}px` }}
         />
       )}
-      {hasOverlay(ctx.settings, ctx.backgroundUrl) && <div className="app-bg-overlay" data-testid="app-bg-overlay" />}
+      {/* 막: 사진 위는 중립 바탕색(paper), 그 밖에는 바탕과 같은 팀 색 그라데이션 (장식을 켜도 팀 색이 바뀌지 않게) */}
+      {hasOverlay(ctx.settings, ctx.backgroundUrl) && (
+        <div className="app-bg-overlay" data-testid="app-bg-overlay" data-over={ctx.backgroundUrl ? 'paper' : 'theme'} />
+      )}
     </div>
   )
 }

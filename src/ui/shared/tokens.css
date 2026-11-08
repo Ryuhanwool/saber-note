@@ -17,6 +17,8 @@
   --bg-top: var(--team-bg-light-top, var(--paper)); --bg-bottom: var(--team-bg-light-bottom, var(--paper));
   /* 상단 메뉴 바: 팀 색이 은은하게 (기본 테마는 패널색) */
   --bar-bg: var(--team-bg-light-bar, var(--surface));
+  /* 팀 테마 배경 위 장식 무늬 색 (domain/theme/surface.ts decorationColor) */
+  --deco-neutral: var(--surface);
 
   /* 내 사진·장식 위에 덮는 반투명 막. domain/theme/themes.ts OVERLAY_OPACITY와 같은 값 */
   --bg-overlay: color-mix(in srgb, var(--paper) 85%, transparent);
@@ -32,6 +34,7 @@
     --warn: #E8B64A;
     --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
     --bar-bg: var(--team-bg-dark-bar, var(--surface));
+    --deco-neutral: var(--paper);
     color-scheme: dark;
   }
 }
@@ -41,6 +44,7 @@
   --warn: #E8B64A;
   --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
   --bar-bg: var(--team-bg-dark-bar, var(--surface));
+  --deco-neutral: var(--paper);
   color-scheme: dark;
 }
 

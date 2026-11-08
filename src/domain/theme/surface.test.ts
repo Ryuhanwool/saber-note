@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BACKGROUND_STRENGTHS, type BackgroundStrength } from '../../data/types'
 import { contrastRatio, relativeLuminance } from './contrast'
-import { BACKGROUND_STRENGTH_LABELS, BACKGROUND_TINT, textOnBackground, themeBackground, tint } from './surface'
+import { BACKGROUND_STRENGTH_LABELS, BACKGROUND_TINT, textOnBackground, themeBackground, tint, visibleBackground } from './surface'
 import { BASE_COLORS, BASE_SOFT, THEMES } from './themes'
 
 const AA = 4.5
@@ -66,3 +66,30 @@ describe.each(BACKGROUND_STRENGTHS.map((s) => [BACKGROUND_STRENGTH_LABELS[s], s]
     }
   })
 })
+
+describe('장식을 켜도 배경 팀 색이 바뀌지 않는다 (모든 테마 × 배경 진하기 3단계 × 라이트·다크)', () => {
+  for (const strength of BACKGROUND_STRENGTHS) {
+    for (const t of THEMES) {
+      it(`${BACKGROUND_STRENGTH_LABELS[strength]} · ${t.name}`, () => {
+        for (const m of MODES) {
+          const off = visibleBackground(t, m, strength, false)
+          const on = visibleBackground(t, m, strength, true)
+          // 무늬가 없는 자리: 장식을 켜기 전과 같은 팀 색(기본 테마는 중립 바탕색)
+          expect({ top: on.top, bottom: on.bottom }, `${m}`).toEqual({ top: off.top, bottom: off.bottom })
+          const bg = themeBackground(t, strength)
+          const want = bg ? bg[m] : { top: BASE_COLORS[m].paper, bottom: BASE_COLORS[m].paper }
+          expect({ top: on.top, bottom: on.bottom }).toEqual({ top: want.top.toLowerCase(), bottom: want.bottom.toLowerCase() })
+          // 무늬 자리: 흐리게 비치고(바탕과 다르다), 글자 대비 4.5:1을 지킨다 (장식을 켜면 배경용 보조 글자색)
+          const pattern = on.pattern!
+          for (const [back, p] of [[on.top, pattern.top], [on.bottom, pattern.bottom]] as const) {
+            expect(p, `${m} 무늬가 보인다`).not.toBe(back)
+            for (const fg of textOnBackground(m)) expect(contrastRatio(fg, p), `${m} ${fg} on 무늬 ${p}`).toBeGreaterThanOrEqual(AA)
+            // 팀 테마는 무늬를 중립색으로 칠해 무늬 자리가 대비를 떨어뜨리지 않는다 (기본 테마는 위의 4.5:1 확인으로 충분)
+            if (t.colors) for (const fg of textOnBackground(m)) expect(contrastRatio(fg, p)).toBeGreaterThanOrEqual(contrastRatio(fg, back))
+          }
+        }
+      })
+    }
+  }
+})
+
