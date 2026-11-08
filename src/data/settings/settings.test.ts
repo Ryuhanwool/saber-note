@@ -22,7 +22,9 @@ describe('설정 값 정리', () => {
   it('없거나 망가진 값은 기본값으로, 알맞은 값만 남긴다', () => {
     expect(normalizeSettings(null)).toEqual(DEFAULT_DISPLAY_SETTINGS)
     expect(normalizeSettings({ themeId: 'navy-gold', decorations: 'yes', extra: 1 })).toEqual({ ...DEFAULT_DISPLAY_SETTINGS, themeId: 'navy-gold' })
-    expect(DEFAULT_DISPLAY_SETTINGS).toEqual({ themeId: 'default', decorations: false, maskProfanity: true }) // 장식 기본값은 꺼짐
+    expect(DEFAULT_DISPLAY_SETTINGS).toEqual({ themeId: 'default', decorations: false, maskProfanity: true, bgStrength: 'medium' }) // 장식 꺼짐, 배경 진하기 보통
+    expect(normalizeSettings({ bgStrength: 'very-strong' }).bgStrength).toBe('medium')
+    expect(normalizeSettings({ bgStrength: 'soft' }).bgStrength).toBe('soft')
   })
 })
 
@@ -31,11 +33,11 @@ describe('브라우저 설정 저장소', () => {
     const indexedDB = new IDBFactory()
     const storage = fakeStorage()
     const before = createBrowserSettings({ indexedDB, storage })
-    await before.save({ themeId: 'orange-black', decorations: false, maskProfanity: false })
+    await before.save({ themeId: 'orange-black', decorations: false, maskProfanity: false, bgStrength: 'strong' })
     await before.saveBackground(new Blob(['사진'], { type: 'image/jpeg' }))
 
     const after = createBrowserSettings({ indexedDB, storage })
-    expect(await after.load()).toEqual({ themeId: 'orange-black', decorations: false, maskProfanity: false })
+    expect(await after.load()).toEqual({ themeId: 'orange-black', decorations: false, maskProfanity: false, bgStrength: 'strong' })
     const img = await after.loadBackground()
     expect(img?.type).toBe('image/jpeg')
     expect(await img?.text()).toBe('사진')
@@ -71,8 +73,8 @@ describe('저장 형식 버전 (장식 기본값을 꺼짐으로 바꾼 뒤)', (
     const storage = fakeStorage()
     storage.setItem(SETTINGS_KEY, JSON.stringify({ themeId: 'navy-gold', decorations: true, maskProfanity: false }))
     const store = createBrowserSettings({ indexedDB: new IDBFactory(), storage })
-    expect(await store.load()).toEqual({ themeId: 'navy-gold', decorations: false, maskProfanity: false })
-    await store.save({ themeId: 'navy-gold', decorations: true, maskProfanity: false })
+    expect(await store.load()).toEqual({ themeId: 'navy-gold', decorations: false, maskProfanity: false, bgStrength: 'medium' }) // 배경 진하기가 없던 값은 보통
+    await store.save({ themeId: 'navy-gold', decorations: true, maskProfanity: false, bgStrength: 'soft' })
     expect(JSON.parse(storage.getItem(SETTINGS_KEY)!)).toMatchObject({ v: SETTINGS_VERSION, decorations: true })
     expect((await store.load()).decorations).toBe(true)
   })

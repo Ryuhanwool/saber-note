@@ -327,6 +327,11 @@ export type DisplaySettings = {
   decorations: boolean
   /** 거친 표현 가리기: 허용된 욕도 ●●로 가려 보기 */
   maskProfanity: boolean
+  /** 배경 진하기: 팀 테마 배경에 팀 색을 섞는 정도 (연하게·보통·진하게) */
+  bgStrength: BackgroundStrength
 }
 
-export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { themeId: 'default', decorations: false, maskProfanity: true }
+export type BackgroundStrength = 'soft' | 'medium' | 'strong'
+export const BACKGROUND_STRENGTHS: readonly BackgroundStrength[] = ['soft', 'medium', 'strong']
+
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { themeId: 'default', decorations: false, maskProfanity: true, bgStrength: 'medium' }

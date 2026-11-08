@@ -25,6 +25,10 @@
 .bg-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .bg-thumb{width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
 .toggle{display:flex;align-items:center;gap:8px;cursor:pointer}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg-item{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:.88rem}
+.seg-item:has(input:checked){border:2px solid var(--seam);padding:5px 7px;font-weight:700}
+.seg-item:has(input:focus-visible){outline:3px solid var(--seam);outline-offset:2px}
 @media (max-width:560px){
   .settings{position:static}
   .settings-panel{position:fixed;left:16px;right:16px;top:auto;width:auto;margin-top:4px}

@@ -28,9 +28,12 @@ describe('tokens.css와 domain/theme 값이 같다', () => {
     expect(css).toContain(`--ink: ${BASE_COLORS.light.ink}; --soft: ${BASE_SOFT.light};`)
     expect(css).toContain(`--ink: ${BASE_COLORS.dark.ink}; --soft: ${BASE_SOFT.dark};`)
   })
-  it('화면 배경은 팀 테마 배경색 변수를 읽고, 없으면 바탕색 (바둑판 무늬 없음)', () => {
+  it('화면 배경·상단 메뉴 바는 팀 테마 배경색 변수를 읽고, 없으면 바탕색·패널색 (바둑판 무늬 없음)', () => {
     expect(css).toContain('--bg-top: var(--team-bg-light-top, var(--paper)); --bg-bottom: var(--team-bg-light-bottom, var(--paper));')
     expect(css.match(/--bg-top: var\(--team-bg-dark-top, var\(--paper\)\); --bg-bottom: var\(--team-bg-dark-bottom, var\(--paper\)\);/g)).toHaveLength(2)
+    expect(css).toContain('--bar-bg: var(--team-bg-light-bar, var(--surface));')
+    expect(css.match(/--bar-bg: var\(--team-bg-dark-bar, var\(--surface\)\);/g)).toHaveLength(2)
+    expect(readFileSync(resolve(import.meta.dirname, '../src/ui/shared/base.css'), 'utf8')).toMatch(/header\{[^}]*background:var\(--bar-bg\)/)
     for (const file of ['tokens.css', 'base.css']) {
       expect(readFileSync(resolve(import.meta.dirname, '../src/ui/shared', file), 'utf8')).not.toContain('--grid')
     }

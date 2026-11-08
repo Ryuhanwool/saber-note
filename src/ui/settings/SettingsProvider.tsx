@@ -11,7 +11,11 @@ const toUrl = (blob: Blob | null) => (blob && typeof URL.createObjectURL === 'fu
 
 /** 화면 설정을 불러오고, 테마 강조색과 배경 여부를 문서 루트(:root)에 반영한다 */
 /** 팀 테마가 :root에 넣는 CSS 변수 (기본 테마면 모두 지운다) */
-const TEAM_VARS = ['--team-accent-light', '--team-accent-dark', '--team-bg-light-top', '--team-bg-light-bottom', '--team-bg-dark-top', '--team-bg-dark-bottom']
+const TEAM_VARS = [
+  '--team-accent-light', '--team-accent-dark',
+  '--team-bg-light-top', '--team-bg-light-bottom', '--team-bg-light-bar',
+  '--team-bg-dark-top', '--team-bg-dark-bottom', '--team-bg-dark-bar',
+]
 
 export default function SettingsProvider({ store: given, children }: { store?: SettingsStore; children: ReactNode }) {
   const [store, setStore] = useState<SettingsStore | null>(given ?? null)
@@ -43,14 +47,14 @@ export default function SettingsProvider({ store: given, children }: { store?: S
   useEffect(() => {
     const root = document.documentElement
     const theme = findTheme(settings.themeId)
-    const bg = themeBackground(theme)
+    const bg = themeBackground(theme, settings.bgStrength)
     const vars: Record<string, string> =
       theme.id === DEFAULT_THEME_ID || !bg
         ? {}
         : {
             '--team-accent-light': theme.accent.light, '--team-accent-dark': theme.accent.dark,
-            '--team-bg-light-top': bg.light.top, '--team-bg-light-bottom': bg.light.bottom,
-            '--team-bg-dark-top': bg.dark.top, '--team-bg-dark-bottom': bg.dark.bottom,
+            '--team-bg-light-top': bg.light.top, '--team-bg-light-bottom': bg.light.bottom, '--team-bg-light-bar': bg.light.bar,
+            '--team-bg-dark-top': bg.dark.top, '--team-bg-dark-bottom': bg.dark.bottom, '--team-bg-dark-bar': bg.dark.bar,
           }
     for (const name of TEAM_VARS) {
       if (vars[name]) root.style.setProperty(name, vars[name])

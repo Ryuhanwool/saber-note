@@ -12,9 +12,11 @@
   /* 백분위 막대: 하위 파랑 → 중간 회색 → 상위 빨강 (데모 pctColor) */
   --pct-low: rgb(54,97,173); --pct-mid: rgb(160,164,170); --pct-high: rgb(216,33,41);
 
-  /* 화면 배경: 팀 테마의 아주 연한 색 위→아래 그라데이션 (SettingsProvider가 --team-bg-*를 넣는다, domain/theme themeBackground).
+  /* 화면 배경: 팀 테마 색을 섞은 위→아래 그라데이션 (「배경 진하기」 단계) (SettingsProvider가 --team-bg-*를 넣는다, domain/theme themeBackground).
      기본 테마는 바탕색 단색 */
   --bg-top: var(--team-bg-light-top, var(--paper)); --bg-bottom: var(--team-bg-light-bottom, var(--paper));
+  /* 상단 메뉴 바: 팀 색이 은은하게 (기본 테마는 패널색) */
+  --bar-bg: var(--team-bg-light-bar, var(--surface));
 
   /* 내 사진·장식 위에 덮는 반투명 막. domain/theme/themes.ts OVERLAY_OPACITY와 같은 값 */
   --bg-overlay: color-mix(in srgb, var(--paper) 85%, transparent);
@@ -29,6 +31,7 @@
     --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
     --warn: #E8B64A;
     --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
+    --bar-bg: var(--team-bg-dark-bar, var(--surface));
     color-scheme: dark;
   }
 }
@@ -37,6 +40,7 @@
   --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
   --warn: #E8B64A;
   --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
+  --bar-bg: var(--team-bg-dark-bar, var(--surface));
   color-scheme: dark;
 }
 

@@ -47,7 +47,7 @@ describe('화면 설정: 팀 컬러 테마', () => {
     const user = userEvent.setup()
     renderApp()
     const panel = await openPanel(user)
-    expect(panel.getAllByRole('radio')).toHaveLength(11)
+    expect(within(panel.getByRole('group', { name: '팀 컬러 테마' })).getAllByRole('radio')).toHaveLength(11)
     expect((panel.getByRole('radio', { name: '기본' }) as HTMLInputElement).checked).toBe(true)
     expect(panel.getByRole('radio', { name: '남색·금색' })).toBeTruthy()
   })
@@ -61,11 +61,13 @@ describe('화면 설정: 팀 컬러 테마', () => {
     await user.click(panel.getByRole('radio', { name: '남색·금색' }))
     expect(root.style.getPropertyValue('--team-accent-light')).toBe(navyGold.accent.light)
     expect(root.style.getPropertyValue('--team-accent-dark')).toBe(navyGold.accent.dark)
-    const bg = themeBackground(navyGold)!
+    const bg = themeBackground(navyGold, 'medium')! // 배경 진하기 기본값은 보통
     expect(root.style.getPropertyValue('--team-bg-light-top')).toBe(bg.light.top)
     expect(root.style.getPropertyValue('--team-bg-light-bottom')).toBe(bg.light.bottom)
     expect(root.style.getPropertyValue('--team-bg-dark-top')).toBe(bg.dark.top)
     expect(root.style.getPropertyValue('--team-bg-dark-bottom')).toBe(bg.dark.bottom)
+    expect(root.style.getPropertyValue('--team-bg-light-bar')).toBe(bg.light.bar) // 상단 메뉴 바에도 팀 색
+    expect(root.style.getPropertyValue('--team-bg-dark-bar')).toBe(bg.dark.bar)
     expect(root.dataset.bg).toBe('on') // 보조 글자색을 배경용으로 (반투명 막은 깔지 않는다)
     expect(screen.queryByTestId('app-bg-overlay')).toBeNull()
     expect(screen.getByTestId('app-bg').querySelector('.app-bg-base')!.getAttribute('data-kind')).toBe('theme')
@@ -76,6 +78,25 @@ describe('화면 설정: 팀 컬러 테마', () => {
     expect(root.style.getPropertyValue('--team-bg-light-top')).toBe('')
     expect(root.dataset.bg).toBe('off')
     expect(screen.getByTestId('app-bg').querySelector('.app-bg-base')!.getAttribute('data-kind')).toBe('plain')
+  })
+
+  it('배경 진하기: 연하게·보통·진하게 중 기본은 보통, 바꾸면 배경색이 바뀌고 저장된다', async () => {
+    const user = userEvent.setup()
+    const store = createMemorySettings({ decorations: false, themeId: 'navy-gold' })
+    renderApp(store)
+    const panel = await openPanel(user)
+    const group = within(panel.getByRole('radiogroup', { name: '배경 진하기' }))
+    expect(group.getAllByRole('radio').map((r) => r.parentElement!.textContent)).toEqual(['연하게', '보통', '진하게'])
+    expect((group.getByRole('radio', { name: '보통' }) as HTMLInputElement).checked).toBe(true)
+    const navyGold = THEMES.find((t) => t.id === 'navy-gold')!
+    expect(root.style.getPropertyValue('--team-bg-light-top')).toBe(themeBackground(navyGold, 'medium')!.light.top)
+    await user.click(group.getByRole('radio', { name: '진하게' }))
+    expect(root.style.getPropertyValue('--team-bg-light-top')).toBe(themeBackground(navyGold, 'strong')!.light.top)
+    expect(root.style.getPropertyValue('--team-bg-dark-top')).toBe(themeBackground(navyGold, 'strong')!.dark.top)
+    expect((await store.load()).bgStrength).toBe('strong')
+    await user.click(group.getByRole('radio', { name: '연하게' }))
+    expect(root.style.getPropertyValue('--team-bg-light-top')).toBe(themeBackground(navyGold, 'soft')!.light.top)
+    expect((await store.load()).bgStrength).toBe('soft')
   })
 
   it('Esc를 누르면 창이 닫힌다', async () => {

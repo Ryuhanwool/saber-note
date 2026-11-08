@@ -13,7 +13,7 @@ button,input,select{font:inherit;color:inherit}
 .display{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em}
 
 /* 상단 메뉴 — 데모의 nav button을 링크(a)로 바꿨다 */
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar-bg);border-bottom:1px solid var(--line)}
 /* 넓은 화면: 로고 · 메뉴 · (오른쪽 끝) 로그인·설정이 한 줄. 휴대폰 폭에서만 메뉴가 둘째 줄로 내려간다 */
 .bar{max-width:1040px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:flex-end;gap:24px;flex-wrap:nowrap}
 .bar-end{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none;padding-bottom:8px}

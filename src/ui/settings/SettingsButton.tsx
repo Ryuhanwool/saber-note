@@ -3,6 +3,8 @@ import { BACKGROUND_TYPES } from '../../domain/theme/background'
 import { THEMES } from '../../domain/theme/themes'
 import { useSettings } from './SettingsContext'
 import './settings.css'
+import { BACKGROUND_STRENGTHS } from '../../data/types'
+import { BACKGROUND_STRENGTH_LABELS } from '../../domain/theme/surface'
 
 /** 상단 메뉴 옆 「화면 설정」 버튼과 설정 창 */
 export default function SettingsButton() {
@@ -71,6 +73,19 @@ export default function SettingsButton() {
                 </label>
               ))}
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>배경 진하기</legend>
+            <div className="seg" role="radiogroup" aria-label="배경 진하기">
+              {BACKGROUND_STRENGTHS.map((s) => (
+                <label key={s} className="seg-item">
+                  <input type="radio" name="bg-strength" value={s} checked={settings.bgStrength === s} onChange={() => update({ bgStrength: s })} />
+                  {BACKGROUND_STRENGTH_LABELS[s]}
+                </label>
+              ))}
+            </div>
+            <p className="muted hint">팀 컬러 테마 배경에 팀 색을 섞는 정도예요. 글자가 잘 읽히도록, 테마에 따라 「진하게」가 조금 덜 진할 수 있어요.</p>
           </fieldset>
 
           <fieldset>
