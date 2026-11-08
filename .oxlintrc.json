@@ -105,7 +105,8 @@
                   "**/data/community/**",
                   "**/data/settings/**",
                   "**/data/cheer/**",
-                  "**/data/market/**"
+                  "**/data/market/**",
+                  "**/data/auth/**"
                 ],
                 "message": "ui는 리그 어댑터를 직접 import하지 말고 data/registry를 거치세요."
               }

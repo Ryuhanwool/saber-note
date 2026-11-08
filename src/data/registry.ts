@@ -1,3 +1,5 @@
+import { createBrowserAuth } from './auth/browser'
+import { createMemoryAuth } from './auth/memory'
 import { createBrowserCheer } from './cheer/browser'
 import { createMemoryCheer } from './cheer/memory'
 import type { CheerSeeds } from './cheer/seed'
@@ -9,7 +11,7 @@ import { createMemoryCommunity } from './community/memory'
 import type { SeedPost } from './community/seed'
 import { createBrowserSettings } from './settings/browser'
 import { createMemorySettings } from './settings/memory'
-import type { CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
+import type { AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
 import type { LeagueId } from './types'
 import { demoSource } from './demo'
 
@@ -79,6 +81,20 @@ export async function openMarketRepository(opts: { seeds?: SeedListing[] } = {})
 
 /** 시연용 예시 판매글을 리그 기록으로 만든다 */
 export { demoMarketSeeds, DEMO_SELLERS, type SeedListing } from './market/seed'
+
+/** 계정 저장소 열기 (시연용 로그인). 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
+export async function openAuthRepository(): Promise<AuthRepository> {
+  if (typeof indexedDB !== 'undefined') {
+    const browser = createBrowserAuth()
+    try {
+      await browser.current() // 저장소를 실제로 열어 본다
+      return browser
+    } catch {
+      browser.close()
+    }
+  }
+  return createMemoryAuth()
+}
 
 /** 화면 설정 저장소 열기. 브라우저 저장소(localStorage·IndexedDB)를 쓸 수 없으면 메모리 저장으로 바꾼다 */
 export async function openSettingsStore(): Promise<SettingsStore> {

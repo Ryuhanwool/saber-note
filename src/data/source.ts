@@ -1,5 +1,5 @@
 import type {
-  CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
+  Account, CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewAccount, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
 } from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
@@ -103,6 +103,55 @@ export interface MarketRepository {
   close?(): void
   /** 시연 데이터 초기화 (있으면): 내 판매글·사진·신고와 장바구니를 지우고 예시 판매글을 처음 상태로 되돌린다 */
   resetDemoData?(): Promise<void>
+}
+
+/**
+ * 계정 저장소 (시연용 로그인). ui는 registry의 openAuthRepository로 연다.
+ * 닉네임·비밀번호 규칙 검사는 넘기기 전에 domain(domain/auth)이 한다. 나중에 실제 로그인으로 바꿀 때 같은 인터페이스를 구현한다.
+ */
+export interface AuthRepository {
+  /** browser: 이 브라우저에만 저장, memory: 새로고침하면 사라짐, shared: 서버 */
+  readonly storage: 'browser' | 'memory' | 'shared'
+  /** 비밀번호 해시(Web Crypto)를 쓸 수 있는지. false면 가입·로그인 대신 접속 주소 안내를 보여 준다 */
+  readonly cryptoAvailable: boolean
+  /** 로그인한 계정. 로그아웃 상태면 null */
+  current(): Promise<Account | null>
+  /** 로그인 상태가 바뀔 때마다 (다른 탭 포함). 반환값은 구독 해제 */
+  subscribe(listener: (account: Account | null) => void): () => void
+  /** 이 브라우저에 있는 모든 닉네임 (중복 검사용, 데모 계정 포함) */
+  nicknames(): Promise<string[]>
+  /** 가입하고 바로 로그인한다. 닉네임이 이미 있으면 NicknameTakenError */
+  signUp(input: NewAccount): Promise<Account>
+  /** 닉네임·비밀번호가 맞지 않으면 WrongCredentialsError */
+  signIn(nickname: string, password: string): Promise<Account>
+  /** 「데모 계정으로 체험하기」: 비밀번호 없이 데모 계정으로 로그인 */
+  signInDemo(): Promise<Account>
+  signOut(): Promise<void>
+  close?(): void
+  /** 시연 데이터 초기화 (있으면): accounts면 데모 계정을 뺀 계정을 모두 지우고 로그아웃한다. 아니면 아무것도 지우지 않는다 */
+  resetDemoData?(opts: { accounts: boolean }): Promise<void>
+}
+
+export class NicknameTakenError extends Error {
+  constructor() {
+    super('이미 있는 닉네임입니다.')
+    this.name = 'NicknameTakenError'
+  }
+}
+
+export class WrongCredentialsError extends Error {
+  constructor() {
+    super('닉네임이나 비밀번호가 맞지 않습니다.')
+    this.name = 'WrongCredentialsError'
+  }
+}
+
+/** Web Crypto를 쓸 수 없는 접속(https·localhost가 아닌 주소)에서 가입·로그인하려 할 때 */
+export class CryptoUnavailableError extends Error {
+  constructor() {
+    super('이 접속 주소에서는 비밀번호를 안전하게 처리할 수 없습니다. localhost나 https 주소로 접속해 주세요.')
+    this.name = 'CryptoUnavailableError'
+  }
 }
 
 /** 저장 공간이 모자라 저장하지 못했을 때 */
