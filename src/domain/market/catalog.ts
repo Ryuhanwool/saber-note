@@ -1,6 +1,7 @@
 // 굿즈 마켓 상품 목록: 상품 종류와 기준 시세, 리그의 가상 구단별 공식 스토어 상품.
-// 구단 색은 실제 구단을 따라 하지 않고, 구단이 나오는 순서대로 아래 색 조합을 하나씩 붙인다.
+// 구단 색은 구단이 나오는 순서대로 응원 팀 테마(색 이름 테마)의 두 색을 붙인다.
 import type { GoodsCategory } from '../../data/types'
+import { TEAM_THEME_ORDER, themeColors } from '../theme/teams'
 
 export type CategoryInfo = {
   label: string
@@ -23,15 +24,8 @@ export const STORE_CATEGORIES: GoodsCategory[] = ['uniform', 'cap', 'towel', 'st
 
 export type TeamColors = { main: string; sub: string }
 
-/** 가상 구단 색 조합 (구단이 나오는 순서대로. 6개를 넘으면 다시 처음부터) */
-export const TEAM_PALETTE: TeamColors[] = [
-  { main: '#1F6F5C', sub: '#F2C14E' },
-  { main: '#5B3A8C', sub: '#E8E4F2' },
-  { main: '#1D4E89', sub: '#9FD3F0' },
-  { main: '#2B2B2B', sub: '#C6E05A' },
-  { main: '#0B7A8F', sub: '#FF8A5B' },
-  { main: '#7A2E2E', sub: '#E9D8A6' },
-]
+/** 가상 구단 색: 응원 팀 테마와 같은 짝 (구단이 나오는 순서대로, domain/theme/teams.ts) */
+export const TEAM_PALETTE: TeamColors[] = TEAM_THEME_ORDER.map(themeColors)
 
 export type StoreProduct = {
   id: string

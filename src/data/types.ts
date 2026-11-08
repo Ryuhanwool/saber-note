@@ -292,6 +292,27 @@ export type CartLine = { kind: 'store'; productId: string; qty: number } | { kin
 /** 마켓 전체 상태: 판매글(최신순)과 장바구니 */
 export type MarketSnapshot = { listings: MarketListing[]; cart: CartLine[] }
 
+// ---------- 계정 (시연용 로그인) ----------
+
+/** 가입한 계정 (비밀번호 해시는 저장소 안에만 두고 밖으로 내보내지 않는다) */
+export type Account = {
+  /** `acct:…` (로그인 전 익명 사용자는 `local:…`) */
+  id: string
+  nickname: string
+  /** 응원 팀 (가상 구단 이름). 고르지 않았으면 null */
+  team: string | null
+  createdAt: number
+}
+
+export type NewAccount = { nickname: string; password: string; team: string | null }
+
+/** 「데모 계정으로 체험하기」 계정. 비밀번호 없이 그 버튼으로만 로그인한다 */
+export const DEMO_ACCOUNT_ID = 'acct:demo'
+export const DEMO_ACCOUNT_NICKNAME = '체험팬'
+
+/** 로그인 기능 전에 이 브라우저에서 쓴 글의 작성자 id는 `local:`로 시작한다 (화면에는 「익명 팬」) */
+export const isAnonymousAuthor = (authorId: string) => authorId.startsWith('local:')
+
 // ---------- 화면 설정 ----------
 
 /** 화면 설정 (이 브라우저에만 저장) */
