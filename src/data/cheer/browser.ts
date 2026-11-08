@@ -1,5 +1,5 @@
 // 브라우저 응원 저장소: 응원 메시지와 「응원하기」 기록을 IndexedDB에 저장한다. 새로고침해도 남고, 이 브라우저에서만 보인다.
-import { assertAuthor, newId, reportedBy } from '../community/shared'
+import { assertAuthor, newId, reportedBy, requireUser, type RepoUser } from '../community/shared'
 import type { CheerRepository } from '../source'
 import type { CheerEvent, CheerMessage, CheerSnapshot, CommunityUser } from '../types'
 import { EMPTY_CHEER_SEEDS, seedToCheer, seedToMessage, type CheerSeeds } from './seed'
@@ -63,7 +63,7 @@ export type BrowserCheerOptions = {
   /** 기본은 브라우저의 indexedDB (테스트에서는 가짜 구현을 넣는다) */
   indexedDB?: IDBFactory
   /** 기본은 이 브라우저에 한 번 만들어 저장해 둔 로컬 사용자 */
-  user?: CommunityUser
+  user?: RepoUser
   seeds?: CheerSeeds
   /** 기본은 Date.now (테스트에서 날짜를 바꿀 때) */
   now?: () => number
@@ -80,7 +80,7 @@ export function createBrowserCheer(opts: BrowserCheerOptions = {}): CheerReposit
       return d
     }))
   const listeners = new Set<(s: CheerSnapshot) => void>()
-  let userPromise: Promise<CommunityUser> | null = null
+  let userPromise: Promise<CommunityUser | null> | null = null
 
   // 다른 탭에서 바뀌면 다시 읽는다
   const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANNEL) : null
@@ -101,8 +101,8 @@ export function createBrowserCheer(opts: BrowserCheerOptions = {}): CheerReposit
     if (broadcast) channel?.postMessage('changed')
   }
 
-  async function loadUser(): Promise<CommunityUser> {
-    if (opts.user) return opts.user
+  async function loadUser(): Promise<CommunityUser | null> {
+    if (opts.user !== undefined) return opts.user
     const tx = (await db()).transaction('meta', 'readwrite')
     const store = tx.objectStore('meta')
     const saved = await request(store.get('user') as IDBRequest<MetaRecord | undefined>)
@@ -135,13 +135,13 @@ export function createBrowserCheer(opts: BrowserCheerOptions = {}): CheerReposit
       return () => listeners.delete(listener)
     },
     async postMessage(input) {
-      const me = await user()
-      const m: CheerMessage = { id: newId(), playerId: input.playerId, authorId: me.id, text: input.text, createdAt: now(), reports: [], caution: input.caution }
+      const me = requireUser(await user())
+      const m: CheerMessage = { id: newId(), playerId: input.playerId, authorId: me.id, authorName: me.name, text: input.text, createdAt: now(), reports: [], caution: input.caution }
       await write('messages', (s) => s.put(m))
       return m
     },
     async cheer(playerId) {
-      const me = await user()
+      const me = requireUser(await user())
       const t = now()
       // 확인과 저장을 한 트랜잭션에서 해서, 빠르게 두 번 눌러도 한 번만 저장된다
       const tx = (await db()).transaction('cheers', 'readwrite')
@@ -158,11 +158,11 @@ export function createBrowserCheer(opts: BrowserCheerOptions = {}): CheerReposit
       await notify()
     },
     async report(id) {
-      const [me, m] = await Promise.all([user(), getMessage(id)])
+      const [me, m] = await Promise.all([user().then(requireUser), getMessage(id)])
       await write('messages', (s) => s.put({ ...m, reports: reportedBy(m, me.id) }))
     },
     async remove(id) {
-      const [me, m] = await Promise.all([user(), getMessage(id)])
+      const [me, m] = await Promise.all([user().then(requireUser), getMessage(id)])
       assertAuthor(m, me.id)
       await write('messages', (s) => s.delete(id))
     },

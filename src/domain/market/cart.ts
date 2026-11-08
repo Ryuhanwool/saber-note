@@ -2,6 +2,7 @@
 import type { CartLine, MarketListing } from '../../data/types'
 import { isHiddenByReports } from '../community/posts'
 import type { StoreProduct } from './catalog'
+import { sellerLabel } from './listing'
 
 export const MAX_QTY = 10
 /** 공식 스토어 배송비: 5만 원 이상이면 무료 */
@@ -82,7 +83,7 @@ export function summarizeCart(
     } else {
       const l = listings.find((x) => x.id === line.listingId)
       if (!l || !canBuyListing(l, userId)) continue
-      group(l.authorId, l.sellerName).items.push({ line, key: lineKey(line), name: l.title, unitPrice: l.price, qty: 1, product: null, listing: l })
+      group(l.authorId, sellerLabel(l)).items.push({ line, key: lineKey(line), name: l.title, unitPrice: l.price, qty: 1, product: null, listing: l })
     }
   }
   const ordered = [...groups.values()].sort((a, b) => (a.key === 'store' ? -1 : b.key === 'store' ? 1 : 0))

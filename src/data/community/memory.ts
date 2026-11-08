@@ -2,12 +2,12 @@
 import type { CommunityRepository } from '../source'
 import type { CommunityPost, CommunityUser, MediaRef } from '../types'
 import { seedToPost, type SeedPost } from './seed'
-import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, toggledLikes } from './shared'
+import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, requireUser, toggledLikes, type RepoUser } from './shared'
 
 export function createMemoryCommunity(
-  opts: { user?: CommunityUser; posts?: CommunityPost[]; seeds?: SeedPost[] } = {},
+  opts: { user?: RepoUser; posts?: CommunityPost[]; seeds?: SeedPost[] } = {},
 ): CommunityRepository {
-  const user = opts.user ?? { id: `local:${newId()}`, name: '나' }
+  const user: CommunityUser | null = opts.user === undefined ? { id: `local:${newId()}`, name: '나' } : opts.user
   const seeds = opts.seeds ?? []
   const seedPosts = () => {
     const now = Date.now()
@@ -42,13 +42,14 @@ export function createMemoryCommunity(
       return () => listeners.delete(listener)
     },
     async create(input) {
+      const me = requireUser(user)
       const media: MediaRef[] = input.files.map((f) => {
         const id = newId()
         blobs.set(id, f.blob)
         return { id, kind: f.kind, type: f.blob.type, name: f.name }
       })
       const post: CommunityPost = {
-        id: newId(), authorId: user.id, text: input.text, players: input.players, media,
+        id: newId(), authorId: me.id, authorName: me.name, text: input.text, players: input.players, media,
         createdAt: Date.now(), likes: [], reports: [], masked: input.masked, caution: input.caution,
       }
       posts = [post, ...posts]
@@ -57,15 +58,15 @@ export function createMemoryCommunity(
     },
     async toggleLike(id) {
       const p = find(id)
-      replace({ ...p, likes: toggledLikes(p, user.id) })
+      replace({ ...p, likes: toggledLikes(p, requireUser(user).id) })
     },
     async report(id) {
       const p = find(id)
-      replace({ ...p, reports: reportedBy(p, user.id) })
+      replace({ ...p, reports: reportedBy(p, requireUser(user).id) })
     },
     async remove(id) {
       const p = find(id)
-      assertAuthor(p, user.id)
+      assertAuthor(p, requireUser(user).id)
       for (const m of p.media) {
         blobs.delete(m.id)
         const url = urls.get(m.id)

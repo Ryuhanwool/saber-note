@@ -52,7 +52,7 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
     <article className="post">
       <header className="ph2">
         <span className="av ph3" />
-        <b>{authorName(post, me)}</b>
+        <b>{authorName(post)}</b>
         <span className="muted">{timeAgo(post.createdAt, now)}</span>
         {post.caution && <span className="tag caution" title="애매하다는 경고를 받고도 그대로 올린 글이에요">주의</span>}
         {(post.masked || shown !== post.text) && <span className="tag">일부 가림</span>}

@@ -42,7 +42,7 @@ export default function PlayerCommunity({ player }: { player: Player }) {
       </div>
       {ready && rel.slice(0, 2).map((x) => (
         <div key={x.id} className="mini">
-          <span className="muted">{authorName(x, state.user?.id ?? null)}, {timeAgo(x.createdAt, now)}</span>
+          <span className="muted">{authorName(x)}, {timeAgo(x.createdAt, now)}</span>
           {isHiddenByReports(x) ? (
             <div className="muted">신고가 누적돼 가려진 글이에요.</div>
           ) : (

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router'
 import { won } from '../../domain/market/catalog'
-import { playerListings } from '../../domain/market/listing'
+import { playerListings, sellerLabel } from '../../domain/market/listing'
 import type { Player } from '../../domain/players'
 import { listingPath, sellPath } from './hooks'
 import { useMarket } from './MarketContext'
@@ -29,7 +29,7 @@ export default function PlayerMarket({ player }: { player: Player }) {
       </div>
       {list.slice(0, 2).map((l) => (
         <button key={l.id} className="mini mlink" onClick={() => navigate(listingPath(l.id))}>
-          <span className="muted">{l.sellerName} · {l.condition}</span>
+          <span className="muted">{sellerLabel(l)} · {l.condition}</span>
           <span><b>{l.title}</b> {won(l.price)}</span>
         </button>
       ))}

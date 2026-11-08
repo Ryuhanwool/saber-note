@@ -3,7 +3,7 @@
 import { StorageFullError, type CommunityRepository } from '../source'
 import type { CommunityPost, CommunityUser, MediaRef } from '../types'
 import { seedToPost, type SeedPost } from './seed'
-import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, toggledLikes } from './shared'
+import { assertAuthor, newestFirst, newId, normalizePost, reportedBy, requireUser, toggledLikes, type RepoUser } from './shared'
 
 export const DB_NAME = 'saber-note-community'
 const DB_VERSION = 1
@@ -49,7 +49,7 @@ export type BrowserCommunityOptions = {
   /** 기본은 브라우저의 indexedDB (테스트에서는 가짜 구현을 넣는다) */
   indexedDB?: IDBFactory
   /** 기본은 이 브라우저에 한 번 만들어 저장해 둔 로컬 사용자 (테스트에서 여러 사용자를 흉내 낼 때 넣는다) */
-  user?: CommunityUser
+  user?: RepoUser
   /** 시연용 예시 글. 열 때마다 저장하고(좋아요·신고는 유지) 작성 시각을 지금 기준으로 다시 맞춘다 */
   seeds?: SeedPost[]
 }
@@ -90,7 +90,7 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     }))
   const listeners = new Set<(p: CommunityPost[]) => void>()
   const urls = new Map<string, string>()
-  let userPromise: Promise<CommunityUser> | null = null
+  let userPromise: Promise<CommunityUser | null> | null = null
 
   // 다른 탭에서 글이 바뀌면 다시 읽는다
   const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANNEL) : null
@@ -121,8 +121,8 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     await notify()
   }
 
-  async function loadUser(): Promise<CommunityUser> {
-    if (opts.user) return opts.user
+  async function loadUser(): Promise<CommunityUser | null> {
+    if (opts.user !== undefined) return opts.user
     const tx = (await db()).transaction('meta', 'readwrite')
     const store = tx.objectStore('meta')
     const saved = await request(store.get('user') as IDBRequest<MetaRecord | undefined>)
@@ -151,14 +151,14 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     },
 
     async create(input) {
-      const me = await user()
+      const me = requireUser(await user())
       // 파일 읽기(await)를 트랜잭션 전에 끝낸다: IndexedDB 트랜잭션은 기다리는 동안 자동으로 끝나 버린다
       const files = await Promise.all(
         input.files.map(async (f) => ({ id: newId(), kind: f.kind, name: f.name, type: f.blob.type, data: await f.blob.arrayBuffer() })),
       )
       const media: MediaRef[] = files.map(({ id, kind, type, name }) => ({ id, kind, type, name }))
       const post: CommunityPost = {
-        id: newId(), authorId: me.id, text: input.text, players: input.players, media,
+        id: newId(), authorId: me.id, authorName: me.name, text: input.text, players: input.players, media,
         createdAt: Date.now(), likes: [], reports: [], masked: input.masked, caution: input.caution,
       }
       try {
@@ -174,17 +174,17 @@ export function createBrowserCommunity(opts: BrowserCommunityOptions = {}): Comm
     },
 
     async toggleLike(id) {
-      const [me, p] = await Promise.all([user(), getPost(id)])
+      const [me, p] = await Promise.all([user().then(requireUser), getPost(id)])
       await putPost({ ...p, likes: toggledLikes(p, me.id) })
     },
 
     async report(id) {
-      const [me, p] = await Promise.all([user(), getPost(id)])
+      const [me, p] = await Promise.all([user().then(requireUser), getPost(id)])
       await putPost({ ...p, reports: reportedBy(p, me.id) })
     },
 
     async remove(id) {
-      const [me, p] = await Promise.all([user(), getPost(id)])
+      const [me, p] = await Promise.all([user().then(requireUser), getPost(id)])
       assertAuthor(p, me.id)
       const tx = (await db()).transaction(['posts', 'media'], 'readwrite')
       tx.objectStore('posts').delete(id)

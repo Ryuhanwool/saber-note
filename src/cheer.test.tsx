@@ -43,6 +43,8 @@ function renderAt(path: string, cheer?: CheerRepository) {
   )
 }
 
+/** 로그인한 계정 */
+const ME = { id: 'acct:me', name: '수달팬' }
 const room = (id = slugger.id) => `/player/${enc(id)}/cheer`
 const messages = async () => within(await screen.findByLabelText('응원 메시지 목록'))
 
@@ -54,14 +56,14 @@ beforeEach(() => {
 describe('선수 카드의 「응원방」 버튼', () => {
   it('누적 응원 수를 보여 주고, 누르면 그 선수 응원방으로 간다', async () => {
     const user = userEvent.setup()
-    renderAt(`/player/${enc(slugger.id)}`, createMemoryCheer({ seeds }))
+    renderAt(`/player/${enc(slugger.id)}`, createMemoryCheer({ seeds, user: ME }))
     await user.click(await screen.findByRole('button', { name: `응원방 · 응원 ${sluggerTotal}` }))
     expect(await screen.findByRole('heading', { name: `${slugger.name} 응원방` })).toBeTruthy()
     expect((await messages()).getAllByText('데모 응원')).toHaveLength(3)
   })
 
   it('없는 선수 응원방은 안내를 보여 준다', async () => {
-    renderAt('/player/demo%3A99999/cheer', createMemoryCheer())
+    renderAt('/player/demo%3A99999/cheer', createMemoryCheer({ user: ME }))
     expect(await screen.findByText('선수를 찾을 수 없어요.')).toBeTruthy()
   })
 })
@@ -69,7 +71,7 @@ describe('선수 카드의 「응원방」 버튼', () => {
 describe('응원하기', () => {
   it('누르면 누적 수가 1 오르고, 오늘은 다시 누를 수 없다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer({ seeds }))
+    renderAt(room(), createMemoryCheer({ seeds, user: ME }))
     const count = await screen.findByLabelText('누적 응원 수')
     expect(count.textContent).toBe(`${sluggerTotal} 누적 응원`)
     expect(screen.getByText(/^이번 주 14 ·/)).toBeTruthy()
@@ -82,7 +84,7 @@ describe('응원하기', () => {
 
   it('이번 주 응원 순위: 최근 7일 응원 수 순, 누르면 그 선수 응원방으로', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer({ seeds }))
+    renderAt(room(), createMemoryCheer({ seeds, user: ME }))
     const rank = within(await screen.findByLabelText('이번 주 응원 순위'))
     const rows = await rank.findAllByRole('button')
     expect(rows).toHaveLength(5)
@@ -94,7 +96,7 @@ describe('응원하기', () => {
   })
 
   it('커뮤니티 화면 옆에도 이번 주 응원 순위가 있다', async () => {
-    renderAt('/community', createMemoryCheer({ seeds }))
+    renderAt('/community', createMemoryCheer({ seeds, user: ME }))
     const rank = within(await screen.findByLabelText('이번 주 응원 순위'))
     expect((await rank.findAllByRole('button'))[0].textContent).toContain(slugger.name)
   })
@@ -107,21 +109,21 @@ describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
     await user.type(box, text)
   }
 
-  it('남기면 타임라인 맨 위에 "나"로 나오고, 저장 위치 안내가 보인다', async () => {
+  it('남기면 타임라인 맨 위에 닉네임으로 나오고, 저장 위치 안내가 보인다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer({ seeds }))
+    renderAt(room(), createMemoryCheer({ seeds, user: ME }))
     expect(await screen.findByText(/^시연용이라 응원이 이 브라우저에만 저장돼요/)).toBeTruthy()
     await type(user, '오늘도 화이팅!')
     await user.click(screen.getByRole('button', { name: '응원 남기기' }))
     const first = (await messages()).getAllByRole('article')[0]
     await waitFor(() => expect(first.textContent).toContain('오늘도 화이팅!'))
-    expect(within(first).getByText('나')).toBeTruthy()
+    expect(within(first).getByText('수달팬')).toBeTruthy()
     expect(within(first).getByRole('button', { name: '삭제' })).toBeTruthy()
   })
 
   it('심한 표현은 이유를 보여 주고 남길 수 없다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer())
+    renderAt(room(), createMemoryCheer({ user: ME }))
     await type(user, `${slugger.name} 얼굴부터 좆같이 생김`)
     expect(screen.getByText('이대로는 올릴 수 없어요.')).toBeTruthy()
     expect((screen.getByRole('button', { name: '응원 남기기' }) as HTMLButtonElement).disabled).toBe(true)
@@ -129,7 +131,7 @@ describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
 
   it('애매하면 물어보고, 그래도 올리면 「주의」 표시와 함께 걸린 표현을 가린다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer())
+    renderAt(room(), createMemoryCheer({ user: ME }))
     await type(user, '니 말이 맞다 씨발 오늘 대박')
     await user.click(screen.getByRole('button', { name: '응원 남기기' }))
     const dialog = within(await screen.findByRole('alertdialog', { name: '게시 전 확인' }))
@@ -141,7 +143,7 @@ describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
 
   it('30초에 한 번만 남길 수 있다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer())
+    renderAt(room(), createMemoryCheer({ user: ME }))
     await type(user, '첫 응원')
     await user.click(screen.getByRole('button', { name: '응원 남기기' }))
     await screen.findByText('응원을 남겼어요.')
@@ -151,7 +153,7 @@ describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
   })
 
   it('허용되는 거친 표현 예시는 「거친 표현 가리기」(기본 켜짐)에 따라 가려 보인다', async () => {
-    renderAt(room(), createMemoryCheer({ seeds }))
+    renderAt(room(), createMemoryCheer({ seeds, user: ME }))
     const list = await messages()
     expect(await list.findByText(/어제 그 홈런 ●●/)).toBeTruthy()
     expect(list.getAllByText('일부 가림')).toHaveLength(1)
@@ -159,7 +161,7 @@ describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
 
   it('남의 메시지는 두 번 눌러 신고한다', async () => {
     const user = userEvent.setup()
-    renderAt(room(), createMemoryCheer({ seeds }))
+    renderAt(room(), createMemoryCheer({ seeds, user: ME }))
     const card = within((await messages()).getAllByRole('article')[0])
     await user.click(card.getByRole('button', { name: '신고' }))
     await user.click(card.getByRole('button', { name: /^한 번 더 누르면 신고/ }))

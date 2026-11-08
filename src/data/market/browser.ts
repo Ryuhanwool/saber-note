@@ -1,5 +1,5 @@
 // 브라우저 마켓 저장소: 판매글과 사진, 장바구니를 IndexedDB에 저장한다. 새로고침해도 남고, 이 브라우저에서만 보인다.
-import { assertAuthor, newId, reportedBy } from '../community/shared'
+import { assertAuthor, newId, reportedBy, requireUser, type RepoUser } from '../community/shared'
 import { StorageFullError, type MarketRepository } from '../source'
 import type { CartLine, CommunityUser, MarketListing, MarketSnapshot } from '../types'
 import { findListing, newestListingsFirst } from './memory'
@@ -65,7 +65,7 @@ async function applySeeds(db: IDBDatabase, seeds: SeedListing[], now: number, fr
 
 export type BrowserMarketOptions = {
   indexedDB?: IDBFactory
-  user?: CommunityUser
+  user?: RepoUser
   seeds?: SeedListing[]
   now?: () => number
 }
@@ -82,7 +82,7 @@ export function createBrowserMarket(opts: BrowserMarketOptions = {}): MarketRepo
     }))
   const listeners = new Set<(s: MarketSnapshot) => void>()
   const urls = new Map<string, string>()
-  let userPromise: Promise<CommunityUser> | null = null
+  let userPromise: Promise<CommunityUser | null> | null = null
 
   const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANNEL) : null
   if (channel) channel.onmessage = () => void notify(false).catch(() => {})
@@ -102,8 +102,8 @@ export function createBrowserMarket(opts: BrowserMarketOptions = {}): MarketRepo
     if (broadcast) channel?.postMessage('changed')
   }
 
-  async function loadUser(): Promise<CommunityUser> {
-    if (opts.user) return opts.user
+  async function loadUser(): Promise<CommunityUser | null> {
+    if (opts.user !== undefined) return opts.user
     const tx = (await db()).transaction('meta', 'readwrite')
     const store = tx.objectStore('meta')
     const saved = await request(store.get('user') as IDBRequest<MetaRecord | undefined>)
@@ -135,7 +135,7 @@ export function createBrowserMarket(opts: BrowserMarketOptions = {}): MarketRepo
       return () => listeners.delete(listener)
     },
     async createListing(input) {
-      const me = await user()
+      const me = requireUser(await user())
       const { files: inputFiles, ...rest } = input
       // 파일 읽기(await)는 트랜잭션 전에 끝낸다
       const files = await Promise.all(inputFiles.map(async (f) => ({ id: newId(), kind: f.kind, name: f.name, type: f.blob.type, data: await f.blob.arrayBuffer() })))
@@ -155,14 +155,14 @@ export function createBrowserMarket(opts: BrowserMarketOptions = {}): MarketRepo
       return l
     },
     async report(id) {
-      const [me, l] = await Promise.all([user(), getListing(id)])
+      const [me, l] = await Promise.all([user().then(requireUser), getListing(id)])
       const tx = (await db()).transaction('listings', 'readwrite')
       tx.objectStore('listings').put({ ...l, reports: reportedBy(l, me.id) })
       await finished(tx)
       await notify()
     },
     async remove(id) {
-      const [me, l] = await Promise.all([user(), getListing(id)])
+      const [me, l] = await Promise.all([user().then(requireUser), getListing(id)])
       assertAuthor(l, me.id)
       const tx = (await db()).transaction(['listings', 'media'], 'readwrite')
       tx.objectStore('listings').delete(id)

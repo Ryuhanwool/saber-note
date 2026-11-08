@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import { canDelete, canReport, REPORT_HIDE_THRESHOLD, timeAgo } from '../../domain/community/posts'
 import { canBuyListing, inCart } from '../../domain/market/cart'
 import { CATEGORIES, won } from '../../domain/market/catalog'
-import { listingWarnings } from '../../domain/market/listing'
+import { listingWarnings, sellerLabel } from '../../domain/market/listing'
 import { useShownText } from '../community/labels'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
@@ -69,7 +69,7 @@ export default function ListingPage() {
           <dl className="ldl">
             <dt>종류</dt><dd>{CATEGORIES[l.category].label}</dd>
             <dt>상태</dt><dd>{l.condition}</dd>
-            <dt>판매자</dt><dd>{l.authorId === me ? '나' : l.sellerName}</dd>
+            <dt>판매자</dt><dd>{sellerLabel(l)}</dd>
             <dt>올린 때</dt><dd>{timeAgo(l.createdAt, now)}</dd>
           </dl>
           <div className="ptags">

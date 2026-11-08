@@ -1,5 +1,5 @@
 // 메모리 마켓 저장소: 새로고침하면 사라진다. IndexedDB를 쓸 수 없는 브라우저의 대체와 테스트용.
-import { assertAuthor, newId, reportedBy } from '../community/shared'
+import { assertAuthor, newId, reportedBy, requireUser, type RepoUser } from '../community/shared'
 import type { MarketRepository } from '../source'
 import type { CartLine, CommunityUser, MarketListing, MarketSnapshot, MediaRef } from '../types'
 import { seedToListing, type SeedListing } from './seed'
@@ -12,8 +12,8 @@ export function findListing(ls: readonly MarketListing[], id: string): MarketLis
   return l
 }
 
-export function createMemoryMarket(opts: { user?: CommunityUser; seeds?: SeedListing[]; now?: () => number } = {}): MarketRepository {
-  const user = opts.user ?? { id: `local:${newId()}`, name: '나' }
+export function createMemoryMarket(opts: { user?: RepoUser; seeds?: SeedListing[]; now?: () => number } = {}): MarketRepository {
+  const user: CommunityUser | null = opts.user === undefined ? { id: `local:${newId()}`, name: '나' } : opts.user
   const seeds = opts.seeds ?? []
   const now = opts.now ?? Date.now
   let listings: MarketListing[] = []
@@ -52,25 +52,26 @@ export function createMemoryMarket(opts: { user?: CommunityUser; seeds?: SeedLis
       return () => listeners.delete(listener)
     },
     async createListing(input) {
+      const me = requireUser(user)
       const { files, ...rest } = input
       const media: MediaRef[] = files.map((f) => {
         const id = newId()
         blobs.set(id, f.blob)
         return { id, kind: f.kind, type: f.blob.type, name: f.name }
       })
-      const l: MarketListing = { ...rest, id: newId(), authorId: user.id, sellerName: user.name, media, createdAt: now(), reports: [] }
+      const l: MarketListing = { ...rest, id: newId(), authorId: me.id, sellerName: me.name, media, createdAt: now(), reports: [] }
       listings = [l, ...listings]
       emit()
       return l
     },
     async report(id) {
       const l = findListing(listings, id)
-      listings = listings.map((x) => (x.id === id ? { ...l, reports: reportedBy(l, user.id) } : x))
+      listings = listings.map((x) => (x.id === id ? { ...l, reports: reportedBy(l, requireUser(user).id) } : x))
       emit()
     },
     async remove(id) {
       const l = findListing(listings, id)
-      assertAuthor(l, user.id)
+      assertAuthor(l, requireUser(user).id)
       forget(l.media)
       listings = listings.filter((x) => x.id !== id)
       emit()

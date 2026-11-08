@@ -79,7 +79,7 @@ describe('게시 검사', () => {
 describe('신고·삭제·선수별 집계', () => {
   const now = 10 * 24 * 60 * 60 * 1000
   const post = (id: string, over: Partial<CommunityPost>): CommunityPost => ({
-    id, authorId: 'me', text: '', players: [], media: [], createdAt: now, likes: [], reports: [], masked: false, caution: false, ...over,
+    id, authorId: 'me', authorName: null, text: '', players: [], media: [], createdAt: now, likes: [], reports: [], masked: false, caution: false, ...over,
   })
   const kim = { id: 'demo:1' as PlayerId, name: '김도윤' }
   const lee = { id: 'demo:2' as PlayerId, name: '이하준' }

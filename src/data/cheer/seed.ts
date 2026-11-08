@@ -4,7 +4,7 @@ import type { CheerEvent, CheerMessage, RawHitter, RawPitcher } from '../types'
 import { DEMO_AUTHOR_ID } from '../types'
 
 /** 작성 시각은 "연 시각으로부터 얼마 전"(ageMs)으로 둔다 */
-export type SeedCheerMessage = Omit<CheerMessage, 'authorId' | 'createdAt' | 'reports'> & { ageMs: number }
+export type SeedCheerMessage = Omit<CheerMessage, 'authorId' | 'authorName' | 'createdAt' | 'reports'> & { ageMs: number }
 export type SeedCheer = Omit<CheerEvent, 'createdAt'> & { ageMs: number }
 export type CheerSeeds = { messages: SeedCheerMessage[]; cheers: SeedCheer[] }
 
@@ -67,7 +67,7 @@ export function demoCheerSeeds(league: { hitters: readonly RawHitter[]; pitchers
 /** 예시 메시지 → 저장할 메시지. 작성 시각은 지금 기준으로 다시 맞추고, 이미 쌓인 신고는 그대로 둔다 */
 export function seedToMessage(seed: SeedCheerMessage, now: number, existing?: CheerMessage): CheerMessage {
   return {
-    id: seed.id, playerId: seed.playerId, authorId: DEMO_AUTHOR_ID, text: seed.text,
+    id: seed.id, playerId: seed.playerId, authorId: DEMO_AUTHOR_ID, authorName: null, text: seed.text,
     createdAt: now - seed.ageMs, reports: existing?.reports ?? [], caution: seed.caution,
   }
 }

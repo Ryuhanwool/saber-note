@@ -23,7 +23,10 @@ const league = buildLeague(await getDataSource('demo').load())
 const kim = league.pool.H[0]
 const enc = encodeURIComponent
 
-function renderAt(path: string, repository: CommunityRepository = createMemoryCommunity()) {
+/** 로그인한 계정 (글에는 "나" 대신 닉네임이 보인다) */
+const ME = { id: 'acct:me', name: '수달팬' }
+
+function renderAt(path: string, repository: CommunityRepository = createMemoryCommunity({ user: ME })) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <LeagueProvider>
@@ -36,7 +39,7 @@ function renderAt(path: string, repository: CommunityRepository = createMemoryCo
 }
 
 const otherPost = (over: Partial<CommunityPost> = {}): CommunityPost => ({
-  id: 'p1', authorId: 'someone', text: `${kim.name} 오늘 수비 좋았다`, players: [kim.id], media: [],
+  id: 'p1', authorId: 'someone', authorName: '다른팬', text: `${kim.name} 오늘 수비 좋았다`, players: [kim.id], media: [],
   createdAt: Date.now() - 60_000, likes: [], reports: [], masked: false, caution: false, ...over,
 })
 
@@ -62,7 +65,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
     const feed = within(screen.getByLabelText('글 목록'))
     expect(feed.getByText(`${kim.name} 오늘 홈런`)).toBeTruthy()
     expect(feed.getByRole('button', { name: kim.name })).toBeTruthy() // 태그 칩
-    expect(feed.getByText('나')).toBeTruthy()
+    expect(feed.getByText('수달팬')).toBeTruthy() // "나" 대신 닉네임
   })
 
   it('차단 표현은 이유와 표현을 알려 주고 게시 버튼을 막는다 (띄어 쓴 우회 표현 포함)', async () => {

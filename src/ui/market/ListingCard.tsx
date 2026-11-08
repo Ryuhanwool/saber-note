@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import type { MarketListing } from '../../data/types'
 import { isHiddenByReports } from '../../domain/community/posts'
 import { CATEGORIES, won } from '../../domain/market/catalog'
-import { listingWarnings } from '../../domain/market/listing'
+import { listingWarnings, sellerLabel } from '../../domain/market/listing'
 import { listingPath } from './hooks'
 import { ListingPhoto } from './shared'
 
@@ -22,7 +22,7 @@ export default function ListingCard({ listing: l }: { listing: MarketListing }) 
         <ListingPhoto listing={l} />
       </Link>
       <div className="gbody">
-        <span className="muted" style={{ fontSize: '.8rem' }}>{CATEGORIES[l.category].label} · {l.condition} · {l.sellerName}</span>
+        <span className="muted" style={{ fontSize: '.8rem' }}>{CATEGORIES[l.category].label} · {l.condition} · {sellerLabel(l)}</span>
         <Link to={listingPath(l.id)}><b>{l.title}</b></Link>
         <span>{won(l.price)}{warn && <span className="tag caution">주의</span>}</span>
       </div>

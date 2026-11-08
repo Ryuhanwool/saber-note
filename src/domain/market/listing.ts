@@ -2,6 +2,7 @@
 import type { GoodsCategory, ItemCondition, MarketListing, PlayerId } from '../../data/types'
 import { moderate, type ModerationResult } from '../community/moderation'
 import { ambiguousMessage, autoTag, blockMessage, postWaitMs } from '../community/posts'
+import { authorLabel } from '../auth/account'
 import { CATEGORIES } from './catalog'
 
 export const CONDITIONS: ItemCondition[] = ['새 상품', '아주 좋음', '좋음', '사용감 있음']
@@ -168,6 +169,9 @@ export function prepareListing(
   }
   return { ok: true, title, text, players, price: d.price, caution: moderation.level === 'ambiguous', warnings }
 }
+
+/** 판매자 표시: 로그인 기능 전에 쓴 판매글은 「익명 팬」, 그 밖에는 쓸 때의 닉네임(예시 판매자 이름 포함) */
+export const sellerLabel = (l: Pick<MarketListing, 'authorId' | 'sellerName'>) => authorLabel({ authorId: l.authorId, authorName: l.sellerName }, l.sellerName)
 
 /** 이 선수 관련 판매글 (태그가 달렸거나 제목·설명에 이름이 나온다), 최신순 */
 export const playerListings = (listings: readonly MarketListing[], player: { id: PlayerId; name: string }) =>

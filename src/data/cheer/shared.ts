@@ -2,7 +2,9 @@
 import { AlreadyCheeredError } from '../source'
 import type { CheerEvent, CheerMessage, PlayerId } from '../types'
 
-export const newestMessagesFirst = (ms: readonly CheerMessage[]) => [...ms].sort((a, b) => b.createdAt - a.createdAt)
+/** 최신순. 닉네임 필드가 없던 예전 메시지는 null로 채운다 */
+export const newestMessagesFirst = (ms: readonly CheerMessage[]) =>
+  ms.map((m) => ({ ...m, authorName: m.authorName ?? null })).sort((a, b) => b.createdAt - a.createdAt)
 
 const sameDay = (a: number, b: number) => new Date(a).toDateString() === new Date(b).toDateString()
 

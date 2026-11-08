@@ -12,7 +12,7 @@ import type { SeedPost } from './community/seed'
 import { createBrowserSettings } from './settings/browser'
 import { createMemorySettings } from './settings/memory'
 import type { AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
-import type { LeagueId } from './types'
+import type { CommunityUser, LeagueId } from './types'
 import { demoSource } from './demo'
 
 // mlb(추가 1단계), kbo(데이터 확보 후)는 구현되면 여기에 등록한다.
@@ -28,13 +28,18 @@ export function getDataSource(league: LeagueId = DEFAULT_LEAGUE): LeagueDataSour
   return source
 }
 
+/*
+ * 커뮤니티·응원방·마켓 저장소의 user: 로그인한 계정({ id, name: 닉네임 }), 로그아웃 상태면 null.
+ * null이면 읽기만 되고 쓰기(글·응원·신고·판매글)는 '로그인이 필요합니다' 오류를 낸다.
+ */
+
 /**
  * 커뮤니티 저장소 열기. 지금은 브라우저 저장(IndexedDB)이고, 쓸 수 없으면(사생활 보호 모드 등) 메모리 저장으로 바꾼다.
  * Supabase 연결(7-2) 후에는 여기서 서버 저장소를 고른다.
  */
-export async function openCommunityRepository(opts: { seeds?: SeedPost[] } = {}): Promise<CommunityRepository> {
+export async function openCommunityRepository(opts: { seeds?: SeedPost[]; user?: CommunityUser | null } = {}): Promise<CommunityRepository> {
   if (typeof indexedDB !== 'undefined') {
-    const browser = createBrowserCommunity({ seeds: opts.seeds })
+    const browser = createBrowserCommunity({ seeds: opts.seeds, user: opts.user })
     try {
       await browser.currentUser() // 저장소를 실제로 열어 본다
       return browser
@@ -42,16 +47,16 @@ export async function openCommunityRepository(opts: { seeds?: SeedPost[] } = {})
       browser.close()
     }
   }
-  return createMemoryCommunity({ seeds: opts.seeds })
+  return createMemoryCommunity({ seeds: opts.seeds, user: opts.user })
 }
 
 /** 시연용 예시 글("데모 게시글")을 리그 기록으로 만든다 */
 export { demoCommunitySeeds, type SeedPost } from './community/seed'
 
 /** 선수 응원방 저장소 열기. 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
-export async function openCheerRepository(opts: { seeds?: CheerSeeds } = {}): Promise<CheerRepository> {
+export async function openCheerRepository(opts: { seeds?: CheerSeeds; user?: CommunityUser | null } = {}): Promise<CheerRepository> {
   if (typeof indexedDB !== 'undefined') {
-    const browser = createBrowserCheer({ seeds: opts.seeds })
+    const browser = createBrowserCheer({ seeds: opts.seeds, user: opts.user })
     try {
       await browser.currentUser() // 저장소를 실제로 열어 본다
       return browser
@@ -59,16 +64,16 @@ export async function openCheerRepository(opts: { seeds?: CheerSeeds } = {}): Pr
       browser.close()
     }
   }
-  return createMemoryCheer({ seeds: opts.seeds })
+  return createMemoryCheer({ seeds: opts.seeds, user: opts.user })
 }
 
 /** 시연용 예시 응원("데모 응원")을 리그 기록으로 만든다 */
 export { demoCheerSeeds, type CheerSeeds } from './cheer/seed'
 
 /** 굿즈 마켓 저장소 열기. 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
-export async function openMarketRepository(opts: { seeds?: SeedListing[] } = {}): Promise<MarketRepository> {
+export async function openMarketRepository(opts: { seeds?: SeedListing[]; user?: CommunityUser | null } = {}): Promise<MarketRepository> {
   if (typeof indexedDB !== 'undefined') {
-    const browser = createBrowserMarket({ seeds: opts.seeds })
+    const browser = createBrowserMarket({ seeds: opts.seeds, user: opts.user })
     try {
       await browser.currentUser() // 저장소를 실제로 열어 본다
       return browser
@@ -76,7 +81,7 @@ export async function openMarketRepository(opts: { seeds?: SeedListing[] } = {})
       browser.close()
     }
   }
-  return createMemoryMarket({ seeds: opts.seeds })
+  return createMemoryMarket({ seeds: opts.seeds, user: opts.user })
 }
 
 /** 시연용 예시 판매글을 리그 기록으로 만든다 */

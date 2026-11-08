@@ -43,7 +43,7 @@ export default function CheerMessageCard({ message, now }: { message: CheerMessa
   return (
     <article className="post">
       <header className="ph2">
-        <b>{authorName(message, me, '데모 응원')}</b>
+        <b>{authorName(message, '데모 응원')}</b>
         <span className="muted">{timeAgo(message.createdAt, now)}</span>
         {message.caution && <span className="tag caution" title="애매하다는 경고를 받고도 그대로 올린 응원이에요">주의</span>}
         {shown !== message.text && <span className="tag">일부 가림</span>}

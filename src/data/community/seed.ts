@@ -9,7 +9,7 @@ export type SeedMedia = MediaRef & { blob: Blob }
  * 예시 글 하나. 작성 시각은 고정값 대신 "연 시각으로부터 얼마 전"(ageMs)으로 둔다.
  * reports는 처음 상태의 신고 기록이다 (신고 시연용 글은 2번 쌓인 채로 시작).
  */
-export type SeedPost = Omit<CommunityPost, 'authorId' | 'createdAt' | 'likes' | 'media'> & {
+export type SeedPost = Omit<CommunityPost, 'authorId' | 'authorName' | 'createdAt' | 'likes' | 'media'> & {
   ageMs: number
   media: SeedMedia[]
 }
@@ -103,6 +103,7 @@ export function seedToPost(seed: SeedPost, now: number, existing?: CommunityPost
   return {
     id: seed.id,
     authorId: DEMO_AUTHOR_ID,
+    authorName: null,
     text: seed.text,
     players: seed.players,
     media: seed.media.map(({ id, kind, type, name }) => ({ id, kind, type, name })),

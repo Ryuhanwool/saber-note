@@ -204,6 +204,8 @@ export type CommunityUser = { id: string; name: string }
 export type CommunityPost = {
   id: string
   authorId: string
+  /** 쓸 때의 닉네임. 예시 글과 로그인 기능 전에 쓴 글은 null */
+  authorName: string | null
   /** 게시된 본문 (거친 표현은 이미 ●로 가려진 상태) */
   text: string
   /** 선수 태그 (직접 단 태그 + 본문 속 선수 이름 자동 태그) */
@@ -235,6 +237,8 @@ export type CheerMessage = {
   id: string
   playerId: PlayerId
   authorId: string
+  /** 쓸 때의 닉네임. 예시 응원과 로그인 기능 전에 쓴 메시지는 null */
+  authorName: string | null
   /** 원문 (거친 표현은 화면에 보일 때 가린다) */
   text: string
   createdAt: number

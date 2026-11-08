@@ -37,7 +37,7 @@ function renderApp(opts: { community?: CommunityRepository; settings?: SettingsS
 }
 
 const otherPost = (text: string, over: Partial<CommunityPost> = {}): CommunityPost => ({
-  id: crypto.randomUUID(), authorId: 'someone', text, players: [], media: [], createdAt: Date.now() - 60_000,
+  id: crypto.randomUUID(), authorId: 'someone', authorName: '다른팬', text, players: [], media: [], createdAt: Date.now() - 60_000,
   likes: [], reports: [], masked: false, caution: false, ...over,
 })
 const feed = () => within(screen.getByLabelText('글 목록'))

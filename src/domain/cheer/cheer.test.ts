@@ -12,7 +12,7 @@ const DAY = 24 * HOUR
 const ctx = { players, lastPostAt: null, now: NOW }
 
 const ev = (playerId: PlayerId, userId: string, ago: number, id = `${playerId}-${userId}-${ago}`): CheerEvent => ({ id, playerId, userId, createdAt: NOW - ago })
-const msg = (id: string, playerId: PlayerId, authorId: string, ago: number): CheerMessage => ({ id, playerId, authorId, text: '화이팅', createdAt: NOW - ago, reports: [], caution: false })
+const msg = (id: string, playerId: PlayerId, authorId: string, ago: number): CheerMessage => ({ id, playerId, authorId, authorName: null, text: '화이팅', createdAt: NOW - ago, reports: [], caution: false })
 
 describe('응원 메시지 검사 (커뮤니티와 같은 작성 제한)', () => {
   it('보통 응원은 그대로 통과한다', () => {
