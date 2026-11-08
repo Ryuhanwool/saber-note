@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { demoMarketSeeds, openMarketRepository } from '../../data/registry'
 import type { MarketRepository } from '../../data/source'
+import { useAuth } from '../auth/AuthContext'
 import { useLeagueState } from '../shared/LeagueContext'
 import { MarketContext, type MarketState } from './MarketContext'
 
@@ -15,26 +16,38 @@ export default function MarketProvider({ repository, children }: Props) {
   const [state, setState] = useState<MarketState>({ status: 'loading' })
   const leagueState = useLeagueState()
   const league = leagueState.status === 'ready' ? leagueState.league : null
+  // 로그인한 계정이 작성자가 된다. 로그인·로그아웃하면 그 계정으로 저장소를 다시 연다 (로그아웃 상태면 읽기만)
+  const auth = useAuth()
+  const authReady = auth.status !== 'loading'
+  const account = auth.status === 'ready' ? auth.account : null
+  const accountId = account?.id ?? null
+  const nickname = account?.nickname ?? null
+  /** 지금 열린 저장소가 어느 계정으로 열렸는지 (계정이 바뀌어 다시 여는 동안 예전 상태를 보여 주지 않으려고) */
+  const [openedFor, setOpenedFor] = useState<string | null | undefined>(undefined)
 
   useEffect(() => {
-    if (!repository && !league) return
+    if (!repository && (!league || !authReady)) return
     let alive = true
     let off: (() => void) | undefined
     let opened: MarketRepository | undefined
     ;(async () => {
       const seeds = league ? demoMarketSeeds({ hitters: league.hitters.map((p) => p.raw), pitchers: league.pitchers.map((p) => p.raw) }) : []
-      const repo = repository ?? (opened = await openMarketRepository({ seeds }))
+      const repo = repository ?? (opened = await openMarketRepository({ seeds, user: accountId && nickname ? { id: accountId, name: nickname } : null }))
       if (!alive) return
       off = repo.subscribe((snapshot) => alive && setState((s) => (s.status === 'ready' ? { ...s, snapshot } : s)))
       const [user, snapshot] = await Promise.all([repo.currentUser(), repo.snapshot()])
-      if (alive) setState({ status: 'ready', repo, user, snapshot })
+      if (!alive) return
+      setOpenedFor(accountId)
+      setState({ status: 'ready', repo, user, snapshot })
     })().catch((e: unknown) => alive && setState({ status: 'error', message: e instanceof Error ? e.message : String(e) }))
     return () => {
       alive = false
       off?.()
       opened?.close?.()
     }
-  }, [repository, league])
+  }, [repository, league, authReady, accountId, nickname])
 
-  return <MarketContext.Provider value={state}>{children}</MarketContext.Provider>
+  // 계정이 바뀌어 다시 여는 동안에는 불러오는 중 (예전 계정·로그아웃 상태를 보고 판단하지 않게)
+  const value = !repository && state.status === 'ready' && openedFor !== accountId ? { status: 'loading' as const } : state
+  return <MarketContext.Provider value={value}>{children}</MarketContext.Provider>
 }

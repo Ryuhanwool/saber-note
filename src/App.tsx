@@ -5,6 +5,8 @@ import PlayerPage from './ui/player/PlayerPage'
 import ComparePage from './ui/compare/ComparePage'
 import GamesPage from './ui/games/GamesPage'
 import CommunityPage from './ui/community/CommunityPage'
+import LoginPage from './ui/auth/LoginPage'
+import SignupPage from './ui/auth/SignupPage'
 import CheerRoomPage from './ui/cheer/CheerRoomPage'
 import CartPage from './ui/market/CartPage'
 import CheckoutPage from './ui/market/CheckoutPage'
@@ -23,6 +25,8 @@ export default function App() {
         <Route path="compare" element={<ComparePage />} />
         <Route path="games/:game?" element={<GamesPage />} />
         <Route path="community" element={<CommunityPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignupPage />} />
         <Route path="market" element={<StorePage />} />
         <Route path="market/fan" element={<FanMarketPage />} />
         <Route path="market/fan/:id" element={<ListingPage />} />

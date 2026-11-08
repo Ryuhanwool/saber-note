@@ -3,6 +3,7 @@ import { won } from '../../domain/market/catalog'
 import { playerListings, sellerLabel } from '../../domain/market/listing'
 import type { Player } from '../../domain/players'
 import { listingPath, sellPath } from './hooks'
+import { useRequireLogin } from '../auth/login'
 import { useMarket } from './MarketContext'
 import './market.css'
 
@@ -10,6 +11,7 @@ import './market.css'
 export default function PlayerMarket({ player }: { player: Player }) {
   const state = useMarket()
   const navigate = useNavigate()
+  const requireLogin = useRequireLogin()
   const list = state.status === 'ready' ? playerListings(state.snapshot.listings, player) : []
   return (
     <div className="panel" style={{ marginTop: 16 }} aria-label="이 선수 관련 상품">
@@ -24,7 +26,7 @@ export default function PlayerMarket({ player }: { player: Player }) {
         </div>
         <div className="row" style={{ gap: 8 }}>
           <button className="btn ghost" disabled={!list.length} onClick={() => navigate(`/market/fan?${new URLSearchParams({ player: player.id })}`)}>관련 상품 모두 보기</button>
-          <button className="btn" disabled={state.status !== 'ready'} onClick={() => navigate(sellPath(player.id))}>이 선수 상품 팔기</button>
+          <button className="btn" disabled={state.status !== 'ready'} onClick={() => requireLogin(state.status === 'ready' && state.user, { next: sellPath(player.id) }) && navigate(sellPath(player.id))}>이 선수 상품 팔기</button>
         </div>
       </div>
       {list.slice(0, 2).map((l) => (

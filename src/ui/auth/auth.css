@@ -1,0 +1,12 @@
+/* 로그인·회원가입 */
+.authbox{max-width:440px;margin:0 auto}
+.authbox h1{font-size:1.8rem;margin:0 0 12px}
+.authform{display:flex;flex-direction:column;gap:12px}
+.authform label{display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.authform input,.authform select{padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:1rem}
+.authform small{font-size:.78rem}
+.autherr{color:var(--seam);margin:0;font-size:.9rem}
+.author{text-align:center;color:var(--soft);font-size:.85rem;margin:12px 0 8px}
+.btn.wide{width:100%}
+.authnote{font-size:.8rem;margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.acct{display:inline-flex;gap:8px;align-items:center;font-size:.9rem;white-space:nowrap;padding-bottom:12px;color:var(--ink)}

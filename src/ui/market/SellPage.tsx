@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { StorageFullError } from '../../data/source'
 import type { GoodsCategory, ItemCondition, PlayerId } from '../../data/types'
 import { CATEGORIES } from '../../domain/market/catalog'
 import { checkPhotos, CONDITIONS, lastListingAt, MAX_LISTING_TEXT, MAX_PHOTOS, MAX_TITLE_LENGTH, PHOTO_TYPES, prepareListing } from '../../domain/market/listing'
+import { loginPath } from '../auth/login'
 import { useLeague } from '../shared/LeagueContext'
 import SearchBox from '../shared/SearchBox'
 import { SaleRules } from './FanMarketPage'
@@ -24,6 +25,7 @@ export default function SellPage() {
   const state = useMarket()
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  const { pathname, search } = useLocation()
   const initial = params.get('player') as PlayerId | null
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<GoodsCategory>('uniform')
@@ -44,6 +46,8 @@ export default function SellPage() {
 
   if (state.status !== 'ready') return <MarketStatus />
   const { repo, user, snapshot } = state
+  // 판매글 쓰기는 로그인이 필요하다 (주소로 바로 들어와도 로그인 화면으로)
+  if (!user) return <Navigate to={loginPath(pathname + search)} replace />
   const players = [...league.hitters, ...league.pitchers]
   const edited = <T,>(set: (v: T) => void) => (v: T) => {
     set(v)

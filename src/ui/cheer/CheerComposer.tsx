@@ -4,6 +4,7 @@ import { lastMessageAt, MAX_CHEER_LENGTH, prepareCheerMessage } from '../../doma
 import { moderate } from '../../domain/community/moderation'
 import { ambiguousMessage, blockMessage } from '../../domain/community/posts'
 import { useLeague } from '../shared/LeagueContext'
+import { takeDraft, useRequireLogin } from '../auth/login'
 import { useCheer } from './CheerContext'
 
 /** 늘 보이는 저장 위치 안내 (시연용이라 서버에 저장하지 않는다) */
@@ -19,7 +20,8 @@ const currentTime = () => Date.now()
 export default function CheerComposer({ playerId, playerName }: { playerId: PlayerId; playerName: string }) {
   const league = useLeague()
   const state = useCheer()
-  const [text, setText] = useState('')
+  const requireLogin = useRequireLogin()
+  const [text, setText] = useState(() => takeDraft(`cheer:${playerId}`))
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState<{ text: string; warn: boolean } | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
@@ -29,10 +31,10 @@ export default function CheerComposer({ playerId, playerName }: { playerId: Play
   const { repo, user, snapshot } = state
   const players = [...league.hitters, ...league.pitchers]
   const mod = moderate(text, { names: players.map((p) => p.name) })
-  const canPost = !busy && user !== null && mod.level !== 'block' && text.trim() !== ''
+  const canPost = !busy && mod.level !== 'block' && text.trim() !== ''
 
   async function submit(confirmAmbiguous = false) {
-    if (!user) return
+    if (!requireLogin(user, { draft: { key: `cheer:${playerId}`, text } }) || !user) return
     const prepared = prepareCheerMessage({ text, confirmAmbiguous }, { players, lastPostAt: lastMessageAt(snapshot.messages, user.id), now: currentTime() })
     if (!prepared.ok) {
       if (prepared.reason === 'needs-confirm') setWarning(prepared.message)

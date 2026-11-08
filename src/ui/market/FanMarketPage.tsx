@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import type { PlayerId } from '../../data/types'
 import { playerListings, SALE_RULES } from '../../domain/market/listing'
 import { useLeague } from '../shared/LeagueContext'
+import { useRequireLogin } from '../auth/login'
 import { sellPath } from './hooks'
 import ListingCard from './ListingCard'
 import { useMarket } from './MarketContext'
@@ -24,6 +25,7 @@ export default function FanMarketPage() {
   const state = useMarket()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
+  const requireLogin = useRequireLogin()
   const player = league.byId.get(params.get('player') as PlayerId)
   const all = state.status === 'ready' ? state.snapshot.listings : []
   const list = player ? playerListings(all, player) : all
@@ -36,7 +38,7 @@ export default function FanMarketPage() {
       <div className="comm" style={{ marginTop: 12 }}>
         <div>
           <div className="filters" style={{ marginTop: 0 }}>
-            <button className="btn" onClick={() => navigate(sellPath(player?.id))}>판매글 쓰기</button>
+            <button className="btn" onClick={() => requireLogin(state.status === 'ready' && state.user, { next: sellPath(player?.id) }) && navigate(sellPath(player?.id))}>판매글 쓰기</button>
             {player && <button className="chip" aria-pressed="true" onClick={() => setParams(new URLSearchParams())}>{player.name} 관련 상품 ✕</button>}
           </div>
           <div className="ggrid" aria-label="판매글 목록">

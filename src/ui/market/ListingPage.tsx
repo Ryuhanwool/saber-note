@@ -9,6 +9,7 @@ import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
 import { useNow } from '../shared/useNow'
 import { useMarket } from './MarketContext'
+import { useRequireLogin } from '../auth/login'
 import { useAddToCart } from './hooks'
 import { ListingPhoto, MarketNav, MarketStatus } from './shared'
 import './market.css'
@@ -24,6 +25,7 @@ export default function ListingPage() {
   const now = useNow()
   const { id } = useParams()
   const [armed, setArmed] = useState<'report' | 'delete' | null>(null)
+  const requireLogin = useRequireLogin()
   const [note, setNote] = useState<{ text: string; warn: boolean } | null>(null)
   const listing = state.status === 'ready' ? state.snapshot.listings.find((l) => l.id === id) : undefined
   const text = useShownText(listing ?? { text: '', caution: false })
@@ -93,7 +95,7 @@ export default function ListingPage() {
             <button className="btn" disabled={!canBuyListing(l, me) || added} onClick={() => run(() => add(line), '장바구니에 담았어요.')}>
               {l.authorId === me ? '내 판매글이에요' : added ? '장바구니에 있어요' : '장바구니에 담기'}
             </button>
-            <button className="btn ghost" disabled={!canReport(l, me)} onClick={() => (armed === 'report' ? (setArmed(null), run(() => repo.report(l.id), '신고했어요.')) : setArmed('report'))}>
+            <button className="btn ghost" disabled={me !== null && !canReport(l, me)} onClick={() => requireLogin(me) && (armed === 'report' ? (setArmed(null), run(() => repo.report(l.id), '신고했어요.')) : setArmed('report'))}>
               {me !== null && l.reports.includes(me) ? '신고함' : armed === 'report' ? `한 번 더 누르면 신고 (${REPORT_HIDE_THRESHOLD}번 쌓이면 가려져요)` : '신고'}
             </button>
             {canDelete(l, me) && (

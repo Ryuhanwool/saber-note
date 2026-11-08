@@ -7,6 +7,9 @@ import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { createMemoryAuth } from './data/auth/memory'
+import { DEMO_ACCOUNT_ID, DEMO_ACCOUNT_NICKNAME } from './data/types'
+import AuthProvider from './ui/auth/AuthProvider'
 import { getDataSource } from './data/registry'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
@@ -18,13 +21,18 @@ URL.revokeObjectURL = () => {}
 const ds = await getDataSource('demo').load()
 const slugger = ds.hitters.reduce((a, b) => (b.HR > a.HR ? b : a))
 
+/** 데모 계정으로 로그인한 상태 (글쓰기·신고·응원은 로그인이 필요하다) */
+const signedInDemo = () => createMemoryAuth({ signedIn: { id: DEMO_ACCOUNT_ID, nickname: DEMO_ACCOUNT_NICKNAME, team: null, createdAt: 0 } })
+
 function renderApp(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <LeagueProvider>
-        <CommunityProvider>
-          <App />
-        </CommunityProvider>
+        <AuthProvider repository={signedInDemo()}>
+          <CommunityProvider>
+            <App />
+          </CommunityProvider>
+        </AuthProvider>
       </LeagueProvider>
     </MemoryRouter>,
   )
@@ -109,7 +117,7 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
 
     await user.click(screen.getByRole('button', { name: '시연 데이터 초기화' }))
     await user.click(screen.getByRole('button', { name: '초기화' }))
-    expect(await screen.findByText('시연 데이터를 처음 상태로 되돌렸어요.')).toBeTruthy()
+    expect(await screen.findByText(/^시연 데이터를 처음 상태로 되돌렸어요/)).toBeTruthy()
     expect(feed().queryByText('시연 중에 쓴 글')).toBeNull()
     expect(feed().queryByRole('button', { name: '좋아요 1' })).toBeNull()
     expect(feed().queryByText(/신고가 누적돼 가려진 글이에요/)).toBeNull()

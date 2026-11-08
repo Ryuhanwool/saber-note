@@ -232,7 +232,7 @@ describe('응원방 연동과 시연 데이터 (앱이 여는 브라우저 저�
     const confirm = within(screen.getByRole('alertdialog', { name: '초기화 확인' }))
     expect(confirm.getByText(/판매글과 장바구니/)).toBeTruthy()
     await user.click(confirm.getByRole('button', { name: '초기화' }))
-    await screen.findByText('시연 데이터를 처음 상태로 되돌렸어요.')
+    await screen.findByText(/^시연 데이터를 처음 상태로 되돌렸어요/)
     await user.click(screen.getByRole('link', { name: '마켓' }))
     expect(await screen.findByRole('link', { name: '장바구니 0' })).toBeTruthy()
   })

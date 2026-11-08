@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import BackgroundLayer from '../settings/BackgroundLayer'
+import AccountMenu from '../auth/AccountMenu'
 import SettingsButton from '../settings/SettingsButton'
 import { useLeagueState } from './LeagueContext'
 
@@ -35,6 +36,7 @@ export default function Layout() {
               </Link>
             ))}
           </nav>
+          <AccountMenu />
           <SettingsButton />
         </div>
       </header>

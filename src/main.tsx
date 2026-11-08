@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import App from './App'
+import AuthProvider from './ui/auth/AuthProvider'
 import CheerProvider from './ui/cheer/CheerProvider'
 import CommunityProvider from './ui/community/CommunityProvider'
 import MarketProvider from './ui/market/MarketProvider'
@@ -15,13 +16,15 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <SettingsProvider>
         <LeagueProvider>
-          <CommunityProvider>
-            <CheerProvider>
-              <MarketProvider>
-                <App />
-              </MarketProvider>
-            </CheerProvider>
-          </CommunityProvider>
+          <AuthProvider>
+            <CommunityProvider>
+              <CheerProvider>
+                <MarketProvider>
+                  <App />
+                </MarketProvider>
+              </CheerProvider>
+            </CommunityProvider>
+          </AuthProvider>
         </LeagueProvider>
       </SettingsProvider>
     </BrowserRouter>

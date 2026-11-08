@@ -6,6 +6,7 @@ import { ACCEPTED_TYPES, ambiguousMessage, blockMessage, checkFiles, MAX_FILES, 
 import type { MediaKind } from '../../data/types'
 import { useLeague } from '../shared/LeagueContext'
 import SearchBox from '../shared/SearchBox'
+import { takeDraft, useRequireLogin } from '../auth/login'
 import { useCommunity } from './CommunityContext'
 
 type DraftFile = { file: File; kind: MediaKind; preview: string }
@@ -27,7 +28,9 @@ const revoke = (f: DraftFile) => f.preview && URL.revokeObjectURL(f.preview)
 export default function Composer({ initialTags = [], autoFocus = false }: { initialTags?: PlayerId[]; autoFocus?: boolean }) {
   const league = useLeague()
   const state = useCommunity()
-  const [text, setText] = useState('')
+  const requireLogin = useRequireLogin()
+  // 로그인하러 갔다 오면 써 두던 글자를 다시 채운다
+  const [text, setText] = useState(() => takeDraft('community'))
   const [tags, setTags] = useState<PlayerId[]>(initialTags)
   const [files, setFiles] = useState<DraftFile[]>([])
   const [busy, setBusy] = useState(false)
@@ -50,7 +53,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
   const { repo, user, posts } = state
   const players = [...league.hitters, ...league.pitchers]
   const mod = moderate(text, { names: players.map((p) => p.name) })
-  const canPost = !busy && user !== null && mod.level !== 'block' && (text.trim() !== '' || files.length > 0)
+  const canPost = !busy && mod.level !== 'block' && (text.trim() !== '' || files.length > 0)
 
   function addFiles(list: File[]) {
     const { accepted, errors } = checkFiles(files.length, list)
@@ -64,7 +67,7 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
   }
 
   async function submit(confirmAmbiguous = false) {
-    if (!user) return
+    if (!requireLogin(user, { draft: { key: 'community', text } }) || !user) return
     // 도배 제한: 이 사용자가 마지막으로 올린 글 시각 (새로고침해도 저장소에서 알 수 있다)
     const mine = posts.filter((p) => p.authorId === user.id)
     const lastPostAt = mine.length ? Math.max(...mine.map((p) => p.createdAt)) : null

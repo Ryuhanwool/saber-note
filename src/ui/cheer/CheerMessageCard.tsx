@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { CheerMessage } from '../../data/types'
 import { canDelete, canReport, isHiddenByReports, REPORT_HIDE_THRESHOLD, timeAgo } from '../../domain/community/posts'
 import { authorName, useShownText } from '../community/labels'
+import { useRequireLogin } from '../auth/login'
 import { useCheer } from './CheerContext'
 
 const CONFIRM_MS = 4000
@@ -13,6 +14,7 @@ export default function CheerMessageCard({ message, now }: { message: CheerMessa
   const [armed, setArmed] = useState<'report' | 'delete' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const shown = useShownText(message)
+  const requireLogin = useRequireLogin()
 
   useEffect(() => {
     if (!armed) return
@@ -51,8 +53,8 @@ export default function CheerMessageCard({ message, now }: { message: CheerMessa
       <p className="ptext">{shown}</p>
       <footer className="pact">
         <button
-          disabled={!canReport(message, me)}
-          onClick={() => (armed === 'report' ? (setArmed(null), run(() => repo.report(message.id))) : setArmed('report'))}
+          disabled={me !== null && !canReport(message, me)}
+          onClick={() => requireLogin(me) && (armed === 'report' ? (setArmed(null), run(() => repo.report(message.id))) : setArmed('report'))}
         >
           {reported ? '신고함' : armed === 'report' ? `한 번 더 누르면 신고 (${REPORT_HIDE_THRESHOLD}번 쌓이면 가려져요)` : '신고'}
         </button>

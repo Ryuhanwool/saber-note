@@ -9,6 +9,7 @@ import PlayerMarket from '../market/PlayerMarket'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath, positionLabel } from '../shared/labels'
 import { useNow } from '../shared/useNow'
+import { useRequireLogin } from '../auth/login'
 import { useCheer } from './CheerContext'
 import CheerComposer from './CheerComposer'
 import CheerMessageCard from './CheerMessageCard'
@@ -22,6 +23,7 @@ function CheerBox({ player }: { player: Player }) {
   const now = useNow()
   const [note, setNote] = useState<{ text: string; warn: boolean } | null>(null)
   const [busy, setBusy] = useState(false)
+  const requireLogin = useRequireLogin()
   if (state.status === 'loading') return <p className="muted">응원 기록을 불러오는 중이에요.</p>
   if (state.status === 'error') return <p className="muted" role="alert">응원방을 열지 못했어요. {state.message}</p>
   const { repo, user, snapshot } = state
@@ -29,6 +31,7 @@ function CheerBox({ player }: { player: Player }) {
   const done = user !== null && cheeredToday(snapshot.cheers, player.id, user.id, now)
 
   async function cheer() {
+    if (!requireLogin(user)) return
     setBusy(true)
     try {
       await repo.cheer(player.id)
@@ -42,7 +45,7 @@ function CheerBox({ player }: { player: Player }) {
 
   return (
     <div className="cheerbox">
-      <button className="btn cheerbtn" disabled={busy || done || user === null} onClick={() => void cheer()}>
+      <button className="btn cheerbtn" disabled={busy || done} onClick={() => void cheer()}>
         {done ? '오늘 응원했어요' : '📣 응원하기'}
       </button>
       <div>

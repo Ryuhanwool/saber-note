@@ -4,6 +4,7 @@ import { demoOrderNumber, summarizeCart, type CartSummary } from '../../domain/m
 import { won } from '../../domain/market/catalog'
 import { DemoPaymentNotice, Totals } from './CartPage'
 import { useMarket } from './MarketContext'
+import { useRequireLogin } from '../auth/login'
 import { useCatalog } from './hooks'
 import { MarketNav, MarketStatus } from './shared'
 import './market.css'
@@ -37,11 +38,13 @@ export default function CheckoutPage() {
   const catalog = useCatalog()
   const navigate = useNavigate()
   const [done, setDone] = useState<{ number: string; summary: CartSummary } | null>(null)
+  const requireLogin = useRequireLogin()
   if (state.status !== 'ready') return <MarketStatus />
   const { repo, user, snapshot } = state
   const summary = summarizeCart(snapshot.cart, catalog, snapshot.listings, user?.id ?? null)
 
   async function order() {
+    if (!requireLogin(user)) return
     const number = demoOrderNumber(Date.now(), Math.random())
     await repo.saveCart([])
     setDone({ number, summary })

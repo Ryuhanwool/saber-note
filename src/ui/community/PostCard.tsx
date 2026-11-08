@@ -4,6 +4,7 @@ import type { CommunityPost } from '../../data/types'
 import { canDelete, canReport, isHiddenByReports, REPORT_HIDE_THRESHOLD, timeAgo } from '../../domain/community/posts'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
+import { useRequireLogin } from '../auth/login'
 import { useCommunity } from './CommunityContext'
 import { authorName, useShownText } from './labels'
 import PostMedia from './PostMedia'
@@ -19,6 +20,7 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
   const [armed, setArmed] = useState<'report' | 'delete' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const shown = useShownText(post)
+  const requireLogin = useRequireLogin()
 
   // 한 번 누른 뒤 4초 안에 다시 누르지 않으면 원래대로
   useEffect(() => {
@@ -68,10 +70,10 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
         </div>
       )}
       <footer className="pact">
-        <button aria-pressed={liked} disabled={me === null} onClick={() => run(() => repo.toggleLike(post.id))}>좋아요 {post.likes.length}</button>
+        <button aria-pressed={liked} onClick={() => requireLogin(me) && run(() => repo.toggleLike(post.id))}>좋아요 {post.likes.length}</button>
         <button
-          disabled={!canReport(post, me)}
-          onClick={() => (armed === 'report' ? (setArmed(null), run(() => repo.report(post.id))) : setArmed('report'))}
+          disabled={me !== null && !canReport(post, me)}
+          onClick={() => requireLogin(me) && (armed === 'report' ? (setArmed(null), run(() => repo.report(post.id))) : setArmed('report'))}
         >
           {reported ? '신고함' : armed === 'report' ? `한 번 더 누르면 신고 (${REPORT_HIDE_THRESHOLD}번 쌓이면 가려져요)` : '신고'}
         </button>

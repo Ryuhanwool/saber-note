@@ -7,6 +7,9 @@ import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { createMemoryAuth } from './data/auth/memory'
+import { DEMO_ACCOUNT_ID, DEMO_ACCOUNT_NICKNAME } from './data/types'
+import AuthProvider from './ui/auth/AuthProvider'
 import { createMemoryCheer } from './data/cheer/memory'
 import { demoCheerSeeds } from './data/cheer/seed'
 import { createMemoryCommunity } from './data/community/memory'
@@ -28,16 +31,21 @@ const ace = [...ds.pitchers].sort((a, b) => b.SO - a.SO)[0]
 const enc = encodeURIComponent
 const sluggerTotal = seeds.cheers.filter((c) => c.playerId === slugger.id).length // 34 (이번 주 14)
 
+/** 데모 계정으로 로그인한 상태 (글쓰기·신고·응원은 로그인이 필요하다) */
+const signedInDemo = () => createMemoryAuth({ signedIn: { id: DEMO_ACCOUNT_ID, nickname: DEMO_ACCOUNT_NICKNAME, team: null, createdAt: 0 } })
+
 /** 저장소를 넣지 않으면 앱이 여는 그대로 (registry → 브라우저 저장소 + 예시 글·예시 응원) */
 function renderAt(path: string, cheer?: CheerRepository) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <LeagueProvider>
-        <CommunityProvider repository={cheer ? createMemoryCommunity() : undefined}>
-          <CheerProvider repository={cheer}>
-            <App />
-          </CheerProvider>
-        </CommunityProvider>
+        <AuthProvider repository={signedInDemo()}>
+          <CommunityProvider repository={cheer ? createMemoryCommunity() : undefined}>
+            <CheerProvider repository={cheer}>
+              <App />
+            </CheerProvider>
+          </CommunityProvider>
+        </AuthProvider>
       </LeagueProvider>
     </MemoryRouter>,
   )
