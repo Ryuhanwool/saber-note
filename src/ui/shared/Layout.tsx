@@ -36,8 +36,10 @@ export default function Layout() {
               </Link>
             ))}
           </nav>
-          <AccountMenu />
-          <SettingsButton />
+          <div className="bar-end">
+            <AccountMenu />
+            <SettingsButton />
+          </div>
         </div>
       </header>
       {state.status === 'ready' && state.league.meta.notice && <p className="notice">{state.league.meta.notice}</p>}

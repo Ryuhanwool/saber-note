@@ -1,7 +1,7 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_DISPLAY_SETTINGS } from '../types'
-import { createBrowserSettings, SETTINGS_KEY } from './browser'
+import { createBrowserSettings, SETTINGS_KEY, SETTINGS_VERSION } from './browser'
 import { createMemorySettings } from './memory'
 import { normalizeSettings } from './shared'
 
@@ -22,7 +22,7 @@ describe('설정 값 정리', () => {
   it('없거나 망가진 값은 기본값으로, 알맞은 값만 남긴다', () => {
     expect(normalizeSettings(null)).toEqual(DEFAULT_DISPLAY_SETTINGS)
     expect(normalizeSettings({ themeId: 'navy-gold', decorations: 'yes', extra: 1 })).toEqual({ ...DEFAULT_DISPLAY_SETTINGS, themeId: 'navy-gold' })
-    expect(DEFAULT_DISPLAY_SETTINGS).toEqual({ themeId: 'default', decorations: true, maskProfanity: true })
+    expect(DEFAULT_DISPLAY_SETTINGS).toEqual({ themeId: 'default', decorations: false, maskProfanity: true }) // 장식 기본값은 꺼짐
   })
 })
 
@@ -63,5 +63,17 @@ describe('메모리 설정 저장소', () => {
     expect((await repo.load()).themeId).toBe('navy-red')
     await repo.saveBackground(new Blob(['x'], { type: 'image/png' }))
     expect(await repo.loadBackground()).not.toBeNull()
+  })
+})
+
+describe('저장 형식 버전 (장식 기본값을 꺼짐으로 바꾼 뒤)', () => {
+  it('버전이 없는 예전 값은 장식만 새 기본값(꺼짐)으로, 새로 저장한 값은 그대로', async () => {
+    const storage = fakeStorage()
+    storage.setItem(SETTINGS_KEY, JSON.stringify({ themeId: 'navy-gold', decorations: true, maskProfanity: false }))
+    const store = createBrowserSettings({ indexedDB: new IDBFactory(), storage })
+    expect(await store.load()).toEqual({ themeId: 'navy-gold', decorations: false, maskProfanity: false })
+    await store.save({ themeId: 'navy-gold', decorations: true, maskProfanity: false })
+    expect(JSON.parse(storage.getItem(SETTINGS_KEY)!)).toMatchObject({ v: SETTINGS_VERSION, decorations: true })
+    expect((await store.load()).decorations).toBe(true)
   })
 })

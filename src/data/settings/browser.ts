@@ -3,6 +3,11 @@ import { StorageFullError, type SettingsStore } from '../source'
 import { normalizeSettings } from './shared'
 
 export const SETTINGS_KEY = 'saber-note-settings'
+/**
+ * 저장 형식 버전. 2: 야구 소품 장식 기본값을 꺼짐으로 바꿨다 (2026-11-08).
+ * 버전이 없는 예전 값은 장식 기본값이 켜짐이던 때 통째로 저장된 것이라, 장식만 새 기본값(꺼짐)으로 돌린다.
+ */
+export const SETTINGS_VERSION = 2
 export const SETTINGS_DB = 'saber-note-settings'
 const IMAGE_KEY = 'background'
 
@@ -41,14 +46,16 @@ export function createBrowserSettings(opts: { indexedDB?: IDBFactory; storage?: 
 
     async load() {
       try {
-        return normalizeSettings(JSON.parse(storage.getItem(SETTINGS_KEY) ?? 'null'))
+        const raw = JSON.parse(storage.getItem(SETTINGS_KEY) ?? 'null') as Record<string, unknown> | null
+        if (raw && typeof raw === 'object' && raw.v !== SETTINGS_VERSION) delete raw.decorations
+        return normalizeSettings(raw)
       } catch {
         return normalizeSettings(null) // 망가진 값이면 기본값
       }
     },
 
     async save(settings) {
-      storage.setItem(SETTINGS_KEY, JSON.stringify(normalizeSettings(settings)))
+      storage.setItem(SETTINGS_KEY, JSON.stringify({ ...normalizeSettings(settings), v: SETTINGS_VERSION }))
     },
 
     async loadBackground() {

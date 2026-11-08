@@ -1,4 +1,4 @@
-// 응원 팀 배경: 팀 컬러 테마 목록과 배경을 꾸몄을 때의 읽기 기준.
+// 응원 팀 배경: 팀 컬러 테마 목록과 배경을 꾸몄을 때의 읽기 기준 (테마 배경색은 surface.ts).
 // KBO 구단 대표 색 조합을 참고했지만, 이름은 색 이름만 쓰고 구단 이름·로고·마스코트는 쓰지 않는다.
 
 export type ThemeId =
@@ -34,16 +34,19 @@ export const DEFAULT_THEME_ID: ThemeId = 'default'
 export const findTheme = (id: string): Theme => THEMES.find((t) => t.id === id) ?? THEMES[0]
 
 /**
- * 배경(팀 색·내 사진·장식)을 깔았을 때 그 위에 덮는 반투명 막의 불투명도.
+ * 내 사진이나 장식을 깔았을 때 그 위에 덮는 반투명 막의 불투명도 (팀 테마 배경만일 때는 막을 깔지 않는다).
  * ui/shared/tokens.css의 --bg-overlay와 같은 값이어야 한다 (ui 테스트에서 확인).
  */
 export const OVERLAY_OPACITY = 0.85
 
 /**
- * 배경을 꾸몄을 때 쓰는 보조 글자색. 막 아래 배경이 아주 어둡거나 밝아도 4.5:1을 지키도록 기본 보조색보다 진하게(다크는 밝게).
+ * 막을 깔았을 때(내 사진·장식) 쓰는 보조 글자색. 막 아래 배경이 아주 어둡거나 밝아도 4.5:1을 지키도록 기본 보조색보다 진하게(다크는 밝게).
  * ui/shared/tokens.css의 [data-bg="on"] --soft와 같은 값이어야 한다.
  */
 export const SOFT_ON_BACKGROUND = { light: '#46505E', dark: '#B0BAC6' }
+
+/** 막이 없을 때의 보조 글자색 (ui/shared/tokens.css의 기본 --soft와 같은 값) */
+export const BASE_SOFT = { light: '#5A6676', dark: '#97A3B1' }
 
 /** 테마와 무관한 바탕색 (ui/shared/tokens.css와 같은 값) */
 export const BASE_COLORS = {

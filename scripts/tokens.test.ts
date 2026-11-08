@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { BASE_COLORS, OVERLAY_OPACITY, SOFT_ON_BACKGROUND, THEMES } from '../src/domain/theme/themes.ts'
+import { BASE_COLORS, BASE_SOFT, OVERLAY_OPACITY, SOFT_ON_BACKGROUND, THEMES } from '../src/domain/theme/themes.ts'
 
 const css = readFileSync(resolve(import.meta.dirname, '../src/ui/shared/tokens.css'), 'utf8')
 
@@ -23,5 +23,17 @@ describe('tokens.css와 domain/theme 값이 같다', () => {
       const { paper, surface, ink } = BASE_COLORS[mode]
       expect(css).toContain(`--paper: ${paper}; --surface: ${surface}; --ink: ${ink};`)
     }
+  })
+  it('막이 없을 때의 보조 글자색 (라이트·다크)', () => {
+    expect(css).toContain(`--ink: ${BASE_COLORS.light.ink}; --soft: ${BASE_SOFT.light};`)
+    expect(css).toContain(`--ink: ${BASE_COLORS.dark.ink}; --soft: ${BASE_SOFT.dark};`)
+  })
+  it('화면 배경은 팀 테마 배경색 변수를 읽고, 없으면 바탕색 (바둑판 무늬 없음)', () => {
+    expect(css).toContain('--bg-top: var(--team-bg-light-top, var(--paper)); --bg-bottom: var(--team-bg-light-bottom, var(--paper));')
+    expect(css.match(/--bg-top: var\(--team-bg-dark-top, var\(--paper\)\); --bg-bottom: var\(--team-bg-dark-bottom, var\(--paper\)\);/g)).toHaveLength(2)
+    for (const file of ['tokens.css', 'base.css']) {
+      expect(readFileSync(resolve(import.meta.dirname, '../src/ui/shared', file), 'utf8')).not.toContain('--grid')
+    }
+    expect(readFileSync(resolve(import.meta.dirname, '../src/ui/settings/settings.css'), 'utf8')).not.toContain('--grid')
   })
 })

@@ -3,12 +3,16 @@ import { openSettingsStore } from '../../data/registry'
 import { StorageFullError, type SettingsStore } from '../../data/source'
 import { DEFAULT_DISPLAY_SETTINGS, type DisplaySettings } from '../../data/types'
 import { checkBackgroundImage } from '../../domain/theme/background'
+import { themeBackground } from '../../domain/theme/surface'
 import { DEFAULT_THEME_ID, findTheme } from '../../domain/theme/themes'
 import { hasBackground, SettingsContext, type SettingsValue } from './SettingsContext'
 
 const toUrl = (blob: Blob | null) => (blob && typeof URL.createObjectURL === 'function' ? URL.createObjectURL(blob) : null)
 
 /** 화면 설정을 불러오고, 테마 강조색과 배경 여부를 문서 루트(:root)에 반영한다 */
+/** 팀 테마가 :root에 넣는 CSS 변수 (기본 테마면 모두 지운다) */
+const TEAM_VARS = ['--team-accent-light', '--team-accent-dark', '--team-bg-light-top', '--team-bg-light-bottom', '--team-bg-dark-top', '--team-bg-dark-bottom']
+
 export default function SettingsProvider({ store: given, children }: { store?: SettingsStore; children: ReactNode }) {
   const [store, setStore] = useState<SettingsStore | null>(given ?? null)
   const [settings, setSettings] = useState<DisplaySettings>(DEFAULT_DISPLAY_SETTINGS)
@@ -35,21 +39,26 @@ export default function SettingsProvider({ store: given, children }: { store?: S
     if (backgroundUrl) URL.revokeObjectURL?.(backgroundUrl)
   }, [backgroundUrl])
 
-  // 테마 강조색과 배경 여부를 :root에 반영 (tokens.css가 --team-accent-*, data-bg를 읽는다)
+  // 테마 강조색·배경색과 막 여부를 :root에 반영 (tokens.css가 --team-accent-*, --team-bg-*, data-bg를 읽는다)
   useEffect(() => {
     const root = document.documentElement
     const theme = findTheme(settings.themeId)
-    if (theme.id === DEFAULT_THEME_ID) {
-      root.style.removeProperty('--team-accent-light')
-      root.style.removeProperty('--team-accent-dark')
-    } else {
-      root.style.setProperty('--team-accent-light', theme.accent.light)
-      root.style.setProperty('--team-accent-dark', theme.accent.dark)
+    const bg = themeBackground(theme)
+    const vars: Record<string, string> =
+      theme.id === DEFAULT_THEME_ID || !bg
+        ? {}
+        : {
+            '--team-accent-light': theme.accent.light, '--team-accent-dark': theme.accent.dark,
+            '--team-bg-light-top': bg.light.top, '--team-bg-light-bottom': bg.light.bottom,
+            '--team-bg-dark-top': bg.dark.top, '--team-bg-dark-bottom': bg.dark.bottom,
+          }
+    for (const name of TEAM_VARS) {
+      if (vars[name]) root.style.setProperty(name, vars[name])
+      else root.style.removeProperty(name)
     }
     root.dataset.bg = hasBackground(settings, backgroundUrl) ? 'on' : 'off'
     return () => {
-      root.style.removeProperty('--team-accent-light')
-      root.style.removeProperty('--team-accent-dark')
+      for (const name of TEAM_VARS) root.style.removeProperty(name)
       delete root.dataset.bg
     }
   }, [settings, backgroundUrl])

@@ -3,9 +3,7 @@
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
-  margin:0;color:var(--ink);background-color:var(--paper);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:24px 24px;
+  margin:0;color:var(--ink);background-color:var(--bg-bottom);
   font-family:var(--font-body);
   font-size:16px;line-height:1.6;font-variant-numeric:tabular-nums;
 }
@@ -16,15 +14,25 @@ button,input,select{font:inherit;color:inherit}
 
 /* 상단 메뉴 — 데모의 nav button을 링크(a)로 바꿨다 */
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.bar{max-width:1040px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
-.brand{font-size:1.5rem;line-height:1;padding-bottom:12px}
+/* 넓은 화면: 로고 · 메뉴 · (오른쪽 끝) 로그인·설정이 한 줄. 휴대폰 폭에서만 메뉴가 둘째 줄로 내려간다 */
+.bar{max-width:1040px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:flex-end;gap:24px;flex-wrap:nowrap}
+.bar-end{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none;padding-bottom:8px}
+.brand{font-size:1.5rem;line-height:1;padding-bottom:12px;flex:none;white-space:nowrap}
 .brand small{font-family:var(--font-body);font-size:.75rem;color:var(--soft);margin-left:8px;font-weight:500}
 nav{display:flex;gap:4px}
+nav a{flex:none;white-space:nowrap}
 nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
 nav a[aria-current="page"]{color:var(--ink);font-weight:700}
 nav a[aria-current="page"]::after{
   content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:4px;
   background:repeating-linear-gradient(90deg,var(--seam) 0 6px,transparent 6px 10px);
+}
+/* 휴대폰 폭: 첫 줄은 로고 · 로그인·설정, 둘째 줄에 메뉴 (넘치면 가로로 밀어 본다) */
+@media (max-width:720px){
+  .bar{flex-wrap:wrap;row-gap:4px;padding-top:8px}
+  .bar-end{padding-bottom:4px}
+  nav{order:3;flex-basis:100%;min-width:0;overflow-x:auto;scrollbar-width:none}
+  nav a[aria-current="page"]::after{bottom:0}
 }
 .notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
 

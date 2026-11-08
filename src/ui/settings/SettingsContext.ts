@@ -20,6 +20,12 @@ export const SettingsContext = createContext<SettingsValue | null>(null)
 
 export const useSettings = () => useContext(SettingsContext)
 
-/** 배경을 꾸몄는지 (팀 색·내 사진·장식 중 하나라도) */
-export const hasBackground = (s: DisplaySettings, backgroundUrl: string | null) =>
-  s.themeId !== DEFAULT_THEME_ID || backgroundUrl !== null || s.decorations
+/** 배경을 꾸몄는지 (팀 테마·내 사진·장식 중 하나라도): data-bg="on"이 되어 보조 글자색을 더 진하게(다크는 밝게) 쓴다 */
+export const hasBackground = (s: DisplaySettings, backgroundUrl: string | null) => s.themeId !== DEFAULT_THEME_ID || hasOverlay(s, backgroundUrl)
+
+/**
+ * 배경 위에 반투명 막을 까는지: 내 사진이나 야구 소품 장식이 있을 때만.
+ * 팀 테마 배경은 바탕색에 아주 조금 섞은 색이라 막 없이도 글자 대비를 지킨다 (domain/theme 테스트).
+ */
+export const hasOverlay = (s: DisplaySettings, backgroundUrl: string | null) =>
+  backgroundUrl !== null || s.decorations

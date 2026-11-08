@@ -1,18 +1,14 @@
 /* 응원 팀 배경: 배경 층과 화면 설정 창 (색은 tokens.css 변수, 테마 견본 색만 테마 목록에서) */
 
-/* 배경 층: 화면 전체에 고정. 바탕 → 장식 → 반투명 막 순서로 겹친다 */
+/* 배경 층: 화면 전체에 고정. 바탕(팀 테마 연한 그라데이션 또는 내 사진) → 장식 → 반투명 막(내 사진·장식일 때만) */
 .app-bg{position:fixed;inset:0;z-index:-1;pointer-events:none}
 .app-bg > div{position:absolute;inset:0}
-.app-bg-base{background-color:var(--paper);background-size:cover;background-position:center}
+.app-bg-base{background-color:var(--bg-bottom);background-image:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));background-size:cover;background-position:center}
 .app-bg-deco{background-color:var(--seam);opacity:.5;-webkit-mask-repeat:repeat;mask-repeat:repeat}
-.app-bg-overlay{
-  background-color:var(--bg-overlay);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:24px 24px;
-}
+.app-bg-overlay{background-color:var(--bg-overlay)}
 
 /* 화면 설정 버튼 (상단 메뉴 옆) */
-.settings{position:relative;margin-left:auto;align-self:center;padding-bottom:8px}
+.settings{position:relative}
 .settings-btn{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .settings-btn[aria-expanded="true"]{border-color:var(--seam);color:var(--seam)}
 .settings-panel{position:absolute;right:0;top:calc(100% + 4px);width:min(340px,calc(100vw - 32px));z-index:6;box-shadow:var(--shadow);max-height:calc(100vh - 120px);overflow:auto}

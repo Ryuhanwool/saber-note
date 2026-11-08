@@ -329,4 +329,4 @@ export type DisplaySettings = {
   maskProfanity: boolean
 }
 
-export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { themeId: 'default', decorations: true, maskProfanity: true }
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = { themeId: 'default', decorations: false, maskProfanity: true }

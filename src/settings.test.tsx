@@ -11,6 +11,7 @@ import { createBrowserSettings } from './data/settings/browser'
 import { createMemorySettings } from './data/settings/memory'
 import type { SettingsStore } from './data/source'
 import { THEMES } from './domain/theme/themes'
+import { themeBackground } from './domain/theme/surface'
 import CommunityProvider from './ui/community/CommunityProvider'
 import SettingsProvider from './ui/settings/SettingsProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
@@ -51,7 +52,7 @@ describe('화면 설정: 팀 컬러 테마', () => {
     expect(panel.getByRole('radio', { name: '남색·금색' })).toBeTruthy()
   })
 
-  it('테마를 고르면 강조색과 배경 층이 바뀌고 저장된다. 기본으로 돌리면 원래대로', async () => {
+  it('테마를 고르면 강조색과 연한 테마 배경색이 바뀌고 저장된다 (막 없음). 기본으로 돌리면 중립 단색', async () => {
     const user = userEvent.setup()
     const store = createMemorySettings({ decorations: false })
     renderApp(store)
@@ -60,14 +61,21 @@ describe('화면 설정: 팀 컬러 테마', () => {
     await user.click(panel.getByRole('radio', { name: '남색·금색' }))
     expect(root.style.getPropertyValue('--team-accent-light')).toBe(navyGold.accent.light)
     expect(root.style.getPropertyValue('--team-accent-dark')).toBe(navyGold.accent.dark)
-    expect(root.dataset.bg).toBe('on')
+    const bg = themeBackground(navyGold)!
+    expect(root.style.getPropertyValue('--team-bg-light-top')).toBe(bg.light.top)
+    expect(root.style.getPropertyValue('--team-bg-light-bottom')).toBe(bg.light.bottom)
+    expect(root.style.getPropertyValue('--team-bg-dark-top')).toBe(bg.dark.top)
+    expect(root.style.getPropertyValue('--team-bg-dark-bottom')).toBe(bg.dark.bottom)
+    expect(root.dataset.bg).toBe('on') // 보조 글자색을 배경용으로 (반투명 막은 깔지 않는다)
+    expect(screen.queryByTestId('app-bg-overlay')).toBeNull()
     expect(screen.getByTestId('app-bg').querySelector('.app-bg-base')!.getAttribute('data-kind')).toBe('theme')
     expect((await store.load()).themeId).toBe('navy-gold')
 
     await user.click(panel.getByRole('radio', { name: '기본' }))
     expect(root.style.getPropertyValue('--team-accent-light')).toBe('')
+    expect(root.style.getPropertyValue('--team-bg-light-top')).toBe('')
     expect(root.dataset.bg).toBe('off')
-    expect(screen.queryByTestId('app-bg')).toBeNull()
+    expect(screen.getByTestId('app-bg').querySelector('.app-bg-base')!.getAttribute('data-kind')).toBe('plain')
   })
 
   it('Esc를 누르면 창이 닫힌다', async () => {
@@ -95,13 +103,16 @@ describe('화면 설정: 내 이미지 배경', () => {
     const base = screen.getByTestId('app-bg').querySelector('.app-bg-base') as HTMLElement
     expect(base.dataset.kind).toBe('image')
     expect(base.style.backgroundImage).toContain('blob:test-bg')
+    expect(screen.getByTestId('app-bg-overlay')).toBeTruthy() // 사진 위에는 막을 깐다
+    expect(root.dataset.bg).toBe('on')
     expect(await store.loadBackground()).not.toBeNull()
 
     await user.click(panel.getByRole('button', { name: '기본 배경으로' }))
     expect(await panel.findByText('기본 배경으로 되돌렸어요.')).toBeTruthy()
     expect(await store.loadBackground()).toBeNull()
     expect((await store.load()).themeId).toBe('default')
-    expect(screen.queryByTestId('app-bg')).toBeNull()
+    expect(screen.getByTestId('app-bg').querySelector('.app-bg-base')!.getAttribute('data-kind')).toBe('plain')
+    expect(screen.queryByTestId('app-bg-overlay')).toBeNull()
   })
 
   it('메모리 저장소면 새로고침하면 사라진다고 알린다', async () => {
@@ -132,25 +143,29 @@ describe('화면 설정: 내 이미지 배경', () => {
 })
 
 describe('화면 설정: 배경 장식', () => {
-  it('기본값은 켜짐: 기본 테마에서도 막 아래에 장식 무늬가 깔린다', async () => {
+  it('기본값은 꺼짐: 무늬도 반투명 막도 없이 중립 단색 배경', async () => {
     renderApp(createMemorySettings())
     const layer = await screen.findByTestId('app-bg')
-    const order = [...layer.children].map((el) => el.className)
-    expect(order).toEqual(['app-bg-base', 'app-bg-deco', 'app-bg-overlay']) // 장식은 반투명 막 아래
-    expect((screen.getByTestId('app-bg-deco') as HTMLElement).style.maskImage).toContain('data:image/svg+xml')
-    expect(root.dataset.bg).toBe('on')
+    expect([...layer.children].map((el) => el.className)).toEqual(['app-bg-base'])
+    expect(root.dataset.bg).toBe('off')
   })
 
-  it('끄면 무늬가 사라지고, 설정이 저장된다', async () => {
+  it('화면 설정에서 켜면 막 아래에 무늬가 깔리고, 다시 끌 수 있다. 설정이 저장된다', async () => {
     const user = userEvent.setup()
     const store = createMemorySettings()
     renderApp(store)
     const panel = await openPanel(user)
     const toggle = panel.getByRole('checkbox', { name: /야구공·배트·글러브·베이스·별/ })
-    expect((toggle as HTMLInputElement).checked).toBe(true)
+    expect((toggle as HTMLInputElement).checked).toBe(false)
+    await user.click(toggle)
+    const layer = screen.getByTestId('app-bg')
+    expect([...layer.children].map((el) => el.className)).toEqual(['app-bg-base', 'app-bg-deco', 'app-bg-overlay']) // 장식은 반투명 막 아래
+    expect((screen.getByTestId('app-bg-deco') as HTMLElement).style.maskImage).toContain('data:image/svg+xml')
+    expect(root.dataset.bg).toBe('on')
+    expect((await store.load()).decorations).toBe(true)
     await user.click(toggle)
     expect(screen.queryByTestId('app-bg-deco')).toBeNull()
-    expect(screen.queryByTestId('app-bg')).toBeNull() // 기본 테마 + 사진 없음 + 장식 끔 → 배경 층 없음
+    expect(screen.queryByTestId('app-bg-overlay')).toBeNull()
     expect((await store.load()).decorations).toBe(false)
   })
 })
