@@ -19,3 +19,14 @@ export function weekIdKST(now: Date): string {
   const week = 1 + Math.round((d.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000))
   return `${year}-W${String(week).padStart(2, '0')}`
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** 한국 날짜 "YYYY-MM-DD"에서 n일 뒤 */
+export function shiftDayKey(dayKey: string, n: number): string {
+  const [y, m, d] = dayKey.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d) + n * DAY_MS).toISOString().slice(0, 10)
+}
+
+/** "2026-11-10" → "2026.11.10" */
+export const formatDayKey = (dayKey: string) => dayKey.replaceAll('-', '.')
