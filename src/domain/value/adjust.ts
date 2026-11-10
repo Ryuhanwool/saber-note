@@ -82,13 +82,11 @@ export function limitsOf(p: Player, s: HitterStats | PitcherStats): Record<strin
  * 기록 하나를 바꾼다. 말이 안 되는 값은 허용 범위로 맞추고,
  * 그 때문에 범위를 벗어난 다른 기록(예: 안타를 줄여 1루 출루가 줄면 도루, 이닝을 줄이면 삼진)도 함께 맞춘다.
  */
-export function setStat<S extends HitterStats | PitcherStats>(p: Player, s: S, key: keyof S & string, value: number): S {
-  const next = { ...s, [key]: clampTo(value, limitsOf(p, s)[key]) }
-  const lim = limitsOf(p, next)
-  for (const k of Object.keys(next) as (keyof S & string)[]) {
-    if (k !== key) (next as Record<string, number>)[k] = clampTo(next[k] as number, lim[k])
-  }
-  return next
+export function setStat<S extends HitterStats | PitcherStats>(p: Player, s: S, key: HitterAdjustKey | PitcherAdjustKey, value: number): S {
+  const next: Record<string, number> = { ...s, [key]: clampTo(value, limitsOf(p, s)[key]) }
+  const lim = limitsOf(p, next as S)
+  for (const k of Object.keys(next)) if (k !== key) next[k] = clampTo(next[k], lim[k])
+  return next as S
 }
 
 /** 바꾼 기록으로 지표를 다시 계산한 선수 (리그 기준값은 그대로) */

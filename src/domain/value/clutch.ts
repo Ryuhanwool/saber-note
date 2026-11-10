@@ -164,3 +164,13 @@ export function clutchScore(league: League, p: Player): ClutchResult | null {
     lostGoAheadOrTying: parsed.lostGoAheadOrTying,
   }
 }
+
+/**
+ * 점수가 된 기록을 한 문장으로: "역전타 4회, 동점타 3회, 7회 이후 위기 무실점 탈출 6회"
+ * 횟수가 있는 기록을 점수가 큰 순서로, 7회 이후(연장 포함)가 있는 기록은 그 횟수도 따로 붙인다.
+ */
+export function evidenceSummary(r: ClutchResult, limit = 5): string {
+  const shown = r.evidence.filter((e) => e.count > 0).sort((a, b) => b.points - a.points).slice(0, limit)
+  if (!shown.length) return '점수가 된 클러치 기록이 없어요'
+  return shown.map((e) => `${e.label} ${e.count}회${e.late > 0 ? `(7회 이후 ${e.late}회)` : ''}`).join(', ')
+}

@@ -14,6 +14,7 @@ import PlayerMarket from '../market/PlayerMarket'
 import DefenseTab from './DefenseTab'
 import { HITTER_TABS, PITCHER_TABS, tabAvailable } from './tabs'
 import TrackingTab from './TrackingTab'
+import ValueTab from './ValueTab'
 import './player.css'
 
 function PlayerCard({ player: p }: { player: Player }) {
@@ -82,6 +83,7 @@ function PlayerCard({ player: p }: { player: Player }) {
           {current.kind === 'metrics' && rows(current.keys)}
           {current.kind === 'defense' && p.type === 'H' && <DefenseTab player={p} rows={rows} />}
           {current.kind === 'tracking' && <TrackingTab player={p} rows={rows} />}
+          {current.kind === 'value' && <ValueTab player={p} />}
         </div>
       </div>
       <PlayerCommunity player={p} />
