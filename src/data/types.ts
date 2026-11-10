@@ -406,6 +406,17 @@ export type LineupDraft = { slots: Record<LineupSlotId, PlayerId | null>; order:
 /** 계정마다 하나 저장하는 라인업 */
 export type SavedLineup = LineupDraft & { accountId: string; updatedAt: number }
 
+// ---------- 홈 프로필 ----------
+
+/** 「마지막으로 본 때」를 기억하는 곳: 새 소식 창, 커뮤니티 화면 */
+export type SeenKind = 'news' | 'community'
+
+/** 마지막으로 본 때 (ms). 본 적 없으면 없음 */
+export type SeenMarks = Partial<Record<SeenKind, number>>
+
+/** 홈 프로필: 내 프로필 사진(로그인한 계정만)과 마지막으로 본 때 */
+export type ProfileSnapshot = { image: Blob | null; seen: SeenMarks }
+
 // ---------- 화면 설정 ----------
 
 /** 화면 설정 (이 브라우저에만 저장) */

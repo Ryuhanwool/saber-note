@@ -6,6 +6,7 @@ import AuthProvider from './ui/auth/AuthProvider'
 import CheerProvider from './ui/cheer/CheerProvider'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LineupProvider from './ui/lineup/LineupProvider'
+import ProfileProvider from './ui/hub/ProfileProvider'
 import MarketProvider from './ui/market/MarketProvider'
 import SettingsProvider from './ui/settings/SettingsProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
@@ -22,7 +23,9 @@ createRoot(document.getElementById('root')!).render(
               <CheerProvider>
                 <MarketProvider>
                   <LineupProvider>
-                    <App />
+                    <ProfileProvider>
+                      <App />
+                    </ProfileProvider>
                   </LineupProvider>
                 </MarketProvider>
               </CheerProvider>
