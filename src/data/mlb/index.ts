@@ -38,6 +38,7 @@ export function createMlbSource(opts: MlbSourceOptions): LeagueDataSource {
             hitterTracking: ['ev', 'maxev', 'la', 'hard', 'barrel', 'xba', 'sprint', 'h2f'],
             pitcherTracking: ['velo', 'spin', 'whiff'],
             battedBalls: Boolean(opts.loadBattedBalls),
+            clutch: false, // 경기 상황별 기록 없음 → 선수 가치의 클러치 부분을 숨긴다
           }),
         },
         constants: opts.constants,

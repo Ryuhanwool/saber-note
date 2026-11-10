@@ -44,6 +44,11 @@ describe('MLB가 알리는 있음/없음', () => {
     expect(a.pitcherTracking.mix).toBe(false)
   })
 
+  it('경기 상황별(클러치) 기록은 없다 → 모든 선수 null', () => {
+    expect(a.clutch).toBe(false)
+    for (const p of [...ds.hitters, ...ds.pitchers]) expect(p.clutch, p.name).toBeNull()
+  })
+
   it('없다고 알린 기록은 모든 선수에게 null이다', () => {
     expect(unavailableButPresent(ds)).toEqual([])
   })

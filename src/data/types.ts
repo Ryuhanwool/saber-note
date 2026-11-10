@@ -64,6 +64,64 @@ export type RawHitterTracking = {
   h2f: Num
 }
 
+/** 이닝 구간별 횟수: 1~6회(early), 7~9회(late), 연장(extra) */
+export type InningCounts = { early: number; late: number; extra: number }
+
+/** 타자 클러치 기록은 팀이 이긴 경기와 진 경기로 나눈다 */
+export type WinLossCounts = { won: InningCounts; lost: InningCounts }
+
+/**
+ * 타자의 경기 상황별(클러치) 기록. 「기회」는 그 일이 일어날 수 있었던 횟수로, 리그 평균 기대 점수 계산에 쓴다.
+ * 「접전」은 동점이거나 1~2점 차인 상황이다.
+ */
+export type RawHitterClutch = {
+  /** 출장 경기 수 */
+  games: number
+  /** 타격 기회: 동점이거나 지고 있을 때의 타석 */
+  battingChances: InningCounts
+  /** 역전타: 지거나 비기던 경기를 앞서게 만든 안타 */
+  goAhead: WinLossCounts
+  /** 동점타 */
+  tying: WinLossCounts
+  /** 추격타: 득점했지만 여전히 지고 있는 안타. 안타 뒤 남은 점수 차가 1점·2점·3점 이상 */
+  chase1: WinLossCounts
+  chase2: WinLossCounts
+  chase3: WinLossCounts
+  /** 도루 기회: 접전에서 1·2루 주자로 나간 횟수 */
+  stealChances: InningCounts
+  /** 접전 도루 성공 */
+  steals: WinLossCounts
+  /** 접전 도루에 성공한 그 주자가 득점한 횟수 */
+  stealRuns: WinLossCounts
+  /** 수비 기회: 접전에서 득점권 주자가 있을 때 자기에게 온 타구 (지명타자는 0) */
+  defenseChances: InningCounts
+  /** 그 기회에 실점을 막은 호수비·보살 */
+  defensePlays: WinLossCounts
+}
+
+/**
+ * 투수의 경기 상황별(클러치) 기록. 선발·불펜 구분 없이 같은 항목이다.
+ * 「위기」는 득점권 주자가 있고 점수 차가 2점 이내(동점 포함)인 상황이다.
+ */
+export type RawPitcherClutch = {
+  /** 등판 경기 수 */
+  games: number
+  /** 위기 등판(위기를 맞은 횟수) */
+  crisis: InningCounts
+  /** 위기를 실점 없이 벗어난 횟수 */
+  escapes: InningCounts
+  /** 그중 마지막 아웃을 삼진으로 잡은 횟수 */
+  escapesLastK: InningCounts
+  /** 그중 볼넷 없이 막은 횟수 */
+  escapesNoBB: InningCounts
+  /** 1점 차 리드 상황 등판과 리드를 지킨 채 내려가거나 경기를 끝낸 횟수 */
+  leadApps1: InningCounts
+  leadHeld1: InningCounts
+  /** 2점 차 이상 리드 상황 등판과 리드를 지킨 횟수 */
+  leadAppsMulti: InningCounts
+  leadHeldMulti: InningCounts
+}
+
 export type RawHitter = {
   id: PlayerId
   type: 'H'
@@ -85,6 +143,8 @@ export type RawHitter = {
   xbt: Num
   fielding: RawFielding
   tracking: RawHitterTracking
+  /** 경기 상황별 기록. 출처에 없으면 null */
+  clutch: RawHitterClutch | null
 }
 
 export type RawPitchMix = { pitch: string; share: number }
@@ -114,6 +174,8 @@ export type RawPitcher = {
   H: number
   ER: number
   tracking: RawPitcherTracking
+  /** 경기 상황별 기록. 출처에 없으면 null */
+  clutch: RawPitcherClutch | null
 }
 
 export type RawBattedBall = { ev: number; la: number; hit: boolean }
@@ -183,6 +245,8 @@ export type DataAvailability = {
   pitcherTracking: Record<keyof RawPitcherTracking, boolean>
   /** loadBattedBalls가 타구 목록을 주는지 */
   battedBalls: boolean
+  /** 경기 상황별(클러치) 기록을 주는지. 없으면 선수 가치의 클러치 부분을 숨긴다 */
+  clutch: boolean
 }
 
 export type RawDataset = {

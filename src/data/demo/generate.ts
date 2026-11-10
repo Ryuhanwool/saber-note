@@ -4,6 +4,7 @@
 // wOBA·wRC+·FIP·UZR 합계·WAR 같은 계산은 domain이 한다.
 import type { FieldPosition, PitcherRole, PlayerId, RawFielding, RawHitter, RawPitcher, RawRating } from '../types'
 import { emptyFielding } from '../records'
+import { addDemoClutch } from './clutch'
 import { clamp, gaussian, mulberry32, pick } from './random'
 
 export const DEMO_SEED = 20261017
@@ -102,6 +103,7 @@ export function generateDemoLeague(seed = DEMO_SEED): DemoLeague {
       SB: 0, CS: 0, xbt, // SB·CS는 아래 후처리에서 채운다
       fielding: emptyFielding(),
       tracking: { ev, maxev, la, hard, barrel, xba: null, sprint, h2f: null },
+      clutch: null, // 마지막에 따로 만든다
     })
   }
 
@@ -136,7 +138,7 @@ export function generateDemoLeague(seed = DEMO_SEED): DemoLeague {
     const role: PitcherRole = sp ? 'SP' : 'RP'
 
     pitcherRates.set(id, rates)
-    pitchers.push({ id, type: 'P', name, team, role, age, outs, TBF, SO, BB, HR, HBP, H, ER, tracking: { velo, spin, whiff, mix } })
+    pitchers.push({ id, type: 'P', name, team, role, age, outs, TBF, SO, BB, HR, HBP, H, ER, tracking: { velo, spin, whiff, mix }, clutch: null })
   }
 
   for (const team of TEAMS) {
@@ -159,6 +161,9 @@ export function generateDemoLeague(seed = DEMO_SEED): DemoLeague {
     h.CS = att - h.SB
     h.tracking.h2f = clamp(4.3 + (8.2 - h.tracking.sprint!) * 0.5 + 0.04 * rn(), 3.9, 4.9)
   }
+
+  // 경기 상황별 기록은 다른 시드의 난수로 따로 만든다 (위의 기록·난수 순서에 영향 없음)
+  addDemoClutch(seed, hitters, pitchers, hitterRates, pitcherRates)
 
   return { hitters, pitchers, hitterRates, pitcherRates }
 }

@@ -100,6 +100,8 @@ export function toRawHitter(r: MlbHitterRow): RawHitter {
       sprint: ftpsToMps(r.sprint_speed),
       h2f: r.hp_to_1b,
     },
+    // 서번트 시즌 리더보드에는 경기 상황별(클러치) 기록이 없다
+    clutch: null,
   }
 }
 
@@ -125,6 +127,7 @@ export function toRawPitcher(r: MlbPitcherRow): RawPitcher {
       whiff: percentToRate(r.whiff_percent),
       mix: null, // 구종 비율(pitch arsenal)은 뼈대에 넣지 않았다
     },
+    clutch: null,
   }
 }
 
