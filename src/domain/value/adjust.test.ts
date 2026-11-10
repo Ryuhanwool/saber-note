@@ -3,7 +3,7 @@ import { getDataSource } from '../../data/registry'
 import { buildLeague } from '../league'
 import type { HitterPlayer, PitcherPlayer } from '../players'
 import {
-  adjustedPlayer, adjustedValue, clampClutch, hitterLimits, hitterStatsOf, initialClutch, isOriginal, pitcherStatsOf, setStat,
+  PITCHER_ADJUST_KEYS, adjustedPlayer, adjustedValue, clampClutch, hitterLimits, hitterStatsOf, initialClutch, isOriginal, pitcherStatsOf, setStat,
   type HitterStats, type PitcherStats,
 } from './adjust'
 import { playerValue } from './value'
@@ -41,10 +41,10 @@ describe('스탯 조절 (domain)', () => {
     }
   })
 
-  it('자책점·피홈런을 늘리면 가치가 올라가지 않는다 (모든 투수)', () => {
+  it('피홈런을 늘리면 가치가 올라가지 않는다 (모든 투수)', () => {
     for (const p of pitchers) {
       const s = pitcherStatsOf(p.raw)
-      for (const key of ['ER', 'HR'] as const) {
+      for (const key of ['HR'] as const) {
         let cur = s
         for (let i = 0; i < 5; i++) {
           const next = setStat(p, cur, key, cur[key] + 1)
@@ -57,14 +57,15 @@ describe('스탯 조절 (domain)', () => {
     }
   })
 
-  it('자책점은 ERA만 바꾸고 FIP·WAR(가치)는 그대로다 — FIP 기준 WAR라 같은 활약을 두 번 세지 않는다', () => {
+  it('자책점은 조절 항목이 아니다 (가치에 영향이 없으므로). 자책점은 원래 값 그대로이고 ERA는 표시만 한다', () => {
+    expect(PITCHER_ADJUST_KEYS).not.toContain('ER')
+    expect(Object.keys(pitcherStatsOf(pitchers[0].raw))).not.toContain('ER')
     const p = pitchers[0]
-    const s = setStat(p, pitcherStatsOf(p.raw), 'ER', p.raw.ER + 10)
+    const s = setStat(p, pitcherStatsOf(p.raw), 'outs', p.raw.outs + 30)
     const q = adjustedPlayer(league, p, s)
     if (q.type !== 'P') throw new Error()
-    expect(q.m.era).toBeGreaterThan(p.m.era)
-    expect(q.m.fip).toBe(p.m.fip)
-    expect(q.m.WAR).toBe(p.m.WAR)
+    expect(q.raw.ER).toBe(p.raw.ER)
+    expect(q.m.era).toBeLessThan(p.m.era) // 같은 자책점을 더 긴 이닝으로 나눔
   })
 
   it('OPS·wRC+·FIP가 기존 공식으로 다시 계산된다', () => {
@@ -104,7 +105,7 @@ describe('스탯 조절 (domain)', () => {
     const fewOuts = setStat(p, t, 'outs', 5)
     expect(fewOuts.SO).toBeLessThanOrEqual(5)
     expect(setStat(p, t, 'SO', t.outs + 50).SO).toBe(t.outs)
-    expect(setStat(p, t, 'ER', -1).ER).toBe(0)
+    expect(setStat(p, t, 'BB', -1).BB).toBe(0)
     for (const x of [...hitters, ...pitchers]) {
       const q = adjustedPlayer(league, x, x.type === 'H' ? setStat(x, hitterStatsOf(x.raw), 'HR', 999) : setStat(x, pitcherStatsOf(x.raw), 'outs', 0))
       for (const v of Object.values(q.m)) if (typeof v === 'number') expect(Number.isFinite(v), x.name).toBe(true)

@@ -18,7 +18,7 @@ const HITTER_ROWS: { key: HitterAdjustKey; label: string }[] = [
   { key: 'HR', label: '홈런' }, { key: 'H', label: '안타' }, { key: 'BB', label: '볼넷' }, { key: 'SO', label: '삼진' }, { key: 'SB', label: '도루' },
 ]
 const PITCHER_ROWS: { key: PitcherAdjustKey; label: string }[] = [
-  { key: 'outs', label: '이닝' }, { key: 'SO', label: '탈삼진' }, { key: 'BB', label: '볼넷' }, { key: 'HR', label: '피홈런' }, { key: 'ER', label: '자책점' },
+  { key: 'outs', label: '이닝' }, { key: 'SO', label: '탈삼진' }, { key: 'BB', label: '볼넷' }, { key: 'HR', label: '피홈런' },
 ]
 const HITTER_RESULT: MetricKey[] = ['ops', 'wrcp', 'WAR']
 const PITCHER_RESULT: MetricKey[] = ['era', 'fip', 'WAR']
@@ -154,7 +154,7 @@ export default function ValueTab({ player: p }: { player: Player }) {
         </div>
         <p className="muted value-note">
           기록을 바꾸면 같은 공식으로 지표를 다시 계산해 WAR로만 가치에 반영해요(같은 활약을 두 번 세지 않게).
-          {p.type === 'P' && ' 이 앱의 투수 WAR는 FIP 기준이라 자책점을 바꾸면 ERA만 바뀌고 가치는 그대로예요.'}
+          {p.type === 'P' && ' 자책점은 가치에 영향이 없어(투수 WAR는 FIP 기준) 조절하지 않아요. ERA는 아래 표에 보여 주기만 해요.'}
         </p>
         <div className="adj-list">
           {rows.map(({ key, label }) => (

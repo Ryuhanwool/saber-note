@@ -87,11 +87,13 @@ describe('선수 카드 「선수 가치」 탭', () => {
     expect(Number(hr.max)).toBe(small.raw.S1 + small.raw.D2 + small.raw.D3 + small.raw.HR)
   })
 
-  it('투수: 이닝·탈삼진·볼넷·피홈런·자책점, 자책점은 가치에 영향이 없다는 안내, 이닝은 0이 될 수 없다', async () => {
+  it('투수: 이닝·탈삼진·볼넷·피홈런만 조절(자책점 없음), ERA는 표시만, 이닝은 0이 될 수 없다', async () => {
     const p = league.pitchers[0]
     const { panel } = await openValueTab(`/player/${p.id}`)
-    for (const n of ['이닝', '탈삼진', '볼넷', '피홈런', '자책점']) expect(within(panel).getByRole('slider', { name: n })).toBeTruthy()
-    expect(within(panel).getByText(/자책점을 바꾸면 ERA만 바뀌고/)).toBeTruthy()
+    for (const n of ['이닝', '탈삼진', '볼넷', '피홈런']) expect(within(panel).getByRole('slider', { name: n })).toBeTruthy()
+    expect(within(panel).queryByRole('slider', { name: '자책점' })).toBeNull()
+    expect(within(panel).getByText(/자책점은 가치에 영향이 없어/)).toBeTruthy()
+    expect(within(within(panel).getByRole('table', { name: '다시 계산한 지표' })).getByRole('rowheader', { name: 'ERA' })).toBeTruthy()
     expect(Number((within(panel).getByRole('slider', { name: '이닝' }) as HTMLInputElement).min)).toBe(1)
   })
 

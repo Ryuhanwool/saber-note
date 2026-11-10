@@ -7,13 +7,14 @@ import { clutchScore } from './clutch'
 import { expectedValue, tenths, type ValueBreakdown } from './value'
 
 export type HitterAdjustKey = 'HR' | 'H' | 'BB' | 'SO' | 'SB'
-export type PitcherAdjustKey = 'outs' | 'SO' | 'BB' | 'HR' | 'ER'
+/** 자책점은 넣지 않는다: 투수 WAR는 FIP 기준이라 가치에 영향이 없다 (ERA는 표시만) */
+export type PitcherAdjustKey = 'outs' | 'SO' | 'BB' | 'HR'
 export type HitterStats = Record<HitterAdjustKey, number>
 export type PitcherStats = Record<PitcherAdjustKey, number>
 export type Range = { min: number; max: number }
 
 export const HITTER_ADJUST_KEYS: readonly HitterAdjustKey[] = ['HR', 'H', 'BB', 'SO', 'SB']
-export const PITCHER_ADJUST_KEYS: readonly PitcherAdjustKey[] = ['outs', 'SO', 'BB', 'HR', 'ER']
+export const PITCHER_ADJUST_KEYS: readonly PitcherAdjustKey[] = ['outs', 'SO', 'BB', 'HR']
 
 /** 클러치 점수(승) 조절 범위 */
 export const CLUTCH_ADJUST_RANGE: Range = { min: -3, max: 3 }
@@ -52,12 +53,12 @@ export function hitterLimits(h: RawHitter, s: HitterStats): Record<HitterAdjustK
 
 // ---------- 투수 ----------
 
-export const pitcherStatsOf = (p: RawPitcher): PitcherStats => ({ outs: p.outs, SO: p.SO, BB: p.BB, HR: p.HR, ER: p.ER })
+export const pitcherStatsOf = (p: RawPitcher): PitcherStats => ({ outs: p.outs, SO: p.SO, BB: p.BB, HR: p.HR })
 
-/** 바꾼 기록을 원시 기록에 반영한다. 상대 타자 수는 늘어난 아웃·볼넷·홈런만큼, 피안타는 홈런만큼 바뀐다 */
+/** 바꾼 기록을 원시 기록에 반영한다. 자책점은 그대로라 ERA는 이닝이 바뀔 때만 달라진다. 상대 타자 수는 늘어난 아웃·볼넷·홈런만큼, 피안타는 홈런만큼 바뀐다 */
 export function applyPitcher(p: RawPitcher, s: PitcherStats): RawPitcher {
   const dHR = s.HR - p.HR
-  return { ...p, outs: s.outs, SO: s.SO, BB: s.BB, HR: s.HR, ER: s.ER, H: p.H + dHR, TBF: p.TBF + (s.outs - p.outs) + (s.BB - p.BB) + dHR }
+  return { ...p, outs: s.outs, SO: s.SO, BB: s.BB, HR: s.HR, H: p.H + dHR, TBF: p.TBF + (s.outs - p.outs) + (s.BB - p.BB) + dHR }
 }
 
 export function pitcherLimits(p: RawPitcher, s: PitcherStats): Record<PitcherAdjustKey, Range> {
@@ -66,7 +67,6 @@ export function pitcherLimits(p: RawPitcher, s: PitcherStats): Record<PitcherAdj
     SO: { min: 0, max: s.outs }, // 삼진은 아웃이라 잡은 아웃 수를 넘을 수 없다
     BB: { min: 0, max: cap(p.BB) },
     HR: { min: 0, max: cap(p.HR) }, // 피안타는 홈런만큼 함께 바뀐다
-    ER: { min: 0, max: cap(p.ER) },
   }
 }
 
