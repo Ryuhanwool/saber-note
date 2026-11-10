@@ -3,6 +3,7 @@ import { gameBlockers, GAMES, type GameId } from '../../domain/games/catalog'
 import { useDataSource, useLeague } from '../shared/LeagueContext'
 import BattedBallGame from './BattedBallGame'
 import BlindGame from './BlindGame'
+import ChallengeDeadline from './ChallengeDeadline'
 import ChallengeGame from './ChallengeGame'
 import UpDownGame from './UpDownGame'
 import './games.css'
@@ -20,7 +21,7 @@ function GamesHome({ blockers }: { blockers: Record<GameId, string | null> }) {
     <>
       {!blockers.challenge && (
         <div className="banner">
-          <div><b>이번 주 세이버 픽 챌린지</b> <span className="muted">마감까지 1일 3시간 (데모 표시)</span></div>
+          <div><b>이번 주 세이버 픽 챌린지</b> <span className="muted"><ChallengeDeadline /> · 매주 화요일 18:30 마감</span></div>
           <button className="btn" onClick={() => navigate('/games/challenge')}>참여하기</button>
         </div>
       )}
