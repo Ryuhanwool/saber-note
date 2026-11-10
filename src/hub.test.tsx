@@ -292,3 +292,65 @@ describe('홈: 카드 메뉴', () => {
     expect(screen.getByRole('heading', { name: 'WAR 상위 타자' })).toBeTruthy()
   })
 })
+
+describe('아래쪽 탭 바 (휴대폰 폭)', () => {
+  const realMatchMedia = window.matchMedia
+  const phone = (matches: boolean) => {
+    window.matchMedia = ((query: string) => ({ matches, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia
+  }
+  afterEach(() => {
+    window.matchMedia = realMatchMedia
+  })
+  const tabs = async () => within(await screen.findByRole('navigation', { name: '아래 탭' }))
+  const tabNames = (t: Awaited<ReturnType<typeof tabs>>) => t.getAllByRole('link').map((a) => a.querySelector('.tab-label')!.textContent)
+
+  it('마켓 · 커뮤니티 · 홈(가운데) · 라인업 · 순위, 지금 화면 표시. 비교·미니게임·선수 카드는 홈 탭', async () => {
+    phone(true)
+    renderApp('/lineup')
+    const t = await tabs()
+    expect(tabNames(t)).toEqual(['마켓', '커뮤니티', '홈', '라인업', '순위'])
+    expect(t.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['/market', '/community', '/', '/lineup', '/ranking'])
+    expect(t.getAllByRole('link')[2].className).toContain('tab-home')
+    const current = () => t.getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.querySelector('.tab-label')!.textContent)
+    expect(current()).toEqual(['라인업'])
+    const user = userEvent.setup()
+    await user.click(t.getByRole('link', { name: /^순위/ }))
+    await waitFor(() => expect(current()).toEqual(['순위']))
+    cleanup()
+    renderApp('/compare')
+    expect((await tabs()).getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['홈'])
+  })
+
+  it('넓은 화면에서는 탭 바 없이 위쪽 메뉴', async () => {
+    phone(false)
+    renderApp('/')
+    expect(await screen.findByRole('navigation', { name: '주요 메뉴' })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: '아래 탭' })).toBeNull()
+  })
+
+  it('커뮤니티 탭: 다른 팬의 새 글이 있으면 점, 커뮤니티를 보고 나면 꺼진다', async () => {
+    phone(true)
+    const user = userEvent.setup()
+    renderApp('/ranking')
+    const t = await tabs()
+    expect(await t.findByRole('link', { name: /^커뮤니티\s*\(새 글 있음\)$/ }, { timeout: 3000 })).toBeTruthy()
+    await user.click(t.getByRole('link', { name: /^커뮤니티/ }))
+    await user.click(await t.findByRole('link', { name: /^순위/ }))
+    await waitFor(() => expect(t.getByRole('link', { name: /^커뮤니티/ }).textContent).toBe('커뮤니티'))
+  })
+
+  it('홈 탭: 로그인했는데 오늘 아직 응원하지 않았으면 점, 응원하면 꺼진다. 로그아웃이면 점 없음', async () => {
+    phone(true)
+    const user = userEvent.setup()
+    renderApp('/ranking')
+    const t0 = await tabs()
+    await screen.findByRole('link', { name: '로그인' })
+    expect(t0.getByRole('link', { name: /^홈/ }).textContent).toBe('홈')
+    cleanup()
+    renderApp(`/player/${enc(today.hitters[0].id)}/cheer`, await demoAuth())
+    const t = await tabs()
+    expect(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요\)$/ }, { timeout: 3000 })).toBeTruthy()
+    await user.click(await screen.findByRole('button', { name: /응원하기/ }))
+    await waitFor(() => expect(t.getByRole('link', { name: /^홈/ }).textContent).toBe('홈'))
+  })
+})

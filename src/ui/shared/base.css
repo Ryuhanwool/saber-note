@@ -19,26 +19,21 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .bar-end{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none;padding-bottom:8px}
 .brand{font-size:1.5rem;line-height:1;padding-bottom:12px;flex:none;white-space:nowrap}
 .brand small{font-family:var(--font-body);font-size:.75rem;color:var(--soft);margin-left:8px;font-weight:500}
-nav{display:flex;gap:4px}
-nav a{flex:none;white-space:nowrap}
-nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
-nav a[aria-current="page"]{color:var(--ink);font-weight:700}
-nav a[aria-current="page"]::after{
+header nav{display:flex;gap:4px}
+header nav a{flex:none;white-space:nowrap}
+header nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
+header nav a[aria-current="page"]{color:var(--ink);font-weight:700}
+header nav a[aria-current="page"]::after{
   content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:4px;
   background:repeating-linear-gradient(90deg,var(--seam) 0 6px,transparent 6px 10px);
 }
-/* 휴대폰 폭: 첫 줄은 로고 · 로그인·설정, 둘째 줄에 메뉴 (넘치면 가로로 밀어 본다) */
+/* 휴대폰 폭: 위쪽 메뉴 대신 아래쪽 탭 바(ui/hub/TabBar, hub.css). 머리줄은 로고 · 아이콘 줄 한 줄 */
 @media (max-width:720px){
-  .bar{flex-wrap:wrap;row-gap:4px;padding-top:8px}
-  .bar-end{padding-bottom:4px}
-  nav{order:3;flex-basis:100%;min-width:0;overflow-x:auto;scrollbar-width:none}
-  nav a[aria-current="page"]::after{bottom:0}
-}
-/* 좁은 휴대폰: 메뉴 7개는 한 줄로 두고 가로로 밀어 본다 (줄이 깨지지 않게, 끝에 걸친 메뉴로 더 있다는 걸 보여 준다).
-   지금 보는 메뉴는 Layout이 보이는 곳으로 옮긴다 */
-@media (max-width:480px){
-  nav{gap:0;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
-  nav a{padding:8px 11px 12px;scroll-snap-align:start}
+  .bar{padding:8px 12px;align-items:center;gap:6px}
+  .bar-end{padding-bottom:0;gap:4px}
+  .brand{padding-bottom:0;font-size:1.15rem}
+  .brand small{margin-left:4px}
+  header nav{display:none}
 }
 /* 시연용 날짜 이동 중 안내 (모든 화면 위) */
 .demo-date{max-width:1040px;margin:8px auto 0;padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:var(--chip);border:2px solid var(--ink);border-radius:6px;font-size:.9rem;color:var(--ink)}

@@ -6,6 +6,8 @@ import SettingsButton from '../settings/SettingsButton'
 import NewsButton from '../hub/NewsButton'
 import SearchButton from '../hub/SearchButton'
 import SeenTracker from '../hub/SeenTracker'
+import TabBar from '../hub/TabBar'
+import { PHONE_QUERY, useMediaQuery } from './useMediaQuery'
 import '../hub/hub.css'
 import { formatDayKey } from '../../domain/games/calendar'
 import { useLeagueState } from './LeagueContext'
@@ -24,6 +26,7 @@ const NAV = [
 export default function Layout() {
   const state = useLeagueState()
   const { pathname } = useLocation()
+  const phone = useMediaQuery(PHONE_QUERY)
 
   // 화면이 바뀌면 맨 위로 (데모 go()와 같은 동작)
   useEffect(() => {
@@ -72,6 +75,7 @@ export default function Layout() {
         )}
         {state.status === 'ready' && <Outlet />}
       </main>
+      {phone && <TabBar />}
     </>
   )
 }
