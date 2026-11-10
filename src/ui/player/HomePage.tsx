@@ -5,6 +5,9 @@ import { topByWar } from '../../domain/search'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath } from '../shared/labels'
 import SearchBox from '../shared/SearchBox'
+import HomeCards from '../hub/HomeCards'
+import LineupBand from '../hub/LineupBand'
+import ProfileRow from '../hub/ProfileRow'
 import './player.css'
 
 function RankList({ title, players, onPick }: { title: string; players: Player[]; onPick: (p: Player) => void }) {
@@ -26,7 +29,7 @@ function RankList({ title, players, onPick }: { title: string; players: Player[]
   )
 }
 
-/** 화면 1. 검색 홈 */
+/** 화면 1. 홈: 프로필 줄 · 내 라인업 띠 · 선수 검색 · 카드 메뉴 · WAR 상위 목록 */
 export default function HomePage() {
   const league = useLeague()
   const navigate = useNavigate()
@@ -37,9 +40,14 @@ export default function HomePage() {
   const popular = [topH[0], topP[0], topH[3]].filter(Boolean)
 
   return (
-    <>
-      <section className="hero">
-        <h1 className="display">궁금한 선수의 이름을<br />입력해 보세요</h1>
+    <div className="hub-home">
+      <h1 className="sr-only">세이버 노트 홈</h1>
+      <div className="hub-top">
+        <ProfileRow />
+        <LineupBand />
+      </div>
+      <section className="hero hub-search-hero" aria-labelledby="home-search-h">
+        <h2 id="home-search-h" className="display">궁금한 선수를 찾아보세요</h2>
         <SearchBox
           label="선수 이름 검색"
           placeholder={`예: ${topH[1]?.name ?? '선수 이름'}`}
@@ -53,10 +61,11 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      <HomeCards />
       <div className="lists">
         <RankList title="WAR 상위 타자" players={topH} onPick={open} />
         <RankList title="WAR 상위 투수" players={topP} onPick={open} />
       </div>
-    </>
+    </div>
   )
 }

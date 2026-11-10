@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
-/** 현재 시각(ms). "5분 전" 같은 표시가 흘러가도록 intervalMs마다 갱신한다 */
-export function useNow(intervalMs = 60_000): number {
+/** 지금 시각 (ms). everyMs마다(기본 1분) 다시 그린다 — 남은 시간·새 글 수처럼 시간이 지나면 바뀌는 표시용 */
+export function useNow(everyMs = 60_000): number {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), intervalMs)
+    const t = setInterval(() => setNow(Date.now()), everyMs)
     return () => clearInterval(t)
-  }, [intervalMs])
+  }, [everyMs])
   return now
 }

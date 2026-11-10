@@ -13,7 +13,9 @@ import { createBrowserSettings } from './settings/browser'
 import { createMemorySettings } from './settings/memory'
 import { createBrowserLineup } from './lineup/browser'
 import { createMemoryLineup } from './lineup/memory'
-import type { LineupRepository, AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
+import { createBrowserProfile } from './profile/browser'
+import { createMemoryProfile } from './profile/memory'
+import type { LineupRepository, ProfileRepository, AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
 import type { CommunityUser, LeagueId } from './types'
 import { demoSource } from './demo'
 
@@ -130,3 +132,17 @@ export async function openLineupRepository(opts: { user: CommunityUser | null })
   return createMemoryLineup({ user: opts.user })
 }
 
+
+/** 홈 프로필 저장소 열기 (프로필 사진·마지막으로 본 때). 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
+export async function openProfileRepository(opts: { user: CommunityUser | null }): Promise<ProfileRepository> {
+  if (typeof indexedDB !== 'undefined') {
+    const browser = createBrowserProfile({ user: opts.user })
+    try {
+      await browser.snapshot() // 저장소를 실제로 열어 본다
+      return browser
+    } catch {
+      browser.close()
+    }
+  }
+  return createMemoryProfile({ user: opts.user })
+}

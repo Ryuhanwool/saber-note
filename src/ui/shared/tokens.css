@@ -8,6 +8,8 @@
   --up: #C4141F; --down: #1D5FB8;
   /* 라인업 야구장 그림: 잔디·흙·라인 (팀 테마와 상관없이 같다) */
   --grass: #3F8C4C; --grass-stripe: #4A9958; --grass-foul: #357842; --dirt: #C29262; --chalk: #FFFFFF; --pen: #2C6A39;
+  /* 홈 「내 라인업」 띠: 라이트·다크 모두 어두운 띠에 밝은 글자 (ui/hub/hub-contrast.test.ts) */
+  --band-bg: #1E2A3A; --band-ink: #F2F5F0;
   /* 데모에서 각 규칙에 직접 쓰던 색 */
   --on-accent: #fff;               /* 진한 배경 위 글자 (백분위 숫자 원, 미디어 버튼) */
   --overlay: rgba(0,0,0,.65);      /* 미디어 위 라벨·버튼 배경 */
@@ -37,6 +39,7 @@
     --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
     --warn: #E8B64A;
     --up: #FF7A84; --down: #7DB2FF;
+    --band-bg: #0A0F16; --band-ink: #E6EBF0;
     --grass: #2B5E36; --grass-stripe: #32693E; --grass-foul: #234F2C; --dirt: #8C6844; --chalk: #DDE5DA; --pen: #1F472A;
     --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
     --bar-bg: var(--team-bg-dark-bar, var(--surface));
@@ -49,6 +52,7 @@
   --seam: var(--team-accent-dark, #FF5A6E); --field: #5FBF8A; --chip: #243041; --track: #2E3949;
   --warn: #E8B64A;
   --up: #FF7A84; --down: #7DB2FF;
+  --band-bg: #0A0F16; --band-ink: #E6EBF0;
   --grass: #2B5E36; --grass-stripe: #32693E; --grass-foul: #234F2C; --dirt: #8C6844; --chalk: #DDE5DA; --pen: #1F472A;
   --bg-top: var(--team-bg-dark-top, var(--paper)); --bg-bottom: var(--team-bg-dark-bottom, var(--paper));
   --bar-bg: var(--team-bg-dark-bar, var(--surface));

@@ -1,5 +1,5 @@
 import type {
-  Account, LineupDraft, SavedLineup, CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewAccount, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
+  Account, LineupDraft, ProfileSnapshot, SeenKind, SavedLineup, CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewAccount, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
 } from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
@@ -182,6 +182,24 @@ export interface LineupRepository {
   save(lineup: LineupDraft): Promise<SavedLineup>
   close?(): void
   /** 시연 데이터 초기화 (있으면): 이 브라우저에 저장된 모든 계정의 라인업을 지운다 */
+  resetDemoData?(): Promise<void>
+}
+
+/**
+ * 홈 프로필 저장소: 계정마다 프로필 사진 1장과 「마지막으로 본 때」(새 소식·커뮤니티). ui는 registry의 openProfileRepository로 연다.
+ * 사진은 로그인한 계정만 바꿀 수 있고, 마지막으로 본 때는 로그아웃 상태면 이 브라우저의 손님 기록에 둔다.
+ * 사진 형식·크기 검사는 넘기기 전에 domain(domain/hub/profile)이 한다.
+ */
+export interface ProfileRepository {
+  readonly storage: 'browser' | 'memory' | 'shared'
+  snapshot(): Promise<ProfileSnapshot>
+  /** 바뀔 때마다 (다른 탭 포함). 반환값은 구독 해제 */
+  subscribe(listener: (s: ProfileSnapshot) => void): () => void
+  /** null이면 기본 엠블럼으로. 로그아웃 상태면 '로그인이 필요합니다' 오류 */
+  setImage(image: Blob | null): Promise<void>
+  markSeen(kind: SeenKind, at: number): Promise<void>
+  close?(): void
+  /** 시연 데이터 초기화 (있으면): 이 브라우저의 모든 프로필 사진과 마지막으로 본 때를 지운다 */
   resetDemoData?(): Promise<void>
 }
 

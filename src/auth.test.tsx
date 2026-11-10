@@ -68,14 +68,16 @@ describe('상단 메뉴와 데모 계정', () => {
   it('로그아웃 상태면 「로그인」, 데모 계정으로 로그인하면 닉네임과 「로그아웃」', async () => {
     const user = userEvent.setup()
     renderApp('/')
-    await user.click(await screen.findByRole('link', { name: '로그인' }))
+    // 머리줄(빠른 메뉴)의 「로그인」 (홈 프로필 줄에도 「로그인」이 있다)
+    const header = within(await screen.findByRole('group', { name: '빠른 메뉴' }))
+    await user.click(await header.findByRole('link', { name: '로그인' }))
     expect(await loginHeading()).toBeTruthy()
     expect(screen.getByRole('note').textContent).toMatch(/시연용 로그인이에요.*실제 서비스 수준의 보안은 아니에요/)
     await demoLogin(user)
     const menu = within(await screen.findByLabelText('로그인 상태'))
     expect(menu.getByText('체험팬')).toBeTruthy()
     await user.click(menu.getByRole('button', { name: '로그아웃' }))
-    expect(await screen.findByRole('link', { name: '로그인' })).toBeTruthy()
+    expect(await header.findByRole('link', { name: '로그인' })).toBeTruthy()
   })
 
   it('로그인 없이도 선수 카드·비교·미니게임은 쓸 수 있다', async () => {

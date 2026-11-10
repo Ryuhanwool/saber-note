@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ChallengeDeadline from './ChallengeDeadline'
 import { weekIdKST } from '../../domain/games/calendar'
 import {
   challengePlayerIds, MIN_WEEKLY_PA, PERFECT_BONUS, POINTS_PER_QUESTION, scoreChallenge, startChallenge,
@@ -61,7 +62,7 @@ export default function ChallengeGame() {
         <div>
           <b>세이버 픽 챌린지</b> <span className="muted">{weekId} · </span>
           <span className="muted">
-            {phase === 'pick' ? '마감까지 1일 3시간 (데모 표시)' : phase === 'scored' ? '채점 완료' : '제출 완료. 일주일 경기를 기다리는 중'}
+            {phase === 'pick' ? <ChallengeDeadline demoNote /> : phase === 'scored' ? '채점 완료' : '제출 완료. 일주일 경기를 기다리는 중'}
           </span>
         </div>
         {result && <b className="display" style={{ fontSize: '1.6rem' }}>{result.score}점</b>}

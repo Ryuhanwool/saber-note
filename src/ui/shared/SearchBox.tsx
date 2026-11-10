@@ -16,10 +16,12 @@ type Props = {
   /** 고른 뒤 입력칸을 비운다 */
   clearOnPick?: boolean
   limit?: number
+  /** 열리자마자 입력칸에 초점 (검색 창) */
+  autoFocus?: boolean
 }
 
 /** 선수 이름 검색 + 자동완성 (이름 · 팀 · 포지션). ↑↓로 고르고 Enter로 열기, Esc로 닫기 */
-export default function SearchBox({ label, placeholder, onPick, exclude = [], emptyText, clearOnPick, limit = 8 }: Props) {
+export default function SearchBox({ label, placeholder, onPick, exclude = [], emptyText, clearOnPick, limit = 8, autoFocus }: Props) {
   const league = useLeague()
   const listId = useId()
   const [query, setQuery] = useState('')
@@ -57,6 +59,7 @@ export default function SearchBox({ label, placeholder, onPick, exclude = [], em
         type="search"
         placeholder={placeholder}
         aria-label={label}
+        autoFocus={autoFocus}
         autoComplete="off"
         role="combobox"
         aria-expanded={showList}

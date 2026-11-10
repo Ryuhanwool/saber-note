@@ -3,12 +3,18 @@ import { Link, Outlet, useLocation } from 'react-router'
 import BackgroundLayer from '../settings/BackgroundLayer'
 import AccountMenu from '../auth/AccountMenu'
 import SettingsButton from '../settings/SettingsButton'
+import NewsButton from '../hub/NewsButton'
+import SearchButton from '../hub/SearchButton'
+import SeenTracker from '../hub/SeenTracker'
+import TabBar from '../hub/TabBar'
+import { PHONE_QUERY, useMediaQuery } from './useMediaQuery'
+import '../hub/hub.css'
 import { formatDayKey } from '../../domain/games/calendar'
 import { useLeagueState } from './LeagueContext'
 
 const NAV = [
-  // 선수 카드(/player/…)를 보는 동안에도 "선수" 메뉴를 현재 위치로 표시한다
-  { to: '/', label: '선수', match: (path: string) => path === '/' || path.startsWith('/player/') },
+  // 홈(선수 검색 포함). 선수 카드(/player/…)를 보는 동안에도 「홈」 메뉴를 현재 위치로 표시한다
+  { to: '/', label: '홈', match: (path: string) => path === '/' || path.startsWith('/player/') },
   { to: '/compare', label: '비교', match: (path: string) => path.startsWith('/compare') },
   { to: '/ranking', label: '가치 순위', match: (path: string) => path.startsWith('/ranking') },
   { to: '/lineup', label: '라인업', match: (path: string) => path.startsWith('/lineup') },
@@ -20,6 +26,7 @@ const NAV = [
 export default function Layout() {
   const state = useLeagueState()
   const { pathname } = useLocation()
+  const phone = useMediaQuery(PHONE_QUERY)
 
   // 화면이 바뀌면 맨 위로 (데모 go()와 같은 동작)
   useEffect(() => {
@@ -32,6 +39,7 @@ export default function Layout() {
   return (
     <>
       <BackgroundLayer />
+      <SeenTracker />
       <header>
         <div className="bar">
           <div className="brand display">세이버 노트<small>데모</small></div>
@@ -42,9 +50,11 @@ export default function Layout() {
               </Link>
             ))}
           </nav>
-          <div className="bar-end">
-            <AccountMenu />
+          <div className="bar-end icon-row" role="group" aria-label="빠른 메뉴">
+            <NewsButton />
+            <SearchButton />
             <SettingsButton />
+            <AccountMenu />
           </div>
         </div>
       </header>
@@ -65,6 +75,7 @@ export default function Layout() {
         )}
         {state.status === 'ready' && <Outlet />}
       </main>
+      {phone && <TabBar />}
     </>
   )
 }
