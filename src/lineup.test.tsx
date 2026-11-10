@@ -12,6 +12,8 @@ import { createMemorySettings } from './data/settings/memory'
 import type { AuthRepository } from './data/source'
 import { dayKeyKST } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
+import { virtualFanLineups } from './domain/lineup/fans'
+import { pickCounts } from './domain/lineup/picks'
 import { bullpenRoles } from './domain/lineup/roles'
 import AuthProvider from './ui/auth/AuthProvider'
 import CheerProvider from './ui/cheer/CheerProvider'
@@ -31,6 +33,7 @@ const basis = buildLeague(await source.loadDay!('2026-11-10'))
 const roles = bullpenRoles(basis)
 const catchers = today.hitters.filter((h) => h.raw.pos === 'C')
 const closers = today.pitchers.filter((p) => roles.get(p.id) === 'CL')
+const fanPicks = pickCounts(virtualFanLineups(basis, roles), null)
 
 /** 앱이 여는 그대로 (커뮤니티·응원방·마켓·라인업은 브라우저 저장소), 계정만 메모리 */
 function renderApp(path: string, auth: AuthRepository = createMemoryAuth({ iterations: 1_000 })) {
@@ -179,3 +182,63 @@ describe('나만의 라인업 화면', () => {
     expect(await slot(/^포수 — 비어 있음/)).toBeTruthy()
   })
 })
+
+describe('포지션별 픽 순위 화면', () => {
+  const pickRow = async (name: string) => (await within(await screen.findByRole('tabpanel', { name: '포수 픽 순위' })).findByRole('link', { name })).closest('tr')!
+
+  it('포지션 탭 12개, 「가상 팬 300명 + 내 라인업 기준」, 순위·선수·팀·픽 수·픽률, 마무리는 세이브·중간은 홀드', async () => {
+    const user = userEvent.setup()
+    renderApp('/lineup?tab=picks')
+    const tabs = within(await screen.findByRole('tablist', { name: '포지션' })).getAllByRole('tab')
+    expect(tabs.map((t) => t.textContent)).toEqual(['포수', '1루수', '2루수', '3루수', '유격수', '좌익수', '중견수', '우익수', '지명타자', '선발 투수', '중간 투수', '마무리 투수'])
+    expect(screen.getByText('가상 팬 300명 + 내 라인업 기준')).toBeTruthy()
+    const table = within(screen.getByRole('table'))
+    expect(table.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['순위', '선수', '팀', '픽 수', '픽률'])
+    expect(table.getAllByRole('row')).toHaveLength(1 + catchers.length)
+    await user.click(screen.getByRole('tab', { name: '마무리 투수' }))
+    const cl = within(screen.getByRole('table'))
+    expect(cl.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['순위', '선수', '팀', '픽 수', '픽률', '세이브'])
+    expect(cl.getAllByRole('row')).toHaveLength(1 + 6)
+    await user.click(screen.getByRole('tab', { name: '중간 투수' }))
+    expect(within(screen.getByRole('table')).getAllByRole('columnheader').at(-1)!.textContent).toBe('홀드')
+    await user.click(screen.getByRole('tab', { name: '선발 투수' }))
+    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(1 + 10)
+  })
+
+  it('내 라인업을 저장하면 그 선수 픽 수가 1 늘고 「내 픽」으로 표시, 바꾸면 이전 선수는 1 줄어든다', async () => {
+    const user = userEvent.setup()
+    const auth = createMemoryAuth({ iterations: 1_000 })
+    await auth.signInDemo()
+    renderApp('/lineup', auth)
+    const [x, y] = catchers
+    const base = (id: string) => fanPicks.counts.C.get(id as never) ?? 0
+    await pickInto(user, '포수', x.name)
+    await user.click(screen.getByRole('button', { name: '저장' }))
+    await screen.findByText(/저장했어요/)
+    await user.click(screen.getByRole('tab', { name: '포지션별 픽 순위' }))
+    let row = await pickRow(x.name)
+    expect(within(row).getAllByRole('cell')[2].textContent).toBe(String(base(x.id) + 1))
+    expect(within(row).getByText('내 픽')).toBeTruthy()
+    // 바꾸기
+    await user.click(screen.getByRole('tab', { name: '내 라인업' }))
+    await pickInto(user, '포수', y.name)
+    await user.click(screen.getByRole('button', { name: '저장' }))
+    await screen.findByText(/저장했어요/)
+    await user.click(screen.getByRole('tab', { name: '포지션별 픽 순위' }))
+    row = await pickRow(x.name)
+    expect(within(row).getAllByRole('cell')[2].textContent).toBe(String(base(x.id)))
+    expect(within(row).queryByText('내 픽')).toBeNull()
+    const rowY = await pickRow(y.name)
+    expect(within(rowY).getAllByRole('cell')[2].textContent).toBe(String(base(y.id) + 1))
+  })
+
+  it('선수 이름을 누르면 선수 카드로 간다', async () => {
+    const user = userEvent.setup()
+    renderApp('/lineup?tab=picks&pos=CL')
+    const first = (await within(await screen.findByRole('tabpanel', { name: '마무리 투수 픽 순위' })).findAllByRole('link'))[0]
+    const name = first.textContent!
+    await user.click(first)
+    expect(await screen.findByRole('heading', { level: 1, name })).toBeTruthy()
+  })
+})
+
