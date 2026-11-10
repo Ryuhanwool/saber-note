@@ -11,6 +11,7 @@ const NAV = [
   { to: '/', label: '선수', match: (path: string) => path === '/' || path.startsWith('/player/') },
   { to: '/compare', label: '비교', match: (path: string) => path.startsWith('/compare') },
   { to: '/ranking', label: '가치 순위', match: (path: string) => path.startsWith('/ranking') },
+  { to: '/lineup', label: '라인업', match: (path: string) => path.startsWith('/lineup') },
   { to: '/games', label: '미니게임', match: (path: string) => path.startsWith('/games') },
   { to: '/community', label: '커뮤니티', match: (path: string) => path.startsWith('/community') },
   { to: '/market', label: '마켓', match: (path: string) => path.startsWith('/market') },
@@ -23,6 +24,9 @@ export default function Layout() {
   // 화면이 바뀌면 맨 위로 (데모 go()와 같은 동작)
   useEffect(() => {
     window.scrollTo?.({ top: 0 })
+    // 휴대폰 폭에서 메뉴 줄을 가로로 밀어 보므로, 지금 보는 메뉴가 화면 밖이면 보이는 곳으로 옮긴다
+    const current = document.querySelector<HTMLElement>('nav[aria-label="주요 메뉴"] a[aria-current="page"]')
+    current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   }, [pathname])
 
   return (

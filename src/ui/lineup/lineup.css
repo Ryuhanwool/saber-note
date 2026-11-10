@@ -85,12 +85,12 @@
 @media (max-width:820px){.my-lineup{grid-template-columns:1fr}}
 
 .order-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:6px}
-.order-list li{display:grid;grid-template-columns:2.2em 1fr 40px 40px;gap:6px;align-items:center;padding:6px 8px;border-top:1px solid var(--line)}
+.order-list li{display:grid;grid-template-columns:2.2em 1fr 44px 44px;gap:6px;align-items:center;padding:6px 8px;border-top:1px solid var(--line)}
 .order-list li:first-child{border-top:0}
 .order-no{font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
 .order-name{font-weight:700;min-width:0;overflow-wrap:anywhere}
 .order-name small{color:var(--soft);font-weight:400;margin-left:4px}
-.order-btn{width:40px;height:40px;border-radius:6px;border:1px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;font-size:.9rem}
+.order-btn{width:44px;height:44px;border-radius:6px;border:1px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;font-size:.9rem}
 .order-btn:disabled{opacity:.3;cursor:not-allowed}
 .order-pitchers{font-size:.85rem;margin:8px 0 0;line-height:1.5}
 

@@ -242,3 +242,36 @@ describe('포지션별 픽 순위 화면', () => {
   })
 })
 
+describe('메뉴와 날짜', () => {
+  it('상단 메뉴 「라인업」(메뉴 7개)으로 들어가고, 날짜를 옮겨도 마무리·중간 역할은 그대로(세이브·홀드 숫자만 바뀜)', async () => {
+    const user = userEvent.setup()
+    renderApp('/ranking')
+    const nav = within(await screen.findByRole('navigation', { name: '주요 메뉴' }))
+    expect(nav.getAllByRole('link')).toHaveLength(7)
+    const names = async (label: string) => {
+      await user.click(await slot(new RegExp(`^${label}`)))
+      const d = await dialog(`${label} 고르기`)
+      const rows = d.getAllByRole('button').filter((b) => b.className.includes('pick-row'))
+      const out = rows.map((r) => r.textContent!)
+      await user.keyboard('{Escape}')
+      return out
+    }
+    await user.click(nav.getByRole('link', { name: '라인업' }))
+    expect(nav.getByRole('link', { name: '라인업' }).getAttribute('aria-current')).toBe('page')
+    const clToday = await names('마무리 투수'), mrToday = await names('중간 투수')
+    // 시연용 날짜를 60일 앞으로
+    await user.click(nav.getByRole('link', { name: '가치 순위' }))
+    const demo = within(await screen.findByRole('group', { name: '시연용 날짜 이동' }))
+    for (let i = 0; i < 60; i++) await user.click(demo.getByRole('button', { name: '‹ 이전 날' }))
+    await screen.findByText(/시연용 날짜예요/)
+    await waitFor(() => expect((demo.getByRole('button', { name: '‹ 이전 날' }) as HTMLButtonElement).disabled).toBe(false))
+    await user.click(nav.getByRole('link', { name: '라인업' }))
+    const clThen = await names('마무리 투수'), mrThen = await names('중간 투수')
+    const who = (rows: string[]) => new Set(closers.concat(today.pitchers.filter((p) => roles.get(p.id) === 'MR')).filter((p) => rows.some((r) => r.startsWith(p.name))).map((p) => p.id))
+    expect(who(clThen)).toEqual(who(clToday))
+    expect(who(mrThen)).toEqual(who(mrToday))
+    expect(who(clToday).size).toBe(6)
+    expect([...clThen, ...mrThen].join()).not.toBe([...clToday, ...mrToday].join()) // 세이브·홀드(와 가치) 숫자는 날짜에 따라 다르다
+  })
+})
+
