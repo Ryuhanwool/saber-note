@@ -1,8 +1,10 @@
 // 나만의 라인업의 자리 12개: 야수 8 + 지명타자 + 선발·중간·마무리 투수
 
-export type HitterSlot = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH'
-export type PitcherSlot = 'SP' | 'MR' | 'CL'
-export type LineupSlot = HitterSlot | PitcherSlot
+import type { LineupHitterSlotId, LineupSlotId } from '../../data/types'
+
+export type HitterSlot = LineupHitterSlotId
+export type PitcherSlot = Exclude<LineupSlotId, LineupHitterSlotId>
+export type LineupSlot = LineupSlotId
 
 export const HITTER_SLOTS: readonly HitterSlot[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH']
 export const PITCHER_SLOTS: readonly PitcherSlot[] = ['SP', 'MR', 'CL']

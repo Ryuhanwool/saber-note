@@ -394,6 +394,18 @@ export const DEMO_ACCOUNT_NICKNAME = '체험팬'
 /** 로그인 기능 전에 이 브라우저에서 쓴 글의 작성자 id는 `local:`로 시작한다 (화면에는 「익명 팬」) */
 export const isAnonymousAuthor = (authorId: string) => authorId.startsWith('local:')
 
+// ---------- 나만의 라인업 ----------
+
+/** 라인업 자리 12개: 야수 8 + 지명타자 + 선발(SP)·중간(MR)·마무리(CL) 투수 */
+export type LineupSlotId = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH' | 'SP' | 'MR' | 'CL'
+export type LineupHitterSlotId = Exclude<LineupSlotId, 'SP' | 'MR' | 'CL'>
+
+/** 라인업 내용: 자리마다 선수(비어 있으면 null)와 타순(채운 타자 자리의 순서, 1번부터) */
+export type LineupDraft = { slots: Record<LineupSlotId, PlayerId | null>; order: LineupHitterSlotId[] }
+
+/** 계정마다 하나 저장하는 라인업 */
+export type SavedLineup = LineupDraft & { accountId: string; updatedAt: number }
+
 // ---------- 화면 설정 ----------
 
 /** 화면 설정 (이 브라우저에만 저장) */

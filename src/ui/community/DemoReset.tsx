@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useCheer } from '../cheer/CheerContext'
+import { useLineupStore } from '../lineup/LineupContext'
 import { useMarket } from '../market/MarketContext'
 import { useCommunity } from './CommunityContext'
 
@@ -14,12 +15,13 @@ export default function DemoReset() {
   const state = useCommunity()
   const cheer = useCheer()
   const market = useMarket()
+  const lineup = useLineupStore()
   const auth = useAuth()
   const [withAccounts, setWithAccounts] = useState(false)
   const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle')
   const [message, setMessage] = useState<{ text: string; warn: boolean } | null>(null)
   if (state.status !== 'ready' || !state.repo.resetDemoData) return null
-  const resets = [state.repo, cheer.status === 'ready' ? cheer.repo : null, market.status === 'ready' ? market.repo : null].flatMap((r) => (r?.resetDemoData ? [r.resetDemoData.bind(r)] : []))
+  const resets = [state.repo, cheer.status === 'ready' ? cheer.repo : null, market.status === 'ready' ? market.repo : null, lineup.status === 'ready' ? lineup.repo : null].flatMap((r) => (r?.resetDemoData ? [r.resetDemoData.bind(r)] : []))
   const authRepo = auth.status === 'ready' ? auth.repo : null
   const reset = async () => {
     await Promise.all(resets.map((f) => f()))
@@ -46,14 +48,14 @@ export default function DemoReset() {
       {step === 'idle' ? (
         <>
           <p className="muted" style={{ fontSize: '.85rem', margin: '0 0 10px' }}>
-            시연을 다시 시작할 때 써요. 커뮤니티·응원방·마켓에서 내가 남긴 글·응원·판매글, 좋아요·신고 기록, 장바구니를 지우고 예시 데이터를 처음 상태로 되돌려요.
+            시연을 다시 시작할 때 써요. 커뮤니티·응원방·마켓·라인업에서 내가 남긴 글·응원·판매글·라인업, 좋아요·신고 기록, 장바구니를 지우고 예시 데이터를 처음 상태로 되돌려요.
           </p>
           <button className="btn ghost" onClick={() => { setMessage(null); setStep('confirm') }}>시연 데이터 초기화</button>
         </>
       ) : (
         <div role="alertdialog" aria-label="초기화 확인">
           <p style={{ margin: '0 0 10px' }}>
-            <b>정말 초기화할까요?</b> 이 브라우저에 저장된 내가 쓴 글·사진·영상, 응원 메시지와 「응원하기」, 판매글과 장바구니, 좋아요·신고 기록이 모두 지워지고 되돌릴 수 없어요. 계정은 아래에서 고르지 않으면 남아요.
+            <b>정말 초기화할까요?</b> 이 브라우저에 저장된 내가 쓴 글·사진·영상, 응원 메시지와 「응원하기」, 판매글과 장바구니, 저장한 라인업, 좋아요·신고 기록이 모두 지워지고 되돌릴 수 없어요. 계정은 아래에서 고르지 않으면 남아요.
           </p>
           {authRepo?.resetDemoData && (
             <label className="row" style={{ gap: 8, alignItems: 'center', margin: '0 0 10px', fontSize: '.9rem' }}>
