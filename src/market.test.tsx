@@ -7,6 +7,7 @@ import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { findEnabledButton } from './testing/buttons'
 import { createMemoryCheer } from './data/cheer/memory'
 import { createMemoryCommunity } from './data/community/memory'
 import { createMemoryMarket } from './data/market/memory'
@@ -68,7 +69,7 @@ describe('공식 스토어', () => {
   it('담으면 장바구니 개수가 오른다', async () => {
     const user = userEvent.setup()
     renderAt('/market', seeded())
-    await user.click(await screen.findByRole('button', { name: `${TEAM} 모자 담기` }))
+    await user.click(await findEnabledButton(`${TEAM} 모자 담기`))
     expect(await screen.findByRole('link', { name: '장바구니 1' })).toBeTruthy()
     await user.click(screen.getByRole('button', { name: `${TEAM} 모자 담기` }))
     expect(await screen.findByRole('link', { name: '장바구니 2' })).toBeTruthy()
@@ -201,6 +202,18 @@ describe('장바구니와 주문 확인 (시연용)', () => {
     expect(done.getByText(/^DEMO-\d{8}-\d{4}$/)).toBeTruthy()
     expect(done.getByText('시연용이라 실제 결제와 배송은 일어나지 않아요. 장바구니를 비웠어요.')).toBeTruthy()
     expect(screen.getByRole('link', { name: '장바구니 0' })).toBeTruthy()
+  })
+
+  it('저장소가 늦게 열려도 담기가 사라지지 않는다 (버튼은 저장소가 열린 뒤 활성)', async () => {
+    const user = userEvent.setup()
+    const repo = seeded()
+    // 저장소가 300ms 늦게 열리는 기기 (바쁠 때를 흉내 낸다)
+    const slow: MarketRepository = { ...repo, snapshot: () => new Promise((r) => setTimeout(() => r(repo.snapshot()), 300)) }
+    renderAt('/market', slow)
+    const button = await screen.findByRole('button', { name: `${TEAM} 모자 담기` })
+    expect((button as HTMLButtonElement).disabled).toBe(true)
+    await user.click(await findEnabledButton(`${TEAM} 모자 담기`))
+    expect(await screen.findByRole('link', { name: '장바구니 1' })).toBeTruthy()
   })
 
   it('판매글 화면에서 담으면 「장바구니에 있어요」로 바뀐다', async () => {

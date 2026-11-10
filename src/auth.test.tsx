@@ -8,6 +8,7 @@ import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { findEnabledButton } from './testing/buttons'
 import { createMemoryAuth } from './data/auth/memory'
 import { createBrowserCommunity } from './data/community/browser'
 import { getDataSource } from './data/registry'
@@ -232,7 +233,8 @@ describe('로그인이 필요한 동작: 로그인 화면으로 안내하고, �
   it('주문하기: 장바구니는 로그인 없이 담고, 주문할 때 로그인한 뒤 주문 확인으로 돌아온다', async () => {
     const user = userEvent.setup()
     renderApp('/market')
-    await user.click(await screen.findByRole('button', { name: `${TEAM} 모자 담기` }))
+    // 담기 버튼은 마켓 저장소가 열려야 활성이 된다 (바로 누르면 바쁠 때 클릭이 사라지던 원인)
+    await user.click(await findEnabledButton(`${TEAM} 모자 담기`))
     await user.click(await screen.findByRole('link', { name: '장바구니 1' }))
     await user.click(await screen.findByRole('button', { name: '주문 확인으로' }))
     await user.click(await screen.findByRole('button', { name: /주문하기 \(시연\)$/ }))
