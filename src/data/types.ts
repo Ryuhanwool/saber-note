@@ -173,6 +173,12 @@ export type RawPitcher = {
   HBP: number
   H: number
   ER: number
+  /**
+   * 세이브·홀드 (불펜 투수만, 선발은 null. 출처에 없으면 null).
+   * 세이브 = 7회 이후 리드를 지킨 등판 중 9회를 맡아 경기를 끝낸 것, 홀드 = 나머지 리드를 지킨 등판
+   */
+  SV: Num
+  HLD: Num
   tracking: RawPitcherTracking
   /** 경기 상황별 기록. 출처에 없으면 null */
   clutch: RawPitcherClutch | null
@@ -228,6 +234,11 @@ export type DatasetMeta = {
   source: string
   /** 화면 상단 안내 문구. 없으면 null */
   notice: string | null
+  /**
+   * 불펜 역할(마무리·중간)과 가상 팬 라인업을 정하는 기준 날짜. 이 날짜 기록으로 한 번 정해 고정한다.
+   * 날짜별 기록이 없는 출처는 null (그때는 지금 기록으로 정한다)
+   */
+  roleBasisDate: string | null
   /** 이 출처가 어떤 기록을 제공하는지. 탭·지표 줄을 보여 줄지는 domain이 이 값으로 정한다 */
   available: DataAvailability
 }
@@ -247,6 +258,8 @@ export type DataAvailability = {
   battedBalls: boolean
   /** 경기 상황별(클러치) 기록을 주는지. 없으면 선수 가치의 클러치 부분을 숨긴다 */
   clutch: boolean
+  /** 불펜 투수의 세이브·홀드를 주는지 */
+  saves: boolean
 }
 
 export type RawDataset = {

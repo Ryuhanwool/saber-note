@@ -32,6 +32,7 @@ export function createMlbSource(opts: MlbSourceOptions): LeagueDataSource {
           asOf: opts.asOf,
           source: 'Baseball Savant',
           notice: 'MLB 베이스볼 서번트 공개 데이터로 화면을 검증하는 프로토타입입니다. KBO 기록이 아닙니다.',
+          roleBasisDate: null,
           available: availability({
             xbt: false,
             fielding: ['oaa'],

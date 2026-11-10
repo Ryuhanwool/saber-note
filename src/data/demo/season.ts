@@ -7,6 +7,7 @@
 //   하루 변화는 경기 하나가 들어오고 가장 오래된 경기 하나가 빠지는 만큼이다.
 // - 수비·트래킹·추가 진루율은 시즌 값 그대로 둔다 (데모 단순화).
 import type { InningCounts, PlayerId, RawHitter, RawHitterClutch, RawPitcher, RawPitcherClutch, WinLossCounts } from '../types'
+import { BULLPEN_SEED_OFFSET, allHolds, daySaves, lateHolds } from './bullpen'
 import { HITTER_CLUTCH_HITS, hitterClutchParams, pitcherClutchParams } from './clutch'
 import type { HitterRates, PitcherRates } from './generate'
 import { mulberry32, type Rand } from './random'
@@ -72,7 +73,12 @@ type Phase = keyof InningCounts
 const PHASES: Phase[] = ['early', 'late', 'extra']
 
 export type HitterDay = Pick<RawHitter, 'PA' | 'BB' | 'HBP' | 'SO' | 'HR' | 'S1' | 'D2' | 'D3' | 'SB' | 'CS'> & { clutch: RawHitterClutch | null }
-export type PitcherDay = Pick<RawPitcher, 'outs' | 'TBF' | 'SO' | 'BB' | 'HR' | 'HBP' | 'H' | 'ER'> & { clutch: RawPitcherClutch | null }
+export type PitcherDay = Pick<RawPitcher, 'outs' | 'TBF' | 'SO' | 'BB' | 'HR' | 'HBP' | 'H' | 'ER'> & {
+  /** 세이브·홀드 (선발은 늘 0, 합계에서 null로 바꾼다) */
+  SV: number
+  HLD: number
+  clutch: RawPitcherClutch | null
+}
 
 const zeroIC = (): InningCounts => ({ early: 0, late: 0, extra: 0 })
 const zeroWL = (): WinLossCounts => ({ won: zeroIC(), lost: zeroIC() })
@@ -194,6 +200,7 @@ function splitPitcher(p: RawPitcher, R: Rand): (PitcherDay | null)[] {
   gameDays.forEach((day, g) => {
     days[day] = {
       outs: outs[g], TBF: tbf[g], SO: so[g], BB: bb[g], HR: hr[g], HBP: hbp[g], H: h[g], ER: er[g],
+      SV: 0, HLD: 0,
       clutch: p.clutch ? { ...zeroPitcherClutch(), games: 1 } : null,
     }
   })
@@ -226,6 +233,21 @@ function mix(a: number, b: number, c: number): number {
   h = Math.imul(h, 0x2c1b3c6d)
   h ^= h >>> 12
   return h >>> 0
+}
+
+/**
+ * 기준 시즌의 세이브를 등판일에 나눈다: 그날 7회 이후 지킨 리드 중에서 고른다. 홀드 = 그날 지킨 리드 − 세이브.
+ * 따로 된 난수를 써서 위에서 나눈 다른 기록은 그대로다.
+ */
+function splitSaves(seed: number, pitchers: RawPitcher[], pDays: (PitcherDay | null)[][]) {
+  const R = mulberry32(seed + BULLPEN_SEED_OFFSET + 1)
+  pitchers.forEach((p, i) => {
+    if (p.SV === null) return
+    const days = pDays[i]
+    const units = days.flatMap((d, idx) => (d?.clutch ? Array<number>(lateHolds(d.clutch)).fill(idx) : []))
+    for (const idx of takeDisjoint(units, [Math.min(p.SV, units.length)], R)[0]) days[idx]!.SV++
+    for (const d of days) if (d?.clutch) d.HLD = allHolds(d.clutch) - d.SV
+  })
 }
 
 // ---------- 기준 시즌 밖의 날: 실력(확률)으로 하루 경기 시뮬레이션 ----------
@@ -324,7 +346,7 @@ function simPitcherDay(p: RawPitcher, rates: PitcherRates, R: Rand): PitcherDay 
   const mean = p.outs / G
   // 등판 길이: 선발은 평균의 75~125%, 불펜은 50~150%
   const target = Math.max(1, Math.round(mean * (sp ? 0.75 + 0.5 * R() : 0.5 + R())))
-  const d: PitcherDay = { outs: 0, TBF: 0, SO: 0, BB: 0, HR: 0, HBP: 0, H: 0, ER: 0, clutch: p.clutch ? { ...zeroPitcherClutch(), games: 1 } : null }
+  const d: PitcherDay = { outs: 0, TBF: 0, SO: 0, BB: 0, HR: 0, HBP: 0, H: 0, ER: 0, SV: 0, HLD: 0, clutch: p.clutch ? { ...zeroPitcherClutch(), games: 1 } : null }
   while (d.outs < target && d.TBF < target * 3 + 12) {
     d.TBF++
     let u = R()
@@ -382,6 +404,7 @@ export function createDemoSeason(
   const R = mulberry32(seed + 0x5ea5)
   const hDays = hitters.map((h) => splitHitter(h, R))
   const pDays = pitchers.map((p) => splitPitcher(p, R))
+  splitSaves(seed, pitchers, pDays)
   const base = dayNumber(DEMO_BASE_DATE)
   const simCache = new Map<string, HitterDay | PitcherDay | null>()
 
@@ -398,6 +421,9 @@ export function createDemoSeason(
     const g = isH
       ? simHitterDay(hitters[i], hitterRates.get(hitters[i].id)!, r)
       : simPitcherDay(pitchers[i - hitters.length], pitcherRates.get(pitchers[i - hitters.length].id)!, r)
+    // 세이브·홀드는 따로 된 난수로 (다른 기록이 바뀌지 않게)
+    const p = isH ? null : pitchers[i - hitters.length]
+    if (p && p.SV !== null && g && 'outs' in g && g.clutch) Object.assign(g, daySaves(p, g.clutch, mulberry32(mix(seed + BULLPEN_SEED_OFFSET, i, offset))))
     if (simCache.size > 200_000) simCache.clear()
     simCache.set(key, g)
     return g
@@ -420,10 +446,11 @@ export function createDemoSeason(
       ...h,
       ...sumOf<HitterDay>(i, { PA: 0, BB: 0, HBP: 0, SO: 0, HR: 0, S1: 0, D2: 0, D3: 0, SB: 0, CS: 0, clutch: h.clutch ? zeroHitterClutch() : null }),
     }))
-    const ps = pitchers.map((p, i) => ({
-      ...p,
-      ...sumOf<PitcherDay>(hitters.length + i, { outs: 0, TBF: 0, SO: 0, BB: 0, HR: 0, HBP: 0, H: 0, ER: 0, clutch: p.clutch ? zeroPitcherClutch() : null }),
-    }))
+    const ps = pitchers.map((p, i) => {
+      const sum = sumOf<PitcherDay>(hitters.length + i, { outs: 0, TBF: 0, SO: 0, BB: 0, HR: 0, HBP: 0, H: 0, ER: 0, SV: 0, HLD: 0, clutch: p.clutch ? zeroPitcherClutch() : null })
+      // 선발(세이브·홀드가 없는 투수)은 null 그대로
+      return { ...p, ...sum, SV: p.SV === null ? null : sum.SV, HLD: p.HLD === null ? null : sum.HLD }
+    })
     const out = { hitters: hs, pitchers: ps }
     if (cache.size > 16) cache.delete(cache.keys().next().value!)
     cache.set(date, out)

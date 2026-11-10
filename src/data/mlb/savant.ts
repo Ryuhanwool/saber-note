@@ -127,6 +127,8 @@ export function toRawPitcher(r: MlbPitcherRow): RawPitcher {
       whiff: percentToRate(r.whiff_percent),
       mix: null, // 구종 비율(pitch arsenal)은 뼈대에 넣지 않았다
     },
+    SV: null, // 세이브·홀드는 뼈대 행에 없다
+    HLD: null,
     clutch: null,
   }
 }
