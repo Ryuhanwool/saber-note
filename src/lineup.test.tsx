@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
 import { createMemoryAuth } from './data/auth/memory'
+import { DEMO_BASE_DATE } from './data/demo/season'
 import { getDataSource } from './data/registry'
 import { createMemorySettings } from './data/settings/memory'
 import type { AuthRepository } from './data/source'
@@ -29,7 +30,7 @@ URL.revokeObjectURL = () => {}
 
 const source = getDataSource('demo')
 const today = buildLeague(await source.loadDay!(dayKeyKST(new Date())))
-const basis = buildLeague(await source.loadDay!('2026-11-10'))
+const basis = buildLeague(await source.loadDay!(DEMO_BASE_DATE))
 const roles = bullpenRoles(basis)
 const catchers = today.hitters.filter((h) => h.raw.pos === 'C')
 const closers = today.pitchers.filter((p) => roles.get(p.id) === 'CL')

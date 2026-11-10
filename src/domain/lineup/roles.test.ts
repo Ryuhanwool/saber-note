@@ -58,7 +58,8 @@ describe('불펜 역할 (domain)', () => {
     expect(leadsHeld(mk('가', 0, 3, 0))).toBe(3)
   })
 
-  it('역할을 정해도 리그 평균은 그대로다 (세이브·홀드를 넣기 전 리그 기준값 지문)', async () => {
+  // 지문은 기준일 2026-11-10 데이터로 뜬 것이라, 기준일을 바꿔 보는 확인에서는 건너뛴다
+  it.runIf(DEMO_BASE_DATE === '2026-11-10')('역할을 정해도 리그 평균은 그대로다 (세이브·홀드를 넣기 전 리그 기준값 지문)', async () => {
     const before: Record<string, string> = { '2026-11-10': '30ab9cfa', '2026-11-11': '832a4b25', '2026-09-21': 'e02f1588', '2027-09-06': '70336a78' }
     for (const [d, h] of Object.entries(before)) {
       const lg = buildLeague(await source.loadDay!(d))

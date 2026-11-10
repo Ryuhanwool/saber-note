@@ -27,7 +27,8 @@ const BEFORE: Record<string, [string, string]> = {
 const withoutSaves = (ds: RawDataset) => ds.pitchers.map(({ SV: _sv, HLD: _hld, ...rest }) => rest)
 
 describe('불펜 세이브·홀드 (data)', () => {
-  it('세이브·홀드를 넣어도 다른 기록은 바뀌지 않는다 (넣기 전 데이터 지문과 같다)', async () => {
+  // 지문은 기준일 2026-11-10 데이터로 뜬 것이라, 기준일을 바꿔 보는 확인에서는 건너뛴다
+  it.runIf(DEMO_BASE_DATE === '2026-11-10')('세이브·홀드를 넣어도 다른 기록은 바뀌지 않는다 (넣기 전 데이터 지문과 같다)', async () => {
     for (const [d, [h, p]] of Object.entries(BEFORE)) {
       const ds = await source.loadDay!(d)
       expect(fnv(JSON.stringify(ds.hitters)), `${d} 타자`).toBe(h)

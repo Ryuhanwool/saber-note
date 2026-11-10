@@ -122,7 +122,8 @@ describe('가치 순위표 화면', () => {
 
   it('스탯 조절로 바꾼 값은 순위표에 들어가지 않는다', async () => {
     const user = userEvent.setup()
-    const r = rows[rows.length - 1]
+    // 최저 금액에 걸리지 않은 가장 낮은 순위 선수 (최저 금액에 걸려 있으면 스탯을 올려도 금액이 그대로일 수 있다)
+    const r = [...rows].reverse().find((x) => !x.value.floorApplied && x.value.total > 30_000_000)!
     renderAt(`/player/${encodeURIComponent(r.player.id)}?tab=value`)
     const panel = await screen.findByRole('tabpanel', { name: '선수 가치' })
     const plus = within(panel).getByRole('button', { name: r.player.type === 'H' ? '홈런 늘리기' : '탈삼진 늘리기' })
