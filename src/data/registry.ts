@@ -11,7 +11,9 @@ import { createMemoryCommunity } from './community/memory'
 import type { SeedPost } from './community/seed'
 import { createBrowserSettings } from './settings/browser'
 import { createMemorySettings } from './settings/memory'
-import type { AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
+import { createBrowserLineup } from './lineup/browser'
+import { createMemoryLineup } from './lineup/memory'
+import type { LineupRepository, AuthRepository, CheerRepository, CommunityRepository, LeagueDataSource, MarketRepository, SettingsStore } from './source'
 import type { CommunityUser, LeagueId } from './types'
 import { demoSource } from './demo'
 
@@ -113,3 +115,18 @@ export async function openSettingsStore(): Promise<SettingsStore> {
     return createMemorySettings()
   }
 }
+
+/** 나만의 라인업 저장소 열기. 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
+export async function openLineupRepository(opts: { user: CommunityUser | null }): Promise<LineupRepository> {
+  if (typeof indexedDB !== 'undefined') {
+    const browser = createBrowserLineup({ user: opts.user })
+    try {
+      await browser.mine() // 저장소를 실제로 열어 본다
+      return browser
+    } catch {
+      browser.close()
+    }
+  }
+  return createMemoryLineup({ user: opts.user })
+}
+

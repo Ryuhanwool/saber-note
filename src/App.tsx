@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router'
 import RankingPage from './ui/ranking/RankingPage'
+import LineupPage from './ui/lineup/LineupPage'
 import Layout from './ui/shared/Layout'
 import HomePage from './ui/player/HomePage'
 import PlayerPage from './ui/player/PlayerPage'
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="player/:id/cheer" element={<CheerRoomPage />} />
         <Route path="compare" element={<ComparePage />} />
         <Route path="ranking" element={<RankingPage />} />
+        <Route path="lineup" element={<LineupPage />} />
         <Route path="games/:game?" element={<GamesPage />} />
         <Route path="community" element={<CommunityPage />} />
         <Route path="login" element={<LoginPage />} />

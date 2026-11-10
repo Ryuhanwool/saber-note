@@ -1,5 +1,5 @@
 import type {
-  Account, CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewAccount, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
+  Account, LineupDraft, SavedLineup, CartLine, CheerMessage, CheerSnapshot, CommunityPost, CommunityUser, DisplaySettings, LeagueId, MarketListing, MarketSnapshot, MediaRef, NewAccount, NewCheerMessage, NewListing, NewPost, PlayerId, RawBattedBall, RawDataset, RawWeek,
 } from './types'
 
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
@@ -165,6 +165,24 @@ export class StorageFullError extends Error {
     super('저장 공간이 가득 찼습니다.')
     this.name = 'StorageFullError'
   }
+}
+
+/**
+ * 나만의 라인업 저장소: 계정마다 라인업 1개. 로그인한 계정만 저장할 수 있다. ui는 registry의 openLineupRepository로 연다.
+ * 자리·타순 규칙 검사는 저장하기 전에 domain(domain/lineup)이 한다.
+ */
+export interface LineupRepository {
+  /** browser: 이 브라우저에만 저장, memory: 새로고침하면 사라짐, shared: 서버 */
+  readonly storage: 'browser' | 'memory' | 'shared'
+  /** 로그인한 계정의 저장된 라인업. 로그아웃이거나 저장한 적이 없으면 null */
+  mine(): Promise<SavedLineup | null>
+  /** 내 라인업이 바뀔 때마다 (다른 탭 포함). 반환값은 구독 해제 */
+  subscribe(listener: (mine: SavedLineup | null) => void): () => void
+  /** 로그인한 계정의 라인업을 저장(덮어쓰기). 로그아웃 상태면 '로그인이 필요합니다' 오류 */
+  save(lineup: LineupDraft): Promise<SavedLineup>
+  close?(): void
+  /** 시연 데이터 초기화 (있으면): 이 브라우저에 저장된 모든 계정의 라인업을 지운다 */
+  resetDemoData?(): Promise<void>
 }
 
 /** 화면 설정 저장소: 설정 값과 내 배경 이미지. ui는 registry의 openSettingsStore로 연다 */

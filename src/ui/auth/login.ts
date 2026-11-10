@@ -28,6 +28,23 @@ export function takeDraft(key: string): string {
   }
 }
 
+/** 보관한 글자를 지우지 않고 읽는다 (화면이 처음 그려질 때 읽고, 저장한 뒤 clearDraft로 지운다). 없으면 '' */
+export function peekDraft(key: string): string {
+  try {
+    return sessionStorage.getItem(DRAFT_PREFIX + key) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function clearDraft(key: string) {
+  try {
+    sessionStorage.removeItem(DRAFT_PREFIX + key)
+  } catch {
+    // 지우지 못해도 괜찮다
+  }
+}
+
 /**
  * 로그인이 필요한 동작 앞에서 부른다. 로그인돼 있으면 true.
  * 아니면 (써 두던 글을 보관하고) 로그인 화면으로 보내고 false. 로그인한 뒤에는 next(기본은 지금 화면)로 돌아온다.

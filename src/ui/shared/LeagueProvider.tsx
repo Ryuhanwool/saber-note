@@ -4,6 +4,7 @@ import type { LeagueDataSource } from '../../data/source'
 import type { LeagueId, RawHitter, RawPitcher } from '../../data/types'
 import { dayKeyKST } from '../../domain/games/calendar'
 import { buildLeague } from '../../domain/league'
+import { bullpenRoles, type BullpenRoles } from '../../domain/lineup/roles'
 import type { League } from '../../domain/players'
 import { LeagueContext, type LeagueState } from './LeagueContext'
 
@@ -46,6 +47,26 @@ export default function LeagueProvider({ league = DEFAULT_LEAGUE, source, childr
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [failed, setFailed] = useState<{ src: LeagueDataSource; want: string | null; message: string } | null>(null)
   const error = failed?.src === src && failed.want === want ? failed.message : null
+  // 불펜 역할·가상 팬 라인업의 기준 리그: 출처마다 한 번 (기준 날짜 기록, 없으면 처음 불러온 기록)
+  const [basis, setBasis] = useState<{ src: LeagueDataSource; league: League; roles: BullpenRoles } | null>(null)
+  const firstLeague = loaded?.source === src ? loaded.league : null
+  const needBasis = firstLeague !== null && basis?.src !== src
+
+  useEffect(() => {
+    if (!needBasis || !firstLeague) return
+    let alive = true
+    const date = firstLeague.meta.roleBasisDate
+    const load = date && src.loadDay && date !== firstLeague.meta.asOf
+      ? src.loadDay(date).then(buildLeague)
+      : Promise.resolve(firstLeague)
+    load.then(
+      (lg) => alive && setBasis({ src, league: lg, roles: bullpenRoles(lg) }),
+      (e: unknown) => alive && setFailed({ src, want, message: e instanceof Error ? e.message : String(e) }),
+    )
+    return () => {
+      alive = false
+    }
+  }, [needBasis, firstLeague, src, want])
 
   useEffect(() => {
     let alive = true
@@ -68,19 +89,21 @@ export default function LeagueProvider({ league = DEFAULT_LEAGUE, source, childr
   const state: LeagueState = useMemo(() => {
     if (error) return { status: 'error', message: error }
     // 다른 출처의 기록이면 아직 불러오는 중. 같은 출처의 다른 날짜면 새 기록이 올 때까지 지금 기록을 보여 준다
-    if (!loaded || loaded.source !== src) return { status: 'loading' }
+    if (!loaded || loaded.source !== src || !basis || basis.src !== src) return { status: 'loading' }
     const date = loaded.date
     return {
       status: 'ready',
       league: loaded.league,
       source: loaded.source,
       roster: loaded.roster,
+      basis: basis.league,
+      roles: basis.roles,
       day: date === null ? null : {
         date, today, isToday: date === today, pending: date !== want,
         setDate: (d) => setMoved(d === null || d === today ? null : { src, date: d }),
       },
     }
-  }, [error, loaded, src, today, want])
+  }, [error, loaded, basis, src, today, want])
 
   return <LeagueContext.Provider value={state}>{children}</LeagueContext.Provider>
 }

@@ -122,10 +122,10 @@ describe('선수 가치 순위 (domain)', () => {
         expect(r.value.total).toBeGreaterThanOrEqual(30_000_000)
         if (r.value.floorApplied) expect(r.value.total).toBe(30_000_000)
       }
-      // 최저 금액이 걸린 선수들은 순위표 맨 아래에 3,000만 원으로 모인다
+      // 최저 금액이 걸린 선수들은 3,000만 원으로 맨 아래 금액대에 있다 (합계가 딱 3,000만 원인 선수와는 WAR 순서로 섞일 수 있다)
       const floored = rows.filter((r) => r.value.floorApplied)
       for (const r of floored) expect(formatWon(r.value.total)).toBe('3,000만 원')
-      if (floored.length) expect(floored.map((r) => r.rank)).toEqual(rows.slice(-floored.length).map((r) => r.rank))
+      if (floored.length) expect(rows.slice(rows.indexOf(floored[0])).every((r) => r.value.total === 30_000_000)).toBe(true)
     }
   })
 

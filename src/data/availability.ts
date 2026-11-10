@@ -17,6 +17,7 @@ export function availability(provided: {
   pitcherTracking?: (keyof RawPitcherTracking)[]
   battedBalls?: boolean
   clutch?: boolean
+  saves?: boolean
 }): DataAvailability {
   return {
     xbt: provided.xbt ?? false,
@@ -25,6 +26,7 @@ export function availability(provided: {
     pitcherTracking: fill(PITCHER_TRACKING_KEYS, (k) => provided.pitcherTracking?.includes(k) ?? false),
     battedBalls: provided.battedBalls ?? false,
     clutch: provided.clutch ?? false,
+    saves: provided.saves ?? false,
   }
 }
 
@@ -36,6 +38,7 @@ export const ALL_AVAILABLE: DataAvailability = availability({
   pitcherTracking: PITCHER_TRACKING_KEYS,
   battedBalls: true,
   clutch: true,
+  saves: true,
 })
 
 /**
@@ -54,6 +57,7 @@ export function unavailableButPresent(ds: RawDataset): string[] {
   for (const p of ds.pitchers) {
     for (const k of PITCHER_TRACKING_KEYS) if (!a.pitcherTracking[k] && p.tracking[k] !== null) out.push(`${p.id} tracking.${k}`)
     if (!a.clutch && p.clutch !== null) out.push(`${p.id} clutch`)
+    if (!a.saves && (p.SV !== null || p.HLD !== null)) out.push(`${p.id} SV·HLD`)
   }
   return out
 }

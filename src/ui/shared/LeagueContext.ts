@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { LeagueDataSource } from '../../data/source'
 import type { RawHitter, RawPitcher } from '../../data/types'
+import type { BullpenRoles } from '../../domain/lineup/roles'
 import type { League } from '../../domain/players'
 
 /** 보고 있는 날짜 (날짜별 기록을 주는 출처만) */
@@ -28,6 +29,10 @@ export type LeagueState =
       day: LeagueDay | null
       /** 예시 글·응원·판매글을 만들 선수 명단: 처음 불러온 기록으로 고정 (날짜를 옮겨도 저장소를 다시 열지 않게) */
       roster: { hitters: RawHitter[]; pitchers: RawPitcher[] }
+      /** 불펜 역할·가상 팬 라인업의 기준 리그 (meta.roleBasisDate 기록, 없으면 처음 불러온 기록). 날짜를 옮겨도 그대로 */
+      basis: League
+      /** 불펜 역할 (마무리·중간). basis로 한 번 정해 고정 */
+      roles: BullpenRoles
     }
 
 export const LeagueContext = createContext<LeagueState>({ status: 'loading' })
@@ -52,4 +57,11 @@ export function useDataSource(): LeagueDataSource {
 export function useLeagueDay(): LeagueDay | null {
   const state = useContext(LeagueContext)
   return state.status === 'ready' ? state.day : null
+}
+
+/** 라인업 기준: 기준 리그와 불펜 역할 */
+export function useLineupBasis(): { basis: League; roles: BullpenRoles } {
+  const state = useContext(LeagueContext)
+  if (state.status !== 'ready') throw new Error('리그 데이터가 아직 준비되지 않았습니다.')
+  return { basis: state.basis, roles: state.roles }
 }

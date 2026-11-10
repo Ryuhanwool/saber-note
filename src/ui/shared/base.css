@@ -34,11 +34,11 @@ nav a[aria-current="page"]::after{
   nav{order:3;flex-basis:100%;min-width:0;overflow-x:auto;scrollbar-width:none}
   nav a[aria-current="page"]::after{bottom:0}
 }
-/* 좁은 휴대폰: 메뉴 6개를 3칸 × 2줄로 (가로로 밀지 않아도 모두 보이게) */
+/* 좁은 휴대폰: 메뉴 7개는 한 줄로 두고 가로로 밀어 본다 (줄이 깨지지 않게, 끝에 걸친 메뉴로 더 있다는 걸 보여 준다).
+   지금 보는 메뉴는 Layout이 보이는 곳으로 옮긴다 */
 @media (max-width:480px){
-  nav{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;gap:0}
-  nav a{text-align:center;padding:8px 4px 10px}
-  nav a[aria-current="page"]::after{left:18%;right:18%}
+  nav{gap:0;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+  nav a{padding:8px 11px 12px;scroll-snap-align:start}
 }
 /* 시연용 날짜 이동 중 안내 (모든 화면 위) */
 .demo-date{max-width:1040px;margin:8px auto 0;padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:var(--chip);border:2px solid var(--ink);border-radius:6px;font-size:.9rem;color:var(--ink)}

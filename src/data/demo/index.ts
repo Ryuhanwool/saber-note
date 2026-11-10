@@ -3,7 +3,7 @@ import type { LeagueDataSource } from '../source'
 import type { LeagueConstants, RawDataset } from '../types'
 import { demoBattedBalls } from './battedBalls'
 import { DEMO_SEED, generateDemoLeague, type DemoLeague } from './generate'
-import { createDemoSeason, kstDate, type DemoSeason } from './season'
+import { DEMO_BASE_DATE, createDemoSeason, kstDate, type DemoSeason } from './season'
 import { simulateWeek } from './week'
 
 /** 데모 HTML이 쓰던 간이 공식 상수 */
@@ -40,6 +40,8 @@ function datasetAt(date: string): RawDataset {
       seasonLabel: `가상 리그 ${SEASON}`,
       basisLabel: '데모 간이 공식 (실서비스는 스탯티즈 기준)',
       asOf: date,
+      // 불펜 역할·가상 팬 라인업은 기준 시즌 기록으로 한 번 정한다 (날짜를 옮겨도 그대로)
+      roleBasisDate: DEMO_BASE_DATE,
       source: `가상 데이터 (시드 ${DEMO_SEED}, 최근 144경기)`,
       notice: '모든 선수, 팀, 기록은 화면 구현을 보여 주기 위해 만든 가상 데이터입니다. 실제 서비스에서는 이 자리에 스탯티즈 기준으로 계산한 실제 기록이 들어갑니다.',
       // 데모는 모든 기록을 만든다
