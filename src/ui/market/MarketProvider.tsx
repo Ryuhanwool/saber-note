@@ -15,7 +15,8 @@ type Props = {
 export default function MarketProvider({ repository, children }: Props) {
   const [state, setState] = useState<MarketState>({ status: 'loading' })
   const leagueState = useLeagueState()
-  const league = leagueState.status === 'ready' ? leagueState.league : null
+  // 예시 글은 처음 불러온 선수 명단으로 만든다 (시연용 날짜 이동으로 저장소를 다시 열지 않게)
+  const league = leagueState.status === 'ready' ? leagueState.roster : null
   // 로그인한 계정이 작성자가 된다. 로그인·로그아웃하면 그 계정으로 저장소를 다시 연다 (로그아웃 상태면 읽기만)
   const auth = useAuth()
   const authReady = auth.status !== 'loading'
@@ -31,7 +32,7 @@ export default function MarketProvider({ repository, children }: Props) {
     let off: (() => void) | undefined
     let opened: MarketRepository | undefined
     ;(async () => {
-      const seeds = league ? demoMarketSeeds({ hitters: league.hitters.map((p) => p.raw), pitchers: league.pitchers.map((p) => p.raw) }) : []
+      const seeds = league ? demoMarketSeeds(league) : []
       const repo = repository ?? (opened = await openMarketRepository({ seeds, user: accountId && nickname ? { id: accountId, name: nickname } : null }))
       if (!alive) return
       off = repo.subscribe((snapshot) => alive && setState((s) => (s.status === 'ready' ? { ...s, snapshot } : s)))

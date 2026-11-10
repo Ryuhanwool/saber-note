@@ -1,0 +1,62 @@
+/* 선수 가치 순위표. 색은 tokens.css 변수만 쓴다. 패널이 불투명이라 팀 테마와 상관없이 같은 대비 */
+.ranking{display:grid;gap:14px}
+.ranking h1{margin:0;font-size:clamp(1.8rem,5vw,2.4rem);line-height:1.1}
+.ranking h2{margin:0 0 8px;font-size:1rem}
+.rk-basis{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rk-basis .basis{margin:0;font-size:.85rem}
+/* 시연용 날짜일 때: 본문색 굵은 글자 + 칩 바탕 + 두꺼운 테두리 */
+.rk-demo-flag{font-size:.85rem;color:var(--ink);background:var(--chip);border:2px solid var(--ink);border-radius:4px;padding:2px 8px}
+.rk-disclaimer{justify-self:start;margin:0;font-weight:800;font-size:1.05rem;color:var(--ink);background:var(--chip);border:2px solid var(--ink);border-radius:4px;padding:4px 10px}
+.rk-sub{margin:0;font-size:.9rem;line-height:1.55}
+
+.rk-demo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1px dashed var(--line);border-radius:6px;padding:8px 12px 10px;margin:0}
+.rk-demo legend{font-size:.8rem;font-weight:700;color:var(--soft);padding:0 4px}
+.rk-demo .btn{padding:6px 12px}
+
+.rk-filters{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.rk-seg{display:inline-flex;border:1px solid var(--ink);border-radius:4px;overflow:hidden}
+.rk-seg button{background:var(--surface);color:var(--ink);border:0;border-left:1px solid var(--ink);padding:7px 14px;cursor:pointer;font-weight:500}
+.rk-seg button:first-child{border-left:0}
+.rk-seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:700}
+.rk-team{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.rk-team select{padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);max-width:100%}
+
+/* 상승(빨강 ▲)·하락(파랑 ▼): 색과 함께 늘 기호·숫자를 쓴다 */
+.rk-chg{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rk-chg.up{color:var(--up)}
+.rk-chg.down{color:var(--down)}
+.rk-chg.same{color:var(--soft)}
+.rk-chg.new{font-size:.75rem;color:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:1px 6px}
+
+.rk-movers-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.rk-movers{border:1px solid var(--line);border-radius:6px;padding:12px}
+.rk-cards{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rk-card{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline;padding:8px 10px;border-radius:4px;background:var(--chip);border-left:4px solid var(--line)}
+.rk-card.up{border-left-color:var(--up)}
+.rk-card.down{border-left-color:var(--down)}
+.rk-card-name{font-weight:700;color:var(--ink)}
+.rk-card-meta{grid-column:1;font-size:.8rem;color:var(--soft)}
+.rk-card-value{grid-column:2;grid-row:1;text-align:right;font-variant-numeric:tabular-nums}
+.rk-card-change{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:.85rem}
+.rk-card-rank{color:var(--ink)}
+
+.rk-table-wrap{overflow-x:auto}
+.rk-table{width:100%;border-collapse:collapse;font-size:.92rem}
+.rk-table th,.rk-table td{padding:8px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:middle}
+.rk-table thead th{border-top:0;color:var(--soft);font-weight:500;font-size:.8rem;white-space:nowrap}
+.rk-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk-rank{font-weight:700;font-variant-numeric:tabular-nums;width:3ch}
+.rk-name{font-weight:500}
+.rk-name a{color:var(--ink);font-weight:700}
+.rk-name-meta{display:none;font-size:.78rem;color:var(--soft);font-weight:400}
+.rk-value{font-weight:700}
+.rk-legend{margin:0;font-size:.82rem;line-height:1.6}
+
+/* 휴대폰 폭: 팀·포지션 칸을 이름 아래로 옮겨 표가 화면 안에 들어오게 */
+@media (max-width:560px){
+  .rk-col-team,.rk-col-pos{display:none}
+  .rk-name-meta{display:block}
+  .rk-table{font-size:.85rem}
+  .rk-table th,.rk-table td{padding:7px 4px}
+  .rk-seg button{padding:7px 12px}
+}

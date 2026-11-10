@@ -16,7 +16,8 @@ export default function CommunityProvider({ repository, children }: Props) {
   const [state, setState] = useState<CommunityState>({ status: 'loading' })
   // 예시 글("데모 게시글")은 리그 선수 기록으로 만들므로 리그가 준비된 뒤에 연다
   const leagueState = useLeagueState()
-  const league = leagueState.status === 'ready' ? leagueState.league : null
+  // 예시 글은 처음 불러온 선수 명단으로 만든다 (시연용 날짜 이동으로 저장소를 다시 열지 않게)
+  const league = leagueState.status === 'ready' ? leagueState.roster : null
   // 로그인한 계정이 작성자가 된다. 로그인·로그아웃하면 그 계정으로 저장소를 다시 연다 (로그아웃 상태면 읽기만)
   const auth = useAuth()
   const authReady = auth.status !== 'loading'
@@ -32,7 +33,7 @@ export default function CommunityProvider({ repository, children }: Props) {
     let off: (() => void) | undefined
     let opened: CommunityRepository | undefined
     ;(async () => {
-      const seeds = league ? demoCommunitySeeds({ hitters: league.hitters.map((p) => p.raw), pitchers: league.pitchers.map((p) => p.raw) }) : []
+      const seeds = league ? demoCommunitySeeds(league) : []
       const repo = repository ?? (opened = await openCommunityRepository({ seeds, user: accountId && nickname ? { id: accountId, name: nickname } : null }))
       if (!alive) return
       // 목록을 읽는 동안의 변경을 놓치지 않게 먼저 구독한다

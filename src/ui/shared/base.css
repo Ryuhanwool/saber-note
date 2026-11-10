@@ -34,6 +34,16 @@ nav a[aria-current="page"]::after{
   nav{order:3;flex-basis:100%;min-width:0;overflow-x:auto;scrollbar-width:none}
   nav a[aria-current="page"]::after{bottom:0}
 }
+/* 좁은 휴대폰: 메뉴 6개를 3칸 × 2줄로 (가로로 밀지 않아도 모두 보이게) */
+@media (max-width:480px){
+  nav{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;gap:0}
+  nav a{text-align:center;padding:8px 4px 10px}
+  nav a[aria-current="page"]::after{left:18%;right:18%}
+}
+/* 시연용 날짜 이동 중 안내 (모든 화면 위) */
+.demo-date{max-width:1040px;margin:8px auto 0;padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:var(--chip);border:2px solid var(--ink);border-radius:6px;font-size:.9rem;color:var(--ink)}
+.demo-date .btn{padding:4px 12px}
+@media (max-width:1080px){.demo-date{margin:8px 20px 0}}
 .notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
 
 main{max-width:1040px;margin:0 auto;padding:8px 20px 64px}
@@ -59,3 +69,5 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .ac{position:absolute;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;z-index:4;box-shadow:var(--shadow)}
 .ac button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;padding:8px 10px;border-radius:4px;cursor:pointer}
 .ac button:hover,.ac button:focus-visible,.ac button[aria-selected="true"]{background:var(--chip)}
+/* 화면 읽기 프로그램에만 읽히는 글자 */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

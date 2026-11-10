@@ -3,12 +3,14 @@ import { Link, Outlet, useLocation } from 'react-router'
 import BackgroundLayer from '../settings/BackgroundLayer'
 import AccountMenu from '../auth/AccountMenu'
 import SettingsButton from '../settings/SettingsButton'
+import { formatDayKey } from '../../domain/games/calendar'
 import { useLeagueState } from './LeagueContext'
 
 const NAV = [
   // 선수 카드(/player/…)를 보는 동안에도 "선수" 메뉴를 현재 위치로 표시한다
   { to: '/', label: '선수', match: (path: string) => path === '/' || path.startsWith('/player/') },
   { to: '/compare', label: '비교', match: (path: string) => path.startsWith('/compare') },
+  { to: '/ranking', label: '가치 순위', match: (path: string) => path.startsWith('/ranking') },
   { to: '/games', label: '미니게임', match: (path: string) => path.startsWith('/games') },
   { to: '/community', label: '커뮤니티', match: (path: string) => path.startsWith('/community') },
   { to: '/market', label: '마켓', match: (path: string) => path.startsWith('/market') },
@@ -43,6 +45,12 @@ export default function Layout() {
         </div>
       </header>
       {state.status === 'ready' && state.league.meta.notice && <p className="notice">{state.league.meta.notice}</p>}
+      {state.status === 'ready' && state.day && !state.day.isToday && (
+        <p className="demo-date" role="status">
+          <b>시연용 날짜: {formatDayKey(state.day.date)} 기록을 보고 있어요</b> (실제 오늘은 {formatDayKey(state.day.today)})
+          <button type="button" className="btn ghost" onClick={() => state.day!.setDate(null)}>오늘로</button>
+        </p>
+      )}
       <main id="app">
         {state.status === 'loading' && <p className="empty">기록을 불러오는 중이에요…</p>}
         {state.status === 'error' && (

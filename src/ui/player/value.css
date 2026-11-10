@@ -42,8 +42,6 @@
 .adj-flag{font-size:.75rem;font-weight:800;color:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:1px 8px}
 .adj-row.changed .adj-val{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
 
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
 /* 휴대폰 폭: 이름·원래 값 한 줄, 버튼 한 줄, 슬라이더 한 줄 */
 @media (max-width:560px){
   .adj-row{grid-template-columns:1fr auto;gap:6px 10px}

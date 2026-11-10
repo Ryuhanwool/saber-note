@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import type { PlayerId } from '../../data/types'
 import { availableKeys } from '../../domain/availability'
 import type { MetricKey } from '../../domain/catalog'
@@ -23,7 +23,12 @@ function PlayerCard({ player: p }: { player: Player }) {
   const { meta, constants } = league
   const tabs = p.type === 'H' ? HITTER_TABS : PITCHER_TABS
   const enabled = tabs.map((t) => tabAvailable(league, p, t))
-  const [tab, setTab] = useState(() => Math.max(0, enabled.indexOf(true)))
+  // ?tab=value: 가치 순위표에서 이름을 눌러 오면 「선수 가치」 탭을 연다
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState(() => {
+    const asked = params.get('tab') === 'value' ? tabs.findIndex((t) => t.kind === 'value') : -1
+    return asked >= 0 && enabled[asked] ? asked : Math.max(0, enabled.indexOf(true))
+  })
   const [openKey, setOpenKey] = useState<MetricKey | null>(null)
   const current = tabs[tab]
 
