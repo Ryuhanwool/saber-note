@@ -1,7 +1,8 @@
 // 시연용 예시 판매글. 처음 열었을 때 팬 마켓이 비어 보이지 않게 하고, 경고(커스텀·마킹, 사기 의심) 시연용 글을 하나씩 둔다.
-// 리그 기록의 선수(홈런·탈삼진·도루 1위 등)를 태그해 선수 카드·응원방에도 잡힌다.
+// 장타자·발 빠른 타자·삼진 투수(seedStars, 날짜와 상관없이 같은 선수)를 태그해 선수 카드·응원방에도 잡힌다.
 import type { SeedMedia } from '../community/seed'
 import type { MarketListing, RawHitter, RawPitcher } from '../types'
+import { seedStars } from '../seedPlayers'
 
 export type SeedListing = Omit<MarketListing, 'createdAt' | 'reports' | 'media'> & { ageMs: number; media: SeedMedia[] }
 
@@ -17,7 +18,6 @@ const MIN = 60_000
 const HOUR = 60 * MIN
 const DAY = 24 * HOUR
 
-const ranked = <T>(xs: readonly T[], score: (x: T) => number) => [...xs].sort((a, b) => score(b) - score(a))
 
 /** 예시 사진: 책상 위에 펼쳐 둔 응원 타월 (SVG, 외부 파일 없이) */
 function towelPhoto(): Blob {
@@ -37,10 +37,8 @@ function towelPhoto(): Blob {
 
 /** 리그 기록으로 예시 판매글을 만든다. 타자가 없으면 빈 목록 */
 export function demoMarketSeeds(league: { hitters: readonly RawHitter[]; pitchers: readonly RawPitcher[] }): SeedListing[] {
-  const [slugger, slugger2] = ranked(league.hitters, (h) => h.HR)
+  const { sluggers: [slugger, slugger2], runner, ace } = seedStars(league)
   if (!slugger) return []
-  const runner = ranked(league.hitters.filter((h) => h !== slugger && h !== slugger2), (h) => h.SB)[0]
-  const ace = ranked(league.pitchers, (p) => p.SO)[0]
   const { otter, goat, firefly, scam } = DEMO_SELLERS
 
   const seeds: SeedListing[] = [

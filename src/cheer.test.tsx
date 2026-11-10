@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { seedStars } from './data/seedPlayers'
 import App from './App'
 import { createMemoryAuth } from './data/auth/memory'
 import { DEMO_ACCOUNT_ID, DEMO_ACCOUNT_NICKNAME } from './data/types'
@@ -25,9 +26,9 @@ URL.revokeObjectURL = () => {}
 
 const ds = await getDataSource('demo').load()
 const seeds = demoCheerSeeds(ds)
-const byHR = [...ds.hitters].sort((a, b) => b.HR - a.HR)
-const slugger = byHR[0]
-const ace = [...ds.pitchers].sort((a, b) => b.SO - a.SO)[0]
+const stars = seedStars(ds)
+const slugger = stars.sluggers[0]
+const ace = stars.ace!
 const enc = encodeURIComponent
 const sluggerTotal = seeds.cheers.filter((c) => c.playerId === slugger.id).length // 34 (이번 주 14)
 

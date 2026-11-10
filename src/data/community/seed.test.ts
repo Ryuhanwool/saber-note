@@ -1,5 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { seedStars } from '../seedPlayers'
 import { getDataSource } from '../registry'
 import { DEMO_AUTHOR_ID } from '../types'
 import { createBrowserCommunity } from './browser'
@@ -23,9 +24,10 @@ describe('시연용 예시 글 만들기', () => {
     expect(withPhoto[0].media[0]).toMatchObject({ kind: '사진', type: 'image/svg+xml' })
   })
 
-  it('태그한 선수는 리그에 있고, 본문에 그 선수 이름과 실제 기록이 나온다', () => {
-    const slugger = ds.hitters.reduce((a, b) => (b.HR > a.HR ? b : a))
-    expect(seeds[0].text).toContain(`${slugger.name} 벌써 홈런 ${slugger.HR}개`)
+  it('태그한 선수는 리그에 있고, 본문에 그 선수 이름이 나온다 (첫 글은 장타자)', () => {
+    const slugger = seedStars(ds).sluggers[0]
+    expect(seeds[0].players).toEqual([slugger.id])
+    expect(seeds[0].text).toContain(`${slugger.name} 어제 넘긴 홈런 타구`)
     for (const s of seeds) {
       for (const id of s.players) {
         expect(byId.has(id), id).toBe(true)

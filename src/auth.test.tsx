@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { seedStars } from './data/seedPlayers'
 import App from './App'
 import { findEnabledButton } from './testing/buttons'
 import { createMemoryAuth } from './data/auth/memory'
@@ -26,7 +27,7 @@ URL.createObjectURL = () => 'blob:test'
 URL.revokeObjectURL = () => {}
 
 const ds = await getDataSource('demo').load()
-const slugger = [...ds.hitters].sort((a, b) => b.HR - a.HR)[0]
+const slugger = seedStars(ds).sluggers[0]
 const enc = encodeURIComponent
 const TEAM = ds.hitters[0].team // 한빛 수달스 → 남색·금색
 

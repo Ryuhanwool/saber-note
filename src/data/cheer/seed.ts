@@ -1,7 +1,8 @@
 // 시연용 예시 응원("데모 응원"). 처음 열었을 때 응원방과 이번 주 응원 순위가 비어 보이지 않게 한다.
-// 리그 기록(홈런·탈삼진·도루 1위 등)으로 만들어 선수 카드의 숫자와 맞아떨어진다.
+// 장타자·발 빠른 타자·삼진 투수에게 응원한다(seedStars). 기록이 날마다 바뀌므로 메시지에는 기록 숫자나 순위를 쓰지 않는다.
 import type { CheerEvent, CheerMessage, RawHitter, RawPitcher } from '../types'
 import { DEMO_AUTHOR_ID } from '../types'
+import { seedStars } from '../seedPlayers'
 
 /** 작성 시각은 "연 시각으로부터 얼마 전"(ageMs)으로 둔다 */
 export type SeedCheerMessage = Omit<CheerMessage, 'authorId' | 'authorName' | 'createdAt' | 'reports'> & { ageMs: number }
@@ -13,8 +14,6 @@ export const EMPTY_CHEER_SEEDS: CheerSeeds = { messages: [], cheers: [] }
 const MIN = 60_000
 const HOUR = 60 * MIN
 const DAY = 24 * HOUR
-
-const ranked = <T>(xs: readonly T[], score: (x: T) => number) => [...xs].sort((a, b) => score(b) - score(a))
 
 /**
  * 가상 시청자들의 「응원하기」 기록. week개는 최근 6.5일 안에, older개는 8~30일 전에 고르게 흩어 둔다
@@ -29,14 +28,11 @@ function fanCheers(playerId: CheerEvent['playerId'], week: number, older: number
 
 /** 리그 기록으로 예시 응원 메시지와 응원 기록을 만든다. 타자가 없으면 빈 값 */
 export function demoCheerSeeds(league: { hitters: readonly RawHitter[]; pitchers: readonly RawPitcher[] }): CheerSeeds {
-  const [slugger, slugger2] = ranked(league.hitters, (h) => h.HR)
+  const { sluggers: [slugger, slugger2], runner, ace, closer } = seedStars(league)
   if (!slugger) return EMPTY_CHEER_SEEDS
-  const runner = ranked(league.hitters.filter((h) => h !== slugger && h !== slugger2), (h) => h.SB)[0]
-  const ace = ranked(league.pitchers, (p) => p.SO)[0]
-  const closer = ranked(league.pitchers.filter((p) => p.role === 'RP'), (p) => p.SO)[0]
 
   const messages: SeedCheerMessage[] = [
-    { id: 'demo-cheer-msg-1', playerId: slugger.id, ageMs: 40 * MIN, caution: false, text: `${slugger.name} 홈런 ${slugger.HR}개! 이번 주도 담장 넘겨 주세요 💪` },
+    { id: 'demo-cheer-msg-1', playerId: slugger.id, ageMs: 40 * MIN, caution: false, text: `${slugger.name} 타석 들어오면 홈런 기대돼요! 이번 주도 담장 넘겨 주세요 💪` },
     // 허용되는 수준의 욕 예시 (「거친 표현 가리기」를 켜면 ●●로 보인다)
     { id: 'demo-cheer-msg-2', playerId: slugger.id, ageMs: 6 * HOUR, caution: false, text: '어제 그 홈런 씨발 아직도 소름 돋아요. 타석 들어올 때마다 설렘' },
     { id: 'demo-cheer-msg-3', playerId: slugger.id, ageMs: 2 * DAY, caution: false, text: '슬럼프 와도 끝까지 응원할게요. 화이팅!' },
@@ -44,13 +40,13 @@ export function demoCheerSeeds(league: { hitters: readonly RawHitter[]; pitchers
   const cheers: SeedCheer[] = [...fanCheers(slugger.id, 14, 20)]
   if (ace) {
     messages.push(
-      { id: 'demo-cheer-msg-4', playerId: ace.id, ageMs: 2 * HOUR, caution: false, text: `${ace.name} 탈삼진 ${ace.SO}개! 다음 등판도 응원합니다` },
+      { id: 'demo-cheer-msg-4', playerId: ace.id, ageMs: 2 * HOUR, caution: false, text: `${ace.name} 삼진 잡을 때가 제일 짜릿해요! 다음 등판도 응원합니다` },
       { id: 'demo-cheer-msg-5', playerId: ace.id, ageMs: 1 * DAY + 3 * HOUR, caution: false, text: '긴 이닝 던져 줘서 고마워요. 어깨 잘 챙기세요' },
     )
     cheers.push(...fanCheers(ace.id, 11, 15))
   }
   if (runner) {
-    messages.push({ id: 'demo-cheer-msg-6', playerId: runner.id, ageMs: 5 * HOUR, caution: false, text: `${runner.name} 도루 ${runner.SB}개째, 뛰는 거 보는 맛에 야구 봐요` })
+    messages.push({ id: 'demo-cheer-msg-6', playerId: runner.id, ageMs: 5 * HOUR, caution: false, text: `${runner.name} 1루에 나가면 벌써 설레요. 뛰는 거 보는 맛에 야구 봐요` })
     cheers.push(...fanCheers(runner.id, 8, 6))
   }
   if (slugger2) {

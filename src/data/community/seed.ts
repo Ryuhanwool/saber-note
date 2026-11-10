@@ -1,7 +1,9 @@
 // 시연용 예시 글("데모 게시글"). 처음 열었을 때 커뮤니티가 비어 보이지 않게 한다.
-// 리그 기록(홈런·도루·탈삼진 1위 등)으로 글을 만들어, 태그와 숫자가 리그 화면과 맞아떨어진다.
+// 장타자·발 빠른 타자·삼진 투수를 태그한다(seedStars). 기록이 날마다 바뀌므로 문장에는 기록 숫자나 순위를 쓰지 않는다
+// → 시연용 날짜를 옮겨도 화면과 어긋나지 않는다.
 import type { CommunityPost, MediaRef, RawHitter, RawPitcher } from '../types'
 import { DEMO_AUTHOR_ID } from '../types'
+import { seedStars } from '../seedPlayers'
 
 export type SeedMedia = MediaRef & { blob: Blob }
 
@@ -35,22 +37,16 @@ function demoPhoto(caption: string): Blob {
   return new Blob([svg], { type: 'image/svg+xml' })
 }
 
-const topBy = <T>(xs: readonly T[], score: (x: T) => number, skip: readonly T[] = []) =>
-  xs.filter((x) => !skip.includes(x)).reduce<T | undefined>((best, x) => (best === undefined || score(x) > score(best) ? x : best), undefined)
-
 /** 리그 기록으로 예시 글 5개를 만든다. 타자가 없으면 빈 목록 */
 export function demoCommunitySeeds(league: { hitters: readonly RawHitter[]; pitchers: readonly RawPitcher[] }): SeedPost[] {
-  const { hitters, pitchers } = league
-  const slugger = topBy(hitters, (h) => h.HR)
-  const runner = topBy(hitters, (h) => h.SB, slugger ? [slugger] : [])
-  const ace = topBy(pitchers, (p) => p.SO)
+  const { sluggers: [slugger], runner, ace } = seedStars(league)
   if (!slugger) return []
 
   const seeds: SeedPost[] = [
     {
       id: 'demo-post-1', ageMs: 25 * MIN, masked: false, caution: false, reports: [], players: [slugger.id],
-      text: `${slugger.name} 벌써 홈런 ${slugger.HR}개! 어제 넘긴 타구 궤적 그려 봤어요. 올해 홈런왕 가능할까요?`,
-      media: [{ id: 'demo-media-1', kind: '사진', type: 'image/svg+xml', name: '홈런 궤적.svg', blob: demoPhoto(`${slugger.name} 시즌 ${slugger.HR}호 홈런`) }],
+      text: `${slugger.name} 어제 넘긴 홈런 타구 궤적 그려 봤어요. 맞는 순간 소리부터 달랐어요. 올해 홈런왕 경쟁 가능할까요?`,
+      media: [{ id: 'demo-media-1', kind: '사진', type: 'image/svg+xml', name: '홈런 궤적.svg', blob: demoPhoto(`${slugger.name} 홈런 타구`) }],
     },
     {
       id: 'demo-post-2', ageMs: 3 * HOUR, masked: false, caution: false, reports: [], players: [],
@@ -73,14 +69,14 @@ export function demoCommunitySeeds(league: { hitters: readonly RawHitter[]; pitc
   if (runner) {
     seeds.push({
       id: 'demo-post-3', ageMs: 9 * HOUR, masked: false, caution: false, reports: [], players: [runner.id],
-      text: `${runner.name} 도루 ${runner.SB}개째. 주루 탭에서 주루 득점(BsR)까지 보니까 발로 만든 점수가 꽤 크네요.`,
+      text: `${runner.name} 오늘도 한 베이스 더 훔쳤네요. 주루 탭에서 주루 득점(BsR)까지 보니까 발로 만든 점수가 꽤 크네요.`,
       media: [],
     })
   }
   if (ace) {
     seeds.push({
       id: 'demo-post-4', ageMs: 1 * DAY + 2 * HOUR, masked: false, caution: false, reports: [], players: [ace.id],
-      text: `${ace.name} 시즌 탈삼진 ${ace.SO}개. ERA보다 FIP를 같이 봐야 투수 실력이 보인다는 게 이런 거군요.`,
+      text: `${ace.name} 어제 삼진 쇼였어요. ERA보다 FIP를 같이 봐야 투수 실력이 보인다는 게 이런 거군요.`,
       media: [],
     })
   }

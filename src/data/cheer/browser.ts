@@ -51,6 +51,13 @@ async function applySeeds(db: IDBDatabase, seeds: CheerSeeds, now: number, fresh
     messages.clear()
     cheers.clear()
   }
+  if (!fresh) {
+    // 예전 예시의 가상 시청자 응원(지금 예시에 없는 것)은 지운다: 예시 선수를 고르는 방식이 바뀌어도 응원 수가 남지 않게
+    const keep = new Set(seeds.cheers.map((c) => c.id))
+    for (const c of await request(cheers.getAll() as IDBRequest<CheerEvent[]>)) {
+      if (c.id.startsWith('demo-cheer-') && !keep.has(c.id)) cheers.delete(c.id)
+    }
+  }
   for (const c of seeds.cheers) cheers.put(seedToCheer(c, now))
   for (const s of seeds.messages) {
     const existing = fresh ? undefined : await request(messages.get(s.id) as IDBRequest<CheerMessage | undefined>)

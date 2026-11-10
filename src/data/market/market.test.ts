@@ -1,5 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, describe, expect, it } from 'vitest'
+import { seedStars } from '../seedPlayers'
 import { getDataSource } from '../registry'
 import type { MarketRepository } from '../source'
 import type { NewListing, PlayerId } from '../types'
@@ -13,7 +14,7 @@ const A = 'demo:1' as PlayerId
 
 const ds = await getDataSource('demo').load()
 const seeds = demoMarketSeeds(ds)
-const slugger = ds.hitters.reduce((x, y) => (y.HR > x.HR ? y : x))
+const slugger = seedStars(ds).sluggers[0]
 
 const item = (over: Partial<NewListing> = {}): NewListing => ({
   title: '응원 타월', category: 'towel', players: [A], price: 10_000, condition: '좋음', text: '깨끗해요', caution: false, files: [], ...over,
@@ -39,7 +40,7 @@ function setup(kind: 'memory' | 'browser', s?: SeedListing[]) {
 }
 
 describe('예시 판매글', () => {
-  it('판매자 4명, 판매글 5개. 홈런 1위 선수 판매글 2개(마킹 시연, 사기 경고 시연), 사진 1장', () => {
+  it('판매자 4명, 판매글 5개. 장타자 판매글 2개(마킹 시연, 사기 경고 시연), 사진 1장', () => {
     expect(seeds).toHaveLength(5)
     expect(new Set(seeds.map((s) => s.authorId)).size).toBe(4)
     expect(seeds.filter((s) => s.players.includes(slugger.id)).map((s) => s.id)).toEqual(['demo-listing-1', 'demo-listing-2'])

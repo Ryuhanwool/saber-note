@@ -1,5 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, describe, expect, it } from 'vitest'
+import { seedStars } from '../seedPlayers'
 import { getDataSource } from '../registry'
 import { AlreadyCheeredError, type CheerRepository } from '../source'
 import type { PlayerId } from '../types'
@@ -38,12 +39,12 @@ function setup(kind: 'memory' | 'browser', s?: CheerSeeds) {
 }
 
 describe('예시 응원 (리그 기록으로 만든다)', () => {
-  const slugger = ds.hitters.reduce((x, y) => (y.HR > x.HR ? y : x))
+  const slugger = seedStars(ds).sluggers[0]
 
-  it('선수 5명에게 메시지 8개, 홈런 1위 선수 메시지에 홈런 수가 들어간다', () => {
+  it('선수 5명에게 메시지 8개, 첫 메시지는 장타자에게 (기록 숫자는 쓰지 않는다)', () => {
     expect(new Set(seeds.messages.map((m) => m.playerId)).size).toBe(5)
     expect(seeds.messages).toHaveLength(8)
-    expect(seeds.messages[0]).toMatchObject({ playerId: slugger.id, text: expect.stringContaining(`홈런 ${slugger.HR}개`) })
+    expect(seeds.messages[0]).toMatchObject({ playerId: slugger.id, text: expect.stringContaining(`${slugger.name} 타석 들어오면 홈런 기대돼요`) })
   })
 
   it('응원 기록: 이번 주는 6.5일 안, 나머지는 8일 넘게 전이라 누적이 이번 주보다 크다', () => {
@@ -137,6 +138,19 @@ describe('브라우저 응원 저장소', () => {
     expect(s.messages.find((m) => m.id === seeds.messages[0].id)!.reports).toEqual([YOU.id])
     expect(s.cheers.filter((c) => c.userId === ME.id)).toHaveLength(1)
     await expect(again.cheer(A)).rejects.toBeInstanceOf(AlreadyCheeredError)
+  })
+
+  it('예시가 바뀌어 다시 열면 예전 예시의 가상 시청자 응원은 지우고, 내 응원은 남긴다', async () => {
+    const { me, indexedDB, clock } = setup('browser', seeds)
+    await me.cheer(A)
+    const before = await me.snapshot()
+    const dropped = seeds.cheers[0].playerId
+    const fewer = { ...seeds, cheers: seeds.cheers.filter((c) => c.playerId !== dropped) }
+    const again = createBrowserCheer({ indexedDB: indexedDB!, user: ME, seeds: fewer, now: () => clock.t })
+    opened.push(again)
+    const s = await again.snapshot()
+    expect(s.cheers.filter((c) => c.id.startsWith('demo-cheer-')).map((c) => c.id).sort()).toEqual(fewer.cheers.map((c) => c.id).sort())
+    expect(s.cheers.filter((c) => c.userId === ME.id)).toEqual(before.cheers.filter((c) => c.userId === ME.id))
   })
 
   it('다른 사용자는 내 메시지를 신고할 수 있지만 지울 수 없다', async () => {

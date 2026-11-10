@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { seedStars } from './data/seedPlayers'
 import App from './App'
 import { createMemoryAuth } from './data/auth/memory'
 import { DEMO_ACCOUNT_ID, DEMO_ACCOUNT_NICKNAME } from './data/types'
@@ -19,7 +20,7 @@ URL.createObjectURL = () => 'blob:test'
 URL.revokeObjectURL = () => {}
 
 const ds = await getDataSource('demo').load()
-const slugger = ds.hitters.reduce((a, b) => (b.HR > a.HR ? b : a))
+const slugger = seedStars(ds).sluggers[0]
 
 /** 데모 계정으로 로그인한 상태 (글쓰기·신고·응원은 로그인이 필요하다) */
 const signedInDemo = () => createMemoryAuth({ signedIn: { id: DEMO_ACCOUNT_ID, nickname: DEMO_ACCOUNT_NICKNAME, team: null, createdAt: 0 } })
@@ -49,7 +50,7 @@ describe('시연 첫 화면: 커뮤니티', () => {
     renderApp('/community')
     const feed = within(await screen.findByLabelText('글 목록'))
     expect(await feed.findAllByText('데모 게시글')).toHaveLength(7)
-    expect(feed.getByText(new RegExp(`${slugger.name} 벌써 홈런 ${slugger.HR}개`))).toBeTruthy()
+    expect(feed.getByText(new RegExp(`${slugger.name} 어제 넘긴 홈런 타구`))).toBeTruthy()
     expect(await feed.findByRole('img', { name: '사진' })).toBeTruthy()
     expect(feed.queryByRole('button', { name: '삭제' })).toBeNull() // 예시 글은 지울 수 없다
   })
