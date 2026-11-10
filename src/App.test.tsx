@@ -182,7 +182,7 @@ describe('화면 3. 선수 2명 비교', () => {
     const [a, b] = league.pool.H
     renderAt(`/compare?a=${enc(a.id)}&b=${enc(b.id)}`)
     expect(await screen.findByRole('table')).toBeTruthy()
-    expect(screen.getAllByRole('row')).toHaveLength(1 + 8)
+    expect(screen.getAllByRole('row')).toHaveLength(1 + 8 + 1) // 머리줄 + 지표 8 + 예상 가치
     expect(screen.getByText(/지표 8개 중 .*(우세해요|앞서요)/)).toBeTruthy()
     expect(screen.getByText(/^근거:/)).toBeTruthy()
   })
@@ -250,7 +250,7 @@ describe('MLB 출처: 없는 지표 줄은 숨긴다', () => {
   it('비교 화면에 DRS 줄이 없다', async () => {
     renderAt(`/compare?a=${id(9001)}&b=${id(9004)}`, mlbSource)
     expect(await screen.findByRole('table')).toBeTruthy()
-    expect(screen.getAllByRole('row')).toHaveLength(1 + 7)
+    expect(screen.getAllByRole('row')).toHaveLength(1 + 7 + 1) // 머리줄 + 지표 7 + 예상 가치
     expect(screen.queryByRole('rowheader', { name: 'DRS' })).toBeNull()
   })
 })

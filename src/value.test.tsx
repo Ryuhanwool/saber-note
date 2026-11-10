@@ -105,3 +105,19 @@ describe('선수 카드 「선수 가치」 탭', () => {
     expect(within(panel).getByText('실제 연봉과 무관합니다.')).toBeTruthy()
   })
 })
+
+describe('선수 2명 비교 「예상 가치」 줄', () => {
+  it('두 선수의 예상 가치를 나란히 보이고 높은 쪽을 표시하지만, 우세 지표 수에는 넣지 않는다', async () => {
+    const [A, B] = [...league.hitters].sort((a, b) => b.m.WAR - a.m.WAR)
+    renderAt(`/compare?a=${A.id}&b=${B.id}`)
+    const row = (await screen.findByRole('rowheader', { name: '예상 가치' })).closest('tr')!
+    const [ca, cb] = within(row).getAllByRole('cell')
+    const va = playerValue(league, A).total, vb = playerValue(league, B).total
+    expect(ca.textContent).toBe(formatWon(va))
+    expect(cb.textContent).toBe(formatWon(vb))
+    expect(ca.className === 'win').toBe(va > vb)
+    expect(cb.className === 'win').toBe(vb > va)
+    const metricRows = screen.getAllByRole('rowheader').length - 1
+    expect(screen.getByText(new RegExp(`지표 ${metricRows}개 중`))).toBeTruthy()
+  })
+})

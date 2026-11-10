@@ -9,6 +9,8 @@
 .ctable thead th{border-top:0;font-size:1.1rem}
 .win{font-weight:700;color:var(--seam)}
 .win::after{content:" ▲";font-size:.7em}
+.value-row th,.value-row td{border-top:2px solid var(--line)}
+.value-row-note{font-size:.85rem;margin:8px 0 0}
 .summary{margin-top:16px;padding:14px 16px;border-left:4px solid var(--seam);background:var(--chip);border-radius:0 4px 4px 0}
 @media (max-width:560px){
   .cmp-pick{grid-template-columns:1fr}

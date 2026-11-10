@@ -5,6 +5,7 @@ import { metricDef } from '../../domain/catalog'
 import { comparePlayers, type CompareRow } from '../../domain/compare'
 import { formatMetric } from '../../domain/format'
 import type { Player } from '../../domain/players'
+import { formatWon, playerValue } from '../../domain/value/value'
 import { useLeague } from '../shared/LeagueContext'
 import { positionLabel } from '../shared/labels'
 import './compare.css'
@@ -44,6 +45,8 @@ function CompareTable({ A, B }: { A: Player; B: Player }) {
     : `지표 ${rows.length}개 중 두 선수가 ${wins.a}개씩 앞서요.`
   const reason = (r: CompareRow) => `${metricDef(r.key).label} ${formatMetric(r.key, r.a)} 대 ${formatMetric(r.key, r.b)}: ${name(r.winner!)}`
   const reasons = rows.filter((r) => r.winner).map(reason)
+  // 예상 가치 줄: 앞서는 쪽은 표시하지만 우세 지표 수에는 넣지 않는다 (WAR와 겹쳐 두 번 세게 되므로)
+  const valueA = playerValue(league, A).total, valueB = playerValue(league, B).total
 
   return (
     <>
@@ -59,8 +62,16 @@ function CompareTable({ A, B }: { A: Player; B: Player }) {
               <td className={r.winner === 'b' ? 'win' : ''}>{formatMetric(r.key, r.b)}</td>
             </tr>
           ))}
+          <tr className="value-row">
+            <td className={valueA > valueB ? 'win' : ''}>{formatWon(valueA)}</td>
+            <th scope="row">예상 가치</th>
+            <td className={valueB > valueA ? 'win' : ''}>{formatWon(valueB)}</td>
+          </tr>
         </tbody>
       </table>
+      <p className="muted value-row-note">
+        예상 가치는 WAR와 클러치로 계산한 재미용 금액이에요. <b>실제 연봉과 무관합니다.</b> WAR와 겹치므로 우세 지표 수에는 넣지 않아요.
+      </p>
       <div className="summary">
         <b>{lead}</b>
         <div className="muted" style={{ fontSize: '.9rem', marginTop: 6 }}>
