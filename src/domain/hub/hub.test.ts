@@ -173,3 +173,29 @@ describe('새 글 수·새 소식', () => {
     expect(newsItems({ posts: [], listings: [], userId: null, since: null, now: wed, challenge: challengeSchedule(wed) }).items).toEqual([])
   })
 })
+
+describe('홈 「선수 가치 순위」 카드·「이번 주 응원」 대상', async () => {
+  const { getDataSource } = await import('../../data/registry')
+  const { buildLeague } = await import('../league')
+  const { valueRanking } = await import('../value/ranking')
+  const { teamTopRow } = await import('./home')
+  const src = getDataSource('demo')
+  const today = buildLeague(await src.loadDay!('2026-11-10'))
+  const yesterday = buildLeague(await src.loadDay!('2026-11-09'))
+  const all = valueRanking(today, yesterday)
+
+  it('응원 팀이 있으면 그 팀 가치 1위 선수 (순위·변화는 전체 순위 기준)', () => {
+    const team = all[all.length - 1].player.team
+    const top = teamTopRow(today, yesterday, team)!
+    expect(top.scope).toBe('team')
+    expect(top.row.player.team).toBe(team)
+    const teamRows = all.filter((r) => r.player.team === team)
+    expect(top.row).toEqual(teamRows[0])
+    expect(top.row.rank).toBe(all.indexOf(teamRows[0]) + 1)
+  })
+
+  it('응원 팀이 없거나 모르는 구단이면 전체 가치 1위', () => {
+    expect(teamTopRow(today, yesterday, null)).toEqual({ row: all[0], scope: 'all' })
+    expect(teamTopRow(today, null, '없는 구단')!.row.player).toBe(all[0].player)
+  })
+})

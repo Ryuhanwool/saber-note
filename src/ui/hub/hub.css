@@ -40,3 +40,84 @@
 .emblem{display:block;flex:none;border-radius:50%}
 .emblem-photo{object-fit:cover;border:2px solid var(--line);background:var(--chip)}
 .icon-row a.acct{min-height:44px;padding:0 16px;border:1px solid var(--ink);border-radius:999px;display:inline-flex;align-items:center;font-weight:700;text-decoration:none;color:var(--ink);background:var(--surface)}
+
+/* ---------- 홈 ---------- */
+.hub-home{display:grid;gap:16px;padding-top:8px}
+.hub-top{display:grid;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+
+/* 프로필 줄: 왼쪽 엠블럼·닉네임·레벨, 오른쪽 숫자 칩 */
+.profile-row{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;padding:14px 16px;background:var(--surface)}
+.profile-who{display:flex;align-items:center;gap:12px;min-width:0}
+.emblem-btn{padding:0;border:0;background:none;border-radius:50%;cursor:pointer;flex:none;position:relative}
+.emblem-btn::after{content:"";position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);
+  background-image:linear-gradient(var(--ink),var(--ink)),linear-gradient(var(--ink),var(--ink));background-size:10px 2px,2px 10px;background-position:center;background-repeat:no-repeat}
+.profile-text{display:grid;gap:4px;min-width:0}
+.profile-name{font-size:1.25rem;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.profile-team,.profile-sub{font-size:.85rem}
+.profile-login{min-height:44px;display:inline-flex;align-items:center;text-decoration:none}
+.lv-wrap{position:relative}
+.lv-badge{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:2px 10px 2px 3px;border-radius:999px;border:2px solid var(--seam);background:var(--chip);color:var(--ink);font-weight:700;font-size:.85rem;cursor:pointer}
+.lv-no{background:var(--ink);color:var(--paper);border-radius:999px;padding:1px 8px;font-size:.8rem}
+.lv-pop{left:0;right:auto}
+.lv-next{margin:0 0 8px}
+.lv-bar{height:8px;border-radius:999px;background:var(--track);overflow:hidden;margin-bottom:10px}
+.lv-bar span{display:block;height:100%;background:var(--seam)}
+.lv-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.lv-table th,.lv-table td{padding:5px 6px;border-top:1px solid var(--line);text-align:left}
+.lv-table thead th{color:var(--soft);font-weight:500;border-top:0}
+.lv-table th[scope="row"]{font-weight:500}
+.profile-stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat-chip{display:grid;gap:0;min-width:112px;min-height:52px;padding:6px 14px;border-radius:10px;background:var(--chip);border:1px solid var(--line);color:var(--ink);text-decoration:none;align-content:center}
+a.stat-chip:hover{border-color:var(--ink)}
+.stat-label{font-size:.75rem;color:var(--soft);font-weight:700}
+.stat-value{font-family:var(--font-display);font-weight:400;font-size:1.35rem;line-height:1.15}
+
+/* 내 라인업 띠: 어두운 띠에 밝은 글자 (라이트·다크, 어느 팀 테마에서나 같은 대비) */
+.lineup-band{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;padding:14px 16px;background:var(--band-bg);color:var(--band-ink)}
+.band-main{display:grid;gap:6px;min-width:0}
+.band-title{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.9rem}
+.band-stats{display:flex;flex-wrap:wrap;gap:4px 20px;margin:0}
+.band-stats div{display:grid}
+.band-stats dt{font-size:.75rem;opacity:1}
+.band-stats dd{margin:0;font-family:var(--font-display);font-size:1.3rem;line-height:1.2}
+.band-empty{margin:0;font-size:.95rem}
+.band-disclaimer{margin:0;font-size:.75rem;font-weight:700}
+.band-btn{flex:none;min-height:44px;display:inline-flex;align-items:center;padding:0 18px;border-radius:999px;background:var(--band-ink);color:var(--band-bg);font-weight:800;text-decoration:none;border:2px solid var(--band-ink)}
+.band-btn:hover{background:transparent;color:var(--band-ink)}
+.lineup-band :focus-visible{outline-color:var(--band-ink)}
+
+/* 검색 */
+.hub-home .hub-search-hero{padding:4px 0 0}
+.hub-home .hub-search-hero h2{font-size:clamp(1.3rem,4vw,1.7rem);margin:0 0 10px}
+
+/* 카드 메뉴: 넓은 화면은 왼쪽 ⅔에 넓은 카드 2개, 오른쪽 ⅓에 반쪽 카드 2개 */
+.hub-cards{display:grid;gap:12px;grid-template-columns:2fr 1fr;grid-template-areas:"rank comm" "games market"}
+.hub-card{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:132px;padding:16px 16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-bottom:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow);overflow:hidden}
+.hub-card:hover{border-color:var(--ink);border-bottom-color:var(--seam)}
+.hub-card:hover .card-title{text-decoration:underline;text-underline-offset:4px}
+.card-body{display:grid;gap:2px;min-width:0}
+.card-title{font-size:1.35rem;line-height:1.15}
+.card-sub{font-size:.85rem;color:var(--soft);font-weight:700}
+.card-big{font-size:1.5rem;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.card-big small{font-size:1rem;font-weight:700}
+.card-line{font-size:.85rem;color:var(--soft)}
+.card-line .rk-chg{font-size:.95rem}
+.card-art{width:88px;height:88px;flex:none}
+.hub-card.half .card-art{width:64px;height:64px}
+.hub-compare{display:flex;align-items:center;justify-content:space-between;min-height:48px;margin-top:12px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;text-decoration:none}
+.hub-compare:hover{border-color:var(--ink)}
+.hub-compare span{font-size:1.3rem}
+
+/* 휴대폰 폭: 넓은 카드는 한 줄씩, 반쪽 카드는 둘이 나란히 */
+@media (max-width:720px){
+  .hub-cards{grid-template-columns:1fr 1fr;grid-template-areas:"rank rank" "games games" "comm market"}
+  .hub-card.half{flex-direction:column-reverse;align-items:flex-start;min-height:0}
+  .hub-card.half .card-art{width:52px;height:52px}
+  .profile-stats{width:100%}
+  .stat-chip{flex:1 1 0;min-width:0}
+}
+@media (max-width:420px){
+  .card-art{width:64px;height:64px}
+  .card-big{font-size:1.3rem}
+}

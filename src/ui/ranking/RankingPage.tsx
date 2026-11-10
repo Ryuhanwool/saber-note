@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { formatDayKey, shiftDayKey } from '../../domain/games/calendar'
-import { buildLeague } from '../../domain/league'
-import type { League, Player } from '../../domain/players'
+import type { Player } from '../../domain/players'
 import {
   changeDirection, movers, rankChangeLabel, rankingTeams, valueChangeLabel, valueRanking,
   type RankFilter, type RankGroup, type RankRow,
 } from '../../domain/value/ranking'
 import { formatWon } from '../../domain/value/value'
-import { useDataSource, useLeague, useLeagueDay } from '../shared/LeagueContext'
+import { useLeague, useLeagueDay } from '../shared/LeagueContext'
+import { useYesterday } from './useYesterday'
 import { playerPath, positionLabel } from '../shared/labels'
 import './ranking.css'
 
@@ -39,22 +39,6 @@ function RankChange({ r }: { r: RankRow }) {
 function ValueChange({ won }: { won: number | null }) {
   const d = changeDirection(won)
   return <span className={`rk-chg ${d}`}>{d === 'new' ? '–' : valueChangeLabel(won)}</span>
-}
-
-/** 어제(보는 날짜 하루 전) 기록. 날짜별 기록이 없는 출처면 null */
-function useYesterday(date: string | null): { league: League | null; ready: boolean } {
-  const source = useDataSource()
-  const [got, setGot] = useState<{ date: string | null; league: League | null } | null>(null)
-  useEffect(() => {
-    if (!date || !source.loadDay) return
-    let alive = true
-    source.loadDay(shiftDayKey(date, -1)).then((ds) => alive && setGot({ date, league: buildLeague(ds) }))
-    return () => {
-      alive = false
-    }
-  }, [source, date])
-  if (!date || !source.loadDay) return { league: null, ready: true }
-  return got?.date === date ? { league: got.league, ready: true } : { league: null, ready: false }
 }
 
 function MoverCard({ r, kind }: { r: RankRow; kind: 'up' | 'down' }) {
