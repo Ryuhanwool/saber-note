@@ -53,3 +53,9 @@ export const BASE_COLORS = {
   light: { paper: '#F2F5F0', surface: '#FFFFFF', ink: '#1E2A3A' },
   dark: { paper: '#121821', surface: '#1A2230', ink: '#E6EBF0' },
 }
+
+/** 칩 바탕색 (ui/shared/tokens.css --chip과 같은 값) */
+export const CHIP_COLORS = { light: '#E4EAE3', dark: '#243041' }
+
+/** 홈 「내 라인업」 띠: 라이트·다크 모두 어두운 띠에 밝은 글자 (ui/shared/tokens.css --band-bg·--band-ink와 같은 값) */
+export const BAND_COLORS = { light: { bg: '#1E2A3A', ink: '#F2F5F0' }, dark: { bg: '#0A0F16', ink: '#E6EBF0' } }
