@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { DEMO_BASE_DATE } from '../../data/demo/season'
 import { getDataSource } from '../../data/registry'
 import { buildLeague } from '../league'
 import { clutchScore } from './clutch'
 import { expectedValue, formatWon, playerValue, valueFormula } from './value'
 
-const league = buildLeague(await getDataSource('demo').load())
+const league = buildLeague(await getDataSource('demo').loadDay!(DEMO_BASE_DATE))
 const 억 = 100_000_000, 천만 = 10_000_000
 
 describe('예상 가치 계산 (domain)', () => {

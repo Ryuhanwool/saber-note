@@ -5,8 +5,13 @@ import type {
 /** 리그별 데이터 출처가 구현하는 인터페이스. ui는 registry를 거쳐서만 얻는다. */
 export interface LeagueDataSource {
   readonly league: LeagueId
-  /** 시즌 기록 전체. season을 생략하면 출처의 최신 시즌 */
+  /** 시즌 기록 전체. season을 생략하면 출처의 최신 시즌 (날짜별 기록을 주는 출처는 오늘(한국 시간) 기록) */
   load(season?: number): Promise<RawDataset>
+  /**
+   * 그 날짜(한국 날짜 YYYY-MM-DD)까지의 기록. meta.asOf가 그 날짜다.
+   * 날짜별 기록을 주는 출처만 둔다 → 없으면 가치 순위표의 전일 비교·날짜 이동을 하지 않는다.
+   */
+  loadDay?(date: string): Promise<RawDataset>
   /** 타자 한 명의 타구 목록. 트래킹 데이터가 없으면 빈 배열 */
   loadBattedBalls(id: PlayerId): Promise<RawBattedBall[]>
   /**

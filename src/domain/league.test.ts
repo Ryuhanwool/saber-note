@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DEMO_BASE_DATE } from '../data/demo/season'
 import golden from '../../fixtures/demo-golden.json'
 import { getDataSource } from '../data/registry'
 import { CATALOG, type MetricKey } from './catalog'
@@ -8,7 +9,7 @@ import { leagueAverage, metricValue, percentile } from './percentile'
 
 type GoldenPlayer = Record<string, unknown> & { id: number }
 
-const league = buildLeague(await getDataSource('demo').load())
+const league = buildLeague(await getDataSource('demo').loadDay!(DEMO_BASE_DATE))
 const goldenById = new Map((golden.players as GoldenPlayer[]).map((p) => [`demo:${p.id}`, p]))
 const goldenMetrics = golden.metrics as Record<string, Record<string, { fmt: string; pctl: number | null }>>
 

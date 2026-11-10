@@ -43,10 +43,12 @@ export const PITCHER_POINTS = {
 } as const
 
 /**
- * 클러치 점수 몇 점을 「1승」으로 보는지.
- * 가상 리그에서 클러치 1위의 추가금이 1억~1억 5천만 원(1.0~1.5승)이 되도록 정했다 (domain/value/value.test.ts가 확인).
+ * 클러치 점수 몇 점을 「1승」으로 보는지 (고정 값).
+ * 가상 리그 기준일(2026-11-10) 클러치 1위의 추가금이 1억~1억 5천만 원(1.0~1.5승)이 되도록 정했다 (domain/value/value.test.ts가 확인).
+ * 기록이 날마다 바뀌어 1위 추가금도 날마다 달라진다: 2년치 날짜에서 69%의 날이 1억~1.5억(0.8~2.3억, 중앙값 1.4억).
+ * 처음 값 14에서 16으로 바꿨다 (사용자 결정, 2026-11-10 — 14면 범위 안인 날이 37%).
  */
-export const CLUTCH_POINTS_PER_WIN = 14
+export const CLUTCH_POINTS_PER_WIN = 16
 
 /** 예상 가치 계산 (원) */
 export const VALUE_RULES = {

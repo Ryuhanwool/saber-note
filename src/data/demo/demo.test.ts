@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DEMO_BASE_DATE } from './season'
 import golden from '../../../fixtures/demo-golden.json'
 import { ALL_AVAILABLE, unavailableButPresent } from '../availability'
 import { getDataSource } from '../registry'
@@ -7,7 +8,7 @@ import { DEMO_CONSTANTS } from '.'
 
 type GoldenPlayer = Record<string, unknown> & { id: number }
 
-const ds = await getDataSource('demo').load()
+const ds = await getDataSource('demo').loadDay!(DEMO_BASE_DATE)
 const goldenById = new Map((golden.players as GoldenPlayer[]).map((p) => [`demo:${p.id}`, p]))
 // 골든(데모)은 지명타자의 일부 수비 항목이 아예 없다(undefined). 새 데이터는 null로 넣으므로 null로 맞춰 비교한다.
 const g = (p: { id: string }, key: string) => goldenById.get(p.id)![key] ?? null
