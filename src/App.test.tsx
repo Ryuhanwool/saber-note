@@ -200,11 +200,11 @@ describe('화면 3. 선수 2명 비교', () => {
 })
 
 describe('상단 메뉴', () => {
-  it('선수 카드를 보는 동안에는 "선수" 메뉴만 현재 위치로 표시한다', async () => {
+  it('선수 카드를 보는 동안에는 「홈」 메뉴만 현재 위치로 표시한다 (선수 검색이 홈에 있다)', async () => {
     renderAt(`/player/${enc(league.hitters[0].id)}`)
     await screen.findByRole('heading', { level: 1 })
     const current = screen.getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page')
-    expect(current.map((a) => a.textContent)).toEqual(['선수'])
+    expect(current.map((a) => a.textContent)).toEqual(['홈'])
   })
 })
 

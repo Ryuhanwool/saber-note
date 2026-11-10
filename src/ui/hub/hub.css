@@ -1,0 +1,42 @@
+/* 홈 화면·아이콘 줄·아래쪽 탭 바. 색은 tokens.css 변수만 쓴다 (모든 팀 테마·라이트·다크에서 같은 대비 — ui/hub/hub-contrast.test.ts) */
+
+/* 아이콘 줄: 44px 동그란 버튼 (손가락으로 누르기 충분한 크기) */
+.icon-row{gap:6px}
+.icon-wrap{position:relative}
+.icon-btn{position:relative;display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;padding:0}
+.icon-btn:hover{border-color:var(--ink)}
+.icon-btn[aria-expanded="true"]{border-color:var(--seam);box-shadow:inset 0 0 0 1px var(--seam)}
+/* 새 것 표시 점: 색만이 아니라 버튼 이름(「새로 옴」)으로도 알린다 */
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--seam);box-shadow:0 0 0 2px var(--surface)}
+.badge-dot{position:absolute;top:7px;right:8px;width:10px;height:10px}
+.acct-name{max-width:9em;overflow:hidden;text-overflow:ellipsis}
+
+/* 아이콘 옆에 뜨는 창 (새 소식·선수 검색) */
+.hub-pop{position:absolute;right:0;top:calc(100% + 6px);width:min(360px,calc(100vw - 32px));z-index:7;box-shadow:var(--shadow);max-height:calc(100vh - 120px);overflow:auto;padding:16px}
+.hub-pop h2{margin:0 0 10px}
+.hub-pop-note{font-size:.8rem;margin:10px 0 0}
+.hub-search .search{max-width:none}
+.news-list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.news-list a{display:grid;gap:2px;padding:8px 10px;border-radius:6px;color:var(--ink);text-decoration:none;border:1px solid transparent}
+.news-list a:hover,.news-list a:focus-visible{background:var(--chip)}
+.news-list li.fresh a{border-color:var(--line);background:var(--surface)}
+.news-kind{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700}
+.news-text{font-size:.9rem;overflow-wrap:anywhere}
+.news-time{font-size:.75rem}
+@media (max-width:720px){
+  .icon-wrap{position:static}
+  .hub-pop{position:fixed;left:16px;right:16px;top:auto;width:auto;margin-top:6px}
+}
+
+/* 화면 가운데 창 (프로필 이미지 바꾸기) */
+.hub-dialog-backdrop{position:fixed;inset:0;z-index:20;background:var(--overlay);display:grid;place-items:center;padding:16px}
+.hub-dialog{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(420px,100%);box-shadow:var(--shadow);display:grid;gap:12px}
+.hub-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hub-dialog-head h2{margin:0}
+.profile-preview{display:flex;gap:14px;align-items:center}
+.profile-preview p{margin:0;font-size:.85rem}
+.hub-note{margin:0;font-size:.85rem;min-height:1.2em}
+.hub-note.warn{font-weight:700}
+.emblem{display:block;flex:none;border-radius:50%}
+.emblem-photo{object-fit:cover;border:2px solid var(--line);background:var(--chip)}
+.icon-row a.acct{min-height:44px;padding:0 16px;border:1px solid var(--ink);border-radius:999px;display:inline-flex;align-items:center;font-weight:700;text-decoration:none;color:var(--ink);background:var(--surface)}

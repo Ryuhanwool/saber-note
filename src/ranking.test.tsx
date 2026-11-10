@@ -46,7 +46,7 @@ describe('가치 순위표 화면', () => {
     const user = userEvent.setup()
     renderAt('/')
     const nav = await screen.findByRole('navigation', { name: '주요 메뉴' })
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['선수', '비교', '가치 순위', '라인업', '미니게임', '커뮤니티', '마켓'])
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['홈', '비교', '가치 순위', '라인업', '미니게임', '커뮤니티', '마켓'])
     await user.click(within(nav).getByRole('link', { name: '가치 순위' }))
     expect(await screen.findByRole('heading', { level: 1, name: '선수 가치 순위' })).toBeTruthy()
     expect(screen.getByText(`${formatDayKey(TODAY)} 기준 · 매일 0시(한국 시간) 갱신`)).toBeTruthy()

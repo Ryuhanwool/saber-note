@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { BACKGROUND_TYPES } from '../../domain/theme/background'
 import { THEMES } from '../../domain/theme/themes'
+import { GearIcon } from '../hub/icons'
 import { useSettings } from './SettingsContext'
 import './settings.css'
 import { BACKGROUND_STRENGTHS } from '../../data/types'
@@ -39,20 +40,14 @@ export default function SettingsButton() {
   return (
     <div className="settings" ref={wrapRef}>
       <button
-        className="settings-btn"
+        className="icon-btn settings-btn"
         aria-label="화면 설정"
         title="화면 설정"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <circle cx="8.5" cy="10" r="1.6" fill="currentColor" />
-          <circle cx="12" cy="7.5" r="1.6" fill="currentColor" />
-          <circle cx="15.5" cy="10" r="1.6" fill="currentColor" />
-          <path d="M9 15.5c1.8 1.6 4.2 1.6 6 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
+        <GearIcon />
       </button>
       {open && (
         <div className="settings-panel panel" id={panelId} role="dialog" aria-label="화면 설정">
