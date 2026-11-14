@@ -1,5 +1,6 @@
 import { createBrowserAuth } from './auth/browser'
 import { createMemoryAuth } from './auth/memory'
+import { cheerApiAvailable, createApiCheer } from './cheer/api'
 import { createBrowserCheer } from './cheer/browser'
 import { createMemoryCheer } from './cheer/memory'
 import type { CheerSeeds } from './cheer/seed'
@@ -57,8 +58,16 @@ export async function openCommunityRepository(opts: { seeds?: SeedPost[]; user?:
 /** 시연용 예시 글("데모 게시글")을 리그 기록으로 만든다 */
 export { demoCommunitySeeds, type SeedPost } from './community/seed'
 
-/** 선수 응원방 저장소 열기. 브라우저 저장(IndexedDB)을 쓸 수 없으면 메모리 저장으로 바꾼다 */
-export async function openCheerRepository(opts: { seeds?: CheerSeeds; user?: CommunityUser | null } = {}): Promise<CheerRepository> {
+/**
+ * 선수 응원방 저장소 열기.
+ * 서버 저장소(/api/health가 응답 — DATABASE_URL이 있고 DB에 닿을 때)를 먼저 쓰고,
+ * 안 되면 브라우저 저장(IndexedDB), 그것도 안 되면 메모리 저장으로 바꾼다.
+ * 테스트(vitest)에서는 서버를 찾지 않는다.
+ */
+export async function openCheerRepository(opts: { seeds?: CheerSeeds; user?: CommunityUser | null; server?: boolean } = {}): Promise<CheerRepository> {
+  if ((opts.server ?? import.meta.env.MODE !== 'test') && (await cheerApiAvailable())) {
+    return createApiCheer({ seeds: opts.seeds, user: opts.user ?? null })
+  }
   if (typeof indexedDB !== 'undefined') {
     const browser = createBrowserCheer({ seeds: opts.seeds, user: opts.user })
     try {

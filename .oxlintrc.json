@@ -18,6 +18,35 @@
   "overrides": [
     {
       "files": [
+        "src/*.ts",
+        "src/*.tsx",
+        "src/testing/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "pg",
+                "message": "DB 접속은 서버(server/)에서만 합니다."
+              }
+            ],
+            "patterns": [
+              {
+                "group": [
+                  "**/server",
+                  "**/server/**"
+                ],
+                "message": "server/는 서버 전용입니다. 브라우저 코드(src/)에서 import할 수 없습니다."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
         "src/data/**"
       ],
       "rules": {
@@ -32,6 +61,10 @@
               {
                 "name": "react-dom",
                 "message": "data 층은 화면을 모릅니다."
+              },
+              {
+                "name": "pg",
+                "message": "DB 접속은 서버(server/)에서만 합니다."
               }
             ],
             "patterns": [
@@ -43,6 +76,13 @@
                   "**/ui/**"
                 ],
                 "message": "data 층은 domain·ui를 import할 수 없습니다."
+              },
+              {
+                "group": [
+                  "**/server",
+                  "**/server/**"
+                ],
+                "message": "server/는 서버 전용입니다. 브라우저 코드(src/)에서 import할 수 없습니다."
               }
             ]
           }
@@ -65,6 +105,10 @@
               {
                 "name": "react-dom",
                 "message": "domain 층은 순수 함수만 둡니다."
+              },
+              {
+                "name": "pg",
+                "message": "DB 접속은 서버(server/)에서만 합니다."
               }
             ],
             "patterns": [
@@ -82,6 +126,13 @@
                   "!**/data/types.ts"
                 ],
                 "message": "domain 층은 data/types만 import할 수 있습니다. 리그 어댑터에 의존하지 마세요."
+              },
+              {
+                "group": [
+                  "**/server",
+                  "**/server/**"
+                ],
+                "message": "server/는 서버 전용입니다. 브라우저 코드(src/)에서 import할 수 없습니다."
               }
             ]
           }
@@ -109,6 +160,19 @@
                   "**/data/auth/**"
                 ],
                 "message": "ui는 리그 어댑터를 직접 import하지 말고 data/registry를 거치세요."
+              },
+              {
+                "group": [
+                  "**/server",
+                  "**/server/**"
+                ],
+                "message": "server/는 서버 전용입니다. 브라우저 코드(src/)에서 import할 수 없습니다."
+              }
+            ],
+            "paths": [
+              {
+                "name": "pg",
+                "message": "DB 접속은 서버(server/)에서만 합니다."
               }
             ]
           }
@@ -130,6 +194,19 @@
                   "**/ui/**"
                 ],
                 "message": "domain 테스트도 ui를 import할 수 없습니다."
+              },
+              {
+                "group": [
+                  "**/server",
+                  "**/server/**"
+                ],
+                "message": "server/는 서버 전용입니다. 브라우저 코드(src/)에서 import할 수 없습니다."
+              }
+            ],
+            "paths": [
+              {
+                "name": "pg",
+                "message": "DB 접속은 서버(server/)에서만 합니다."
               }
             ]
           }
