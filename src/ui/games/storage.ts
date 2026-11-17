@@ -15,3 +15,8 @@ export const localStore = {
     }
   },
 }
+
+/** 오늘의 블라인드 퀴즈를 끝낸 한국 날짜 (YYYY-MM-DD). 홈 「오늘의 소식」의 「오늘 퀴즈 완료」 */
+export const BLIND_DONE_KEY = 'saber-note-blind-done'
+/** 세이버 픽 챌린지를 제출한 주차 ("2026-W47"). 홈 「오늘의 소식」의 「제출 완료」 */
+export const CHALLENGE_SUBMITTED_KEY = 'saber-note-challenge-submitted'

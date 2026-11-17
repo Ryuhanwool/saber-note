@@ -76,7 +76,9 @@ describe('상단 메뉴와 데모 계정', () => {
     await demoLogin(user)
     const menu = within(await screen.findByLabelText('로그인 상태'))
     expect(menu.getByText('체험팬')).toBeTruthy()
-    await user.click(menu.getByRole('button', { name: '로그아웃' }))
+    // 로그아웃은 엠블럼 동그라미를 눌러 여는 내 프로필 창 안에 있다
+    await user.click(menu.getByRole('button', { name: /내 프로필 메뉴/ }))
+    await user.click(within(await screen.findByRole('dialog', { name: '내 프로필' })).getByRole('button', { name: '로그아웃' }))
     expect(await header.findByRole('link', { name: '로그인' })).toBeTruthy()
   })
 

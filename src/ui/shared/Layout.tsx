@@ -7,6 +7,7 @@ import NewsButton from '../hub/NewsButton'
 import SearchButton from '../hub/SearchButton'
 import SeenTracker from '../hub/SeenTracker'
 import TabBar from '../hub/TabBar'
+import DemoNotice from '../hub/DemoNotice'
 import { PHONE_QUERY, useMediaQuery } from './useMediaQuery'
 import '../hub/hub.css'
 import { formatDayKey } from '../../domain/games/calendar'
@@ -58,7 +59,7 @@ export default function Layout() {
           </div>
         </div>
       </header>
-      {state.status === 'ready' && state.league.meta.notice && <p className="notice">{state.league.meta.notice}</p>}
+      {state.status === 'ready' && <DemoNotice meta={state.league.meta} />}
       {state.status === 'ready' && state.day && !state.day.isToday && (
         <p className="demo-date" role="status">
           <b>시연용 날짜: {formatDayKey(state.day.date)} 기록을 보고 있어요</b> (실제 오늘은 {formatDayKey(state.day.today)})

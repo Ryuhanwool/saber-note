@@ -72,6 +72,10 @@ describe('화면 1. 검색 홈', () => {
     const panel = (await screen.findByRole('heading', { name: 'WAR 상위 타자' })).parentElement!
     expect(within(panel).getAllByRole('listitem')).toHaveLength(5)
     expect(within(panel).getAllByRole('listitem')[0].textContent).toContain(formatMetric('WAR', topH[0].m.WAR))
+    // 데이터 안내는 한 줄로 줄이고, ⓘ를 누르면 자세한 설명이 펼쳐진다
+    expect(screen.getByText('가상 데이터로 만든 시연판이에요')).toBeTruthy()
+    expect(screen.queryByText(league.meta.notice!)).toBeNull()
+    await userEvent.setup().click(screen.getByRole('button', { name: '데이터 안내 자세히 보기' }))
     expect(screen.getByText(league.meta.notice!)).toBeTruthy()
   })
 })

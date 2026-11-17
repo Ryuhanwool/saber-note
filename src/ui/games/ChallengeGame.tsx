@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ChallengeDeadline from './ChallengeDeadline'
+import { CHALLENGE_SUBMITTED_KEY, localStore } from './storage'
 import { weekIdKST } from '../../domain/games/calendar'
 import {
   challengePlayerIds, MIN_WEEKLY_PA, PERFECT_BONUS, POINTS_PER_QUESTION, scoreChallenge, startChallenge,
@@ -99,7 +100,11 @@ export default function ChallengeGame() {
           <div className="choice" style={{ justifyContent: 'flex-start' }}>
             {phase === 'pick' && (
               <>
-                <button className="btn" disabled={!all} onClick={() => setPhase('submitted')}>제출하기</button>
+                <button className="btn" disabled={!all} onClick={() => {
+                  setPhase('submitted')
+                  // 이번 주 문제를 제출하면 기록해 둔다 (홈 「오늘의 소식」의 「제출 완료」)
+                  if (weekOffset === 0) localStore.set(CHALLENGE_SUBMITTED_KEY, weekId)
+                }}>제출하기</button>
                 {!all && <span className="muted" style={{ alignSelf: 'center' }}>5문제를 모두 골라 주세요</span>}
               </>
             )}

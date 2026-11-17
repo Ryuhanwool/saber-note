@@ -7,6 +7,7 @@ import { dayKeyKST } from '../../domain/games/calendar'
 import { metricValue, percentile, topPercent } from '../../domain/percentile'
 import { useLeague } from '../shared/LeagueContext'
 import { positionLabel } from '../shared/labels'
+import { BLIND_DONE_KEY, localStore } from './storage'
 
 /** 게임 2. 블라인드 스탯 퀴즈 — 처음에는 오늘의 문제(모두 같은 문제), 그다음은 연습 문제 */
 export default function BlindGame() {
@@ -43,7 +44,12 @@ export default function BlindGame() {
           const wrong = q.wrong.includes(p.id)
           const state = q.done && p === t ? 'right' : wrong ? 'wrong' : ''
           return (
-            <button key={p.id} className="opt" data-state={state} disabled={q.done || wrong} onClick={() => setQ(guessBlind(q, p.id))}>
+            <button key={p.id} className="opt" data-state={state} disabled={q.done || wrong} onClick={() => {
+              const next = guessBlind(q, p.id)
+              setQ(next)
+              // 오늘의 문제를 끝내면(맞혔든 못 맞혔든) 기록해 둔다 (홈 「오늘의 소식」)
+              if (daily && next.done) localStore.set(BLIND_DONE_KEY, today)
+            }}>
               {p.name}
             </button>
           )
