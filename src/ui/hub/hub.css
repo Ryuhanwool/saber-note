@@ -138,17 +138,18 @@
 .info-btn:hover,.info-btn[aria-expanded="true"]{background:var(--chip)}
 .notice-detail{flex-basis:100%;margin:2px 0 4px;padding:8px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
 
-/* ---------- 오늘의 소식: 넓은 화면은 3장 나란히, 휴대폰 폭은 밀어 넘기기 + 점 ---------- */
+/* ---------- 오늘의 소식: 넓은 화면은 4장 나란히(조금 좁으면 2장씩 두 줄), 휴대폰 폭은 밀어 넘기기 + 점 ---------- */
 .today{display:grid;gap:8px}
 .today-title{margin:0;font-size:1.05rem}
-.today-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.today-track{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:960px) and (min-width:721px){.today-track{grid-template-columns:repeat(2,1fr)}}
 .today-card{display:grid;gap:2px;align-content:start;min-height:112px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
 .today-card:hover{border-color:var(--ink);border-top-color:var(--seam)}
 .today-card:hover .today-main{text-decoration:underline;text-underline-offset:4px}
 .today-card.done{border-top-color:var(--line)}
-.today-kind{font-size:.8rem;font-weight:700;color:var(--soft)}
+.today-kind{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;color:var(--soft)}
 .today-main{font-size:1.2rem;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
-.today-main small{font-size:.8rem;font-weight:500;color:var(--soft)}
+.today-main small{display:block;font-size:.8rem;font-weight:500;color:var(--soft)}
 .today-sub{font-size:.85rem;color:var(--soft)}
 .today-sub .rk-chg{font-size:.9rem}
 .today-dots{display:none}

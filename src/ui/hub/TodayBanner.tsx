@@ -1,15 +1,18 @@
-import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router'
 import { dayKeyKST, weekIdKST } from '../../domain/games/calendar'
 import { gameBlockers } from '../../domain/games/catalog'
 import { movers, rankChangeLabel, valueChangeLabel, valueRanking } from '../../domain/value/ranking'
+import { teamTopRow } from '../../domain/hub/home'
 import { formatWon } from '../../domain/value/value'
 import ChallengeDeadline from '../games/ChallengeDeadline'
 import { BLIND_DONE_KEY, CHALLENGE_SUBMITTED_KEY, localStore } from '../games/storage'
 import { useYesterday } from '../ranking/useYesterday'
 import { useDataSource, useLeague, useLeagueDay } from '../shared/LeagueContext'
-import { playerPath, positionLabel } from '../shared/labels'
+import { cheerPath, playerPath, positionLabel } from '../shared/labels'
 import { useNow } from '../shared/useNow'
+import { useCheerToday } from './useCheerToday'
+import { useHubData } from './useHubData'
 import '../ranking/ranking.css'
 
 /** 오늘의 급상승: 가치 순위 기준 전날보다 가장 많이 오른 선수 (순위 변화·금액 변화) */
@@ -72,8 +75,29 @@ function ChallengeCard({ now }: { now: number }) {
   )
 }
 
+/** 오늘의 응원: 내 응원 팀 가치 1위(응원 팀이 없으면 전체 가치 1위) 선수 → 그 선수 응원방. 오늘 응원했으면 「오늘 응원 완료」 (홈 탭 점과 같은 기준) */
+function CheerCard() {
+  const league = useLeague()
+  const d = useHubData()
+  const { done, nudge } = useCheerToday()
+  const team = d.account?.team ?? null
+  const top = useMemo(() => teamTopRow(league, null, team), [league, team])
+  if (!top) return null
+  const p = top.row.player
+  return (
+    <Link className={`today-card${done ? ' done' : ''}`} to={cheerPath(p.id)}>
+      <span className="today-kind">
+        오늘의 응원{nudge && <span className="dot today-dot-new" aria-hidden="true" />}
+        {nudge && <span className="sr-only">{' (오늘 아직 응원하지 않았어요)'}</span>}
+      </span>
+      <span className="today-main">{done ? '오늘 응원 완료' : <>{p.name} <small>{p.team} · {top.scope === 'team' ? '우리 팀 가치 1위' : '전체 가치 1위'}</small></>}</span>
+      <span className="today-sub">{done ? `${p.name} 응원방 가기 · 내일 또 응원해요` : d.account ? '응원방에서 응원하기' : '로그인하고 응원하기'}</span>
+    </Link>
+  )
+}
+
 /**
- * 홈 「오늘의 소식」: 카드 3장(급상승 · 블라인드 퀴즈 · 챌린지).
+ * 홈 「오늘의 소식」: 카드 4장(급상승 · 블라인드 퀴즈 · 챌린지 · 오늘의 응원).
  * 넓은 화면은 나란히, 휴대폰 폭은 옆으로 밀어 넘기고 몇 번째 카드인지 점으로 보여 준다.
  */
 export default function TodayBanner() {
@@ -85,7 +109,9 @@ export default function TodayBanner() {
     <RiserCard key="riser" />,
     ...(blockers.blind ? [] : [<BlindCard key="blind" now={now} />]),
     ...(blockers.challenge ? [] : [<ChallengeCard key="challenge" now={now} />]),
+    <CheerCard key="cheer" />,
   ]
+  const cheerIndex = cards.length - 1
   const track = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(0)
 
@@ -95,6 +121,14 @@ export default function TodayBanner() {
     const max = el.scrollWidth - el.clientWidth
     setActive(max > 0 ? Math.round((el.scrollLeft / max) * (cards.length - 1)) : 0)
   }
+  // 홈 탭의 응원 점을 눌러 오면 「오늘의 응원」 카드로 넘긴다
+  const { state } = useLocation() as { state: { today?: string } | null }
+  const wantCheer = state?.today === 'cheer'
+  useEffect(() => {
+    if (wantCheer) go(cheerIndex)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantCheer])
+
   function go(i: number) {
     setActive(i)
     const el = track.current

@@ -284,11 +284,11 @@ describe('홈: 안내 한 줄 · 검색 · 오늘의 소식', () => {
     for (let i = 1; i < order.length; i++) expect(order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  it('카드 3장: 오늘의 급상승(순위·금액 변화) · 블라인드 퀴즈 · 세이버 픽 챌린지(마감까지), 점 3개', async () => {
+  it('카드 4장: 오늘의 급상승(순위·금액 변화) · 블라인드 퀴즈 · 세이버 픽 챌린지(마감까지) · 오늘의 응원, 점 4개', async () => {
     renderApp('/')
     const b = await banner()
     const links = await b.findAllByRole('link')
-    expect(links.map((a) => a.querySelector('.today-kind')!.textContent)).toEqual(['오늘의 급상승', '오늘의 블라인드 퀴즈', '세이버 픽 챌린지'])
+    expect(links.map((a) => a.querySelector('.today-kind')!.textContent)).toEqual(['오늘의 급상승', '오늘의 블라인드 퀴즈', '세이버 픽 챌린지', '오늘의 응원'])
     const yesterday = buildLeague(await getDataSource('demo').loadDay!(shiftDayKey(dayKeyKST(new Date()), -1)))
     const up = movers(valueRanking(today, yesterday)).up[0]
     await waitFor(() => expect(links[0].textContent).toContain(up.player.name), { timeout: 3000 })
@@ -300,8 +300,8 @@ describe('홈: 안내 한 줄 · 검색 · 오늘의 소식', () => {
     expect(links[2].getAttribute('href')).toBe('/games/challenge')
     expect(links[2].textContent).toMatch(/마감까지 .+|제출 마감 · 일요일 경기 뒤 채점/)
     const dots = within(b.getByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
-    expect(dots.map((d) => d.getAttribute('aria-label'))).toEqual(['1번째 소식 보기 (3장 중)', '2번째 소식 보기 (3장 중)', '3번째 소식 보기 (3장 중)'])
-    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual(['true', null, null])
+    expect(dots.map((d) => d.getAttribute('aria-label'))).toEqual([1, 2, 3, 4].map((n) => `${n}번째 소식 보기 (4장 중)`))
+    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual(['true', null, null, null])
   })
 
   it('점을 누르면 그 카드가 현재 카드가 된다', async () => {
@@ -310,7 +310,7 @@ describe('홈: 안내 한 줄 · 검색 · 오늘의 소식', () => {
     const b = await banner()
     const dots = within(b.getByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
     await user.click(dots[2])
-    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual([null, null, 'true'])
+    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual([null, null, 'true', null])
   })
 
   it('블라인드 퀴즈: 누르면 퀴즈로, 오늘 문제를 끝내면 「오늘 퀴즈 완료」', async () => {
@@ -379,6 +379,50 @@ describe('홈: 카드 메뉴', () => {
   })
 })
 
+describe('홈: 오늘의 응원 카드', () => {
+  const cheerCard = async () => within(await screen.findByRole('region', { name: '오늘의 소식' })).getByRole('link', { name: /^오늘의 응원/ })
+
+  it('로그아웃: 전체 가치 1위 선수, 누르면 그 선수 응원방 (점 없음)', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    const card = await cheerCard()
+    const top = ranked[0].player
+    expect(card.getAttribute('href')).toBe(`/player/${enc(top.id)}/cheer`)
+    expect(card.textContent).toContain(top.name)
+    expect(card.textContent).toContain('전체 가치 1위')
+    expect(card.textContent).toContain('로그인하고 응원하기')
+    expect(card.querySelector('.dot')).toBeNull()
+    await user.click(card)
+    expect(await screen.findByRole('heading', { level: 1, name: new RegExp(top.name) })).toBeTruthy()
+  })
+
+  it('응원 팀이 있으면 그 팀 가치 1위 선수', async () => {
+    const team = teams[2]
+    const auth = createMemoryAuth({ iterations: 1_000 })
+    await auth.signUp({ nickname: '해오라기팬', password: 'secret123', team })
+    renderApp('/', auth)
+    const top = ranked.find((r) => r.player.team === team)!.player
+    const card = await cheerCard()
+    await waitFor(() => expect(card.getAttribute('href')).toBe(`/player/${enc(top.id)}/cheer`))
+    expect(card.textContent).toContain('우리 팀 가치 1위')
+  })
+
+  it('로그인했는데 오늘 아직 응원하지 않았으면 점, 응원방에서 응원하고 돌아오면 「오늘 응원 완료」', async () => {
+    const user = userEvent.setup()
+    renderApp('/', await demoAuth())
+    let card = await cheerCard()
+    await waitFor(() => expect(card.textContent).toContain('오늘 아직 응원하지 않았어요'), { timeout: 3000 })
+    expect(card.querySelector('.dot')).toBeTruthy()
+    await user.click(card)
+    await user.click(await screen.findByRole('button', { name: /응원하기/ }))
+    expect(await screen.findByRole('button', { name: '오늘 응원했어요' })).toBeTruthy()
+    await user.click(screen.getAllByRole('link', { name: /^홈/ })[0])
+    card = await cheerCard()
+    await waitFor(() => expect(card.textContent).toContain('오늘 응원 완료'))
+    expect(card.querySelector('.dot')).toBeNull()
+  })
+})
+
 describe('아래쪽 탭 바 (휴대폰 폭)', () => {
   const realMatchMedia = window.matchMedia
   const phone = (matches: boolean) => {
@@ -425,6 +469,21 @@ describe('아래쪽 탭 바 (휴대폰 폭)', () => {
     await waitFor(() => expect(t.getByRole('link', { name: /^커뮤니티/ }).textContent).toBe('커뮤니티'))
   })
 
+  it('홈 탭의 응원 점을 누르면 홈 「오늘의 소식」이 「오늘의 응원」 카드로 넘어간다 (점이 없으면 첫 카드 그대로)', async () => {
+    phone(true)
+    const user = userEvent.setup()
+    renderApp('/ranking', await demoAuth())
+    const t = await tabs()
+    await user.click(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요/ }, { timeout: 3000 }))
+    const dots = within(await screen.findByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    await waitFor(() => expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual([null, null, null, 'true']))
+    cleanup()
+    renderApp('/ranking')
+    await user.click(await (await tabs()).findByRole('link', { name: /^홈/ }))
+    const dots2 = within(await screen.findByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    expect(dots2.map((d) => d.getAttribute('aria-current'))).toEqual(['true', null, null, null])
+  })
+
   it('홈 탭: 로그인했는데 오늘 아직 응원하지 않았으면 점, 응원하면 꺼진다. 로그아웃이면 점 없음', async () => {
     phone(true)
     const user = userEvent.setup()
@@ -435,7 +494,7 @@ describe('아래쪽 탭 바 (휴대폰 폭)', () => {
     cleanup()
     renderApp(`/player/${enc(today.hitters[0].id)}/cheer`, await demoAuth())
     const t = await tabs()
-    expect(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요\)$/ }, { timeout: 3000 })).toBeTruthy()
+    expect(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요 — 오늘의 응원 카드로\)$/ }, { timeout: 3000 })).toBeTruthy()
     await user.click(await screen.findByRole('button', { name: /응원하기/ }))
     await waitFor(() => expect(t.getByRole('link', { name: /^홈/ }).textContent).toBe('홈'))
   })
