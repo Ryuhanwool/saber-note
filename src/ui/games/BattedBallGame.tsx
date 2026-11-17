@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { metricAvailable } from '../../domain/availability'
 import type { MetricKey } from '../../domain/catalog'
 import { formatMetric } from '../../domain/format'
+import { ballFlight } from '../../domain/games/ballFlight'
 import { BALLS_PER_ROUND, makePlay, type BattedBallPlay } from '../../domain/games/battedBall'
 import { metricValue, percentile, topPercent } from '../../domain/percentile'
 import type { HitterPlayer } from '../../domain/players'
 import { useLeague } from '../shared/LeagueContext'
 import { positionLabel } from '../shared/labels'
+import { REDUCED_MOTION, useMediaQuery } from '../shared/useMediaQuery'
+import BallFlightView from './BallFlightView'
+import { useFlightClock } from './useFlightClock'
 
 const DIR_LABEL = { L: '좌측', C: '가운데', R: '우측' } as const
-/** 위에서 본 그림의 수비 위치 */
-const FPOS = { C: [100, 166], '1B': [140, 117], '2B': [121, 99], SS: [80, 99], '3B': [60, 117], LF: [46, 55], CF: [100, 30], RF: [154, 55] } as const
 const POS_LABEL = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' } as const
 
 /** 보정값 표시: +.012 / −.008 (반올림해서 0이면 부호 없이 .000) */
@@ -55,16 +57,10 @@ export default function BattedBallGame() {
   const { i, score, flips, play: b, answer } = round
   const done = i > BALLS_PER_ROUND
 
-  // 옆에서 본 궤적
-  const rad = (b.la * Math.PI) / 180
-  const len = 40 + ((b.ev - 95) / 90) * 120
-  const x2 = 30 + Math.cos(rad) * len
-  const y2 = 150 - Math.sin(rad) * len
-  // 위에서 본 방향
-  const far = b.la < 10 ? 45 + ((b.ev - 95) / 90) * 30 : b.la > 50 ? 40 : 70 + ((b.ev - 95) / 90) * 75
-  const bx = 100 + Math.sin((b.deg * Math.PI) / 180) * far
-  const by = 155 - Math.cos((b.deg * Math.PI) / 180) * far
-  const [fx, fy] = FPOS[b.fielderPos]
+  // 타구 애니메이션: 새 타구마다 처음부터, 동작 줄이기면 마지막 장면만 (경로는 결과와 상관없이 타구 속도·발사각·방향으로만)
+  const reduced = useMediaQuery(REDUCED_MOTION)
+  const flight = useMemo(() => ballFlight(b), [b])
+  const clock = useFlightClock(flight.durationMs, `${i}:${b.ev}:${b.la}:${b.deg}`, reduced)
   const kind = b.la < 10 ? '땅볼' : b.la > 50 ? '내야 뜬공' : b.la > 25 ? '뜬공' : '라인드라이브'
   const range = b.fielder && league.meta.available.fielding.ratings ? b.fielder.raw.fielding.ratings?.find((r) => r.label === '수비 범위')?.grade : undefined
   const noAdj = b.homeRunZone || b.popup
@@ -121,32 +117,33 @@ export default function BattedBallGame() {
             </div>
           </div>
           <div className="row" style={{ alignItems: 'center', marginTop: 12 }}>
-            <svg viewBox="0 0 220 170" width="230" role="img" aria-label={`옆에서 본 타구 궤적: 발사각 ${b.la.toFixed(0)}도`}>
-              <line x1="10" x2="215" y1="150" y2="150" stroke="var(--line)" strokeWidth="2" />
-              <line x1="30" y1="150" x2={x2.toFixed(1)} y2={y2.toFixed(1)} stroke="var(--seam)" strokeWidth="3" strokeLinecap="round" />
-              <circle cx={x2.toFixed(1)} cy={y2.toFixed(1)} r="6" fill="var(--surface)" stroke="var(--seam)" strokeWidth="2" />
-              <circle cx="30" cy="150" r="4" fill="var(--ink)" />
-              <text x="110" y="166" textAnchor="middle" fontSize="10" fill="var(--soft)">옆에서 본 궤적</text>
-            </svg>
-            <svg viewBox="0 0 200 180" width="210" role="img" aria-label={`위에서 본 타구 방향: ${DIR_LABEL[b.dir]}, 수비수 ${POS_LABEL[b.fielderPos]}`}>
-              <path d="M100 158 L12 70 Q100 -22 188 70 Z" fill="var(--field)" opacity=".12" />
-              <path d="M100 158 L139 119 L100 80 L61 119 Z" fill="none" stroke="var(--line)" strokeWidth="1.5" />
-              <line x1="100" y1="158" x2={bx.toFixed(1)} y2={by.toFixed(1)} stroke="var(--seam)" strokeWidth="2.5" strokeDasharray={b.la < 10 ? '0' : '5 3'} />
-              <circle cx={bx.toFixed(1)} cy={by.toFixed(1)} r="4" fill="var(--seam)" />
-              <circle cx={fx} cy={fy} r="8" fill="var(--ink)" />
-              <text x={fx} y={fy + 3} textAnchor="middle" fontSize="8" fill="var(--paper)" fontWeight="700">{b.fielderPos}</text>
-              <text x="100" y="176" textAnchor="middle" fontSize="10" fill="var(--soft)">위에서 본 방향 ({kind})</text>
-            </svg>
+            <BallFlightView
+              ball={b}
+              fielderPos={b.fielderPos}
+              progress={clock.progress}
+              label={{
+                side: `옆에서 본 타구 궤적: 타구 속도 ${b.ev.toFixed(0)}km/h, 발사각 ${b.la.toFixed(0)}도 (${kind})`,
+                top: `위에서 본 야구장: ${DIR_LABEL[b.dir]} 방향, 그쪽 수비수 ${POS_LABEL[b.fielderPos]}`,
+              }}
+            />
             <div className="statgrid" style={{ flex: 1, minWidth: 200 }}>
               <div className="stat"><b>{b.ev.toFixed(0)} km/h</b><span>타구 속도</span></div>
               <div className="stat"><b>{b.la.toFixed(0)}°</b><span>발사각</span></div>
               <div className="stat"><b>{DIR_LABEL[b.dir]}</b><span>방향</span></div>
             </div>
           </div>
+          <div className="bbcontrols">
+            <p className="muted bbstate" aria-live="polite">
+              {clock.done ? (reduced ? '동작 줄이기 설정이라 공이 멈춘 장면만 보여 줘요.' : '공이 멈췄어요.') : '공이 날아가는 중이에요…'}
+            </p>
+            {!clock.done && <button type="button" className="btn ghost" onClick={clock.skip}>건너뛰기</button>}
+            {clock.done && !reduced && <button type="button" className="btn ghost" onClick={clock.replay}>다시 보기</button>}
+          </div>
           {answer === null ? (
             <div className="choice">
-              <button className="btn" onClick={() => choose(true)}>안타</button>
-              <button className="btn ghost" onClick={() => choose(false)}>아웃</button>
+              <button className="btn" disabled={!clock.done} onClick={() => choose(true)}>안타</button>
+              <button className="btn ghost" disabled={!clock.done} onClick={() => choose(false)}>아웃</button>
+              {!clock.done && <span className="muted bbwait">공이 다 날아간 뒤에 고를 수 있어요.</span>}
             </div>
           ) : (
             <>

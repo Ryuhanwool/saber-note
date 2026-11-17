@@ -42,3 +42,14 @@
 .brk small{display:block;color:var(--soft);font-size:.78rem}
 .brk .tot th,.brk .tot td{font-weight:700;border-top:2px solid var(--ink)}
 @media (max-width:560px){.bbwho{grid-template-columns:1fr}}
+
+/* 「이 타구, 안타일까?」 타구 애니메이션 (옆에서 본 궤적 · 위에서 본 야구장). 색은 tokens.css 변수만 */
+.bbflight{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;flex:2 1 440px}
+.bbfig{margin:0;flex:1 1 200px;min-width:0;display:grid;gap:4px}
+.bbfig svg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.bbfig figcaption{font-size:.8rem;color:var(--soft);text-align:center}
+.bbcontrols{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-top:10px;min-height:44px}
+.bbstate{margin:0;font-size:.9rem}
+.bbcontrols .btn{min-height:44px}
+.bbwait{font-size:.85rem;align-self:center}
+.choice .btn:disabled{cursor:not-allowed}
