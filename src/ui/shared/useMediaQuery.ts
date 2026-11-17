@@ -16,3 +16,6 @@ export function useMediaQuery(query: string): boolean {
 
 /** 휴대폰 폭 (base.css의 720px 기준과 같다): 위쪽 메뉴 대신 아래쪽 탭 바 */
 export const PHONE_QUERY = '(max-width: 720px)'
+
+/** 기기의 「동작 줄이기」 설정: 켜져 있으면 애니메이션 없이 마지막 장면만 */
+export const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'

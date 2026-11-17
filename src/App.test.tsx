@@ -313,6 +313,8 @@ describe('화면 6. 미니게임', () => {
     const user = userEvent.setup()
     renderAt('/games/batted-ball')
     for (let i = 0; i < 10; i++) {
+      // 타구 애니메이션이 끝나야 고를 수 있다 — 건너뛰기
+      await user.click(await screen.findByRole('button', { name: '건너뛰기' }))
       await user.click(await screen.findByRole('button', { name: '안타' }))
       expect(screen.getByText('최종 안타 확률')).toBeTruthy()
       await user.click(screen.getByRole('button', { name: i === 9 ? '결과 보기' : '다음 타구' }))
