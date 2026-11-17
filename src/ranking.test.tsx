@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -149,9 +149,9 @@ describe('가치 순위표 화면', () => {
     expect(screen.getByText(`시연용 날짜: ${formatDayKey(prev)} 기록을 보고 있어요`)).toBeTruthy()
     // 그날 순위표: 어제 리그와 그 전날 비교
     const prevRows = valueRanking(yesterday, buildLeague(await source.loadDay!(shiftDayKey(TODAY, -2))))
-    await screen.findByText((_, el) => el?.tagName === 'TD' && el.textContent === formatWon(prevRows[0].value.total))
-    const first = (await bodyRows())[0]
-    expect(within(first).getByRole('rowheader').textContent).toContain(prevRows[0].player.name)
+    // 같은 금액의 선수가 여럿일 수 있어(날짜에 따라) 금액이 아니라 1위 줄의 이름이 바뀔 때까지 기다린다
+    await waitFor(async () => expect(within((await bodyRows())[0]).getByRole('rowheader').textContent).toContain(prevRows[0].player.name))
+    expect(within((await bodyRows())[0]).getByText(formatWon(prevRows[0].value.total))).toBeTruthy()
     await user.click(demo.getByRole('button', { name: '다음 날 ›' }))
     expect(await screen.findByText(`${formatDayKey(TODAY)} 기준 · 매일 0시(한국 시간) 갱신`)).toBeTruthy()
     expect(screen.queryByText(/시연용 날짜예요/)).toBeNull()

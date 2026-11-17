@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router'
+import ProfileMenu from '../hub/ProfileMenu'
 import { useAuth } from './AuthContext'
-import { LogoutIcon } from '../hub/icons'
 import { loginPath } from './login'
 import './auth.css'
 
-/** 아이콘 줄 끝의 로그인 상태: 닉네임(넓은 화면) + 로그아웃 아이콘, 또는 「로그인」 */
+/** 아이콘 줄 끝: 로그인했으면 내 프로필(엠블럼 동그라미 → 작은 창, 로그아웃은 그 창 안), 아니면 「로그인」 */
 export default function AccountMenu() {
   const auth = useAuth()
   const { pathname, search } = useLocation()
@@ -14,12 +14,5 @@ export default function AccountMenu() {
     if (pathname === '/login' || pathname === '/signup') return null
     return <Link className="acct" to={loginPath(pathname + search)}>로그인</Link>
   }
-  return (
-    <span className="acct" aria-label="로그인 상태">
-      <b className="acct-name">{auth.account.nickname}</b>
-      <button type="button" className="icon-btn" aria-label="로그아웃" title="로그아웃" onClick={() => void repo.signOut()}>
-        <LogoutIcon />
-      </button>
-    </span>
-  )
+  return <ProfileMenu account={auth.account} onSignOut={() => void repo.signOut()} />
 }

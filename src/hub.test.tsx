@@ -13,12 +13,12 @@ import { DEMO_ACCOUNT_ID, DEMO_ACCOUNT_NICKNAME } from './data/types'
 import { getDataSource } from './data/registry'
 import { createMemorySettings } from './data/settings/memory'
 import type { AuthRepository } from './data/source'
-import { dayKeyKST } from './domain/games/calendar'
+import { dayKeyKST, shiftDayKey } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
 import { recentCount } from './domain/hub/news'
 import { emptyLineup } from './domain/lineup/lineup'
 import { teamsOf } from './domain/market/catalog'
-import { valueRanking } from './domain/value/ranking'
+import { movers, valueChangeLabel, valueRanking } from './domain/value/ranking'
 import { formatWon } from './domain/value/value'
 import AuthProvider from './ui/auth/AuthProvider'
 import CheerProvider from './ui/cheer/CheerProvider'
@@ -67,6 +67,7 @@ afterEach(cleanup)
 beforeEach(() => {
   globalThis.indexedDB = new IDBFactory()
   sessionStorage.clear()
+  localStorage.clear()
 })
 
 describe('아이콘 줄', () => {
@@ -82,14 +83,15 @@ describe('아이콘 줄', () => {
     expect(document.querySelector('header img')).toBeNull()
   })
 
-  it('로그인했으면 로그아웃 아이콘. 누르면 로그아웃된다', async () => {
-    const user = userEvent.setup()
+  it('로그인했으면 「로그인」 자리에 내 엠블럼 동그라미, 로그아웃 아이콘은 아이콘 줄에 없다', async () => {
     const auth = createMemoryAuth({ iterations: 1_000 })
     await auth.signInDemo()
     renderApp('/ranking', auth)
     const q = await quick()
-    await user.click(await q.findByRole('button', { name: '로그아웃' }))
-    expect(await q.findByRole('link', { name: '로그인' })).toBeTruthy()
+    const avatar = await q.findByRole('button', { name: `내 프로필 메뉴 (${DEMO_ACCOUNT_NICKNAME})` })
+    expect(within(avatar).getByRole('img', { name: '기본 엠블럼' })).toBeTruthy()
+    expect(q.queryByRole('button', { name: '로그아웃' })).toBeNull()
+    expect(q.queryByRole('link', { name: '로그인' })).toBeNull()
   })
 
   it('선수 검색: 어느 화면에서나 검색 창을 띄우고, 고르면 선수 카드로 간다', async () => {
@@ -143,8 +145,10 @@ describe('아이콘 줄', () => {
 const ranked = valueRanking(today, null)
 const teams = teamsOf([...today.hitters, ...today.pitchers])
 const enc = encodeURIComponent
-const profile = async () => within(await screen.findByRole('region', { name: '내 프로필' }))
-const band = async () => within(await screen.findByRole('region', { name: '내 라인업' }))
+const menu = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(await (await quick()).findByRole('button', { name: /^내 프로필 메뉴/ }))
+  return within(await screen.findByRole('dialog', { name: '내 프로필' }))
+}
 const cards = async () => within(await screen.findByRole('region', { name: '홈 메뉴' }))
 
 async function demoAuth() {
@@ -166,93 +170,175 @@ async function saveDemoLineup() {
   return [c, b, sp]
 }
 
-describe('홈: 프로필 줄', () => {
-  it('로그아웃 상태: 기본 엠블럼과 「로그인」 버튼, 라인업 띠는 「라인업 만들기」', async () => {
-    renderApp('/')
-    const p = await profile()
-    expect(p.getByRole('img', { name: '기본 엠블럼' })).toBeTruthy()
-    expect(p.getByRole('link', { name: '로그인' }).getAttribute('href')).toBe('/login?next=%2F')
-    expect(p.queryByRole('button', { name: '프로필 이미지 바꾸기' })).toBeNull()
-    const b = await band()
-    expect(await b.findByText('로그인하면 나만의 라인업을 저장할 수 있어요.')).toBeTruthy()
-    expect(b.getByText('실제 연봉과 무관합니다.')).toBeTruthy()
-    expect(b.getByRole('link', { name: '라인업 만들기' }).getAttribute('href')).toBe('/lineup')
+describe('내 프로필 창 (아이콘 줄 끝의 엠블럼)', () => {
+  it('홈에는 로그인 카드·프로필 줄·「내 라인업」 띠가 없다', async () => {
+    renderApp('/', await demoAuth())
+    await screen.findByRole('region', { name: '홈 메뉴' })
+    expect(screen.queryByRole('region', { name: '내 프로필' })).toBeNull()
+    expect(screen.queryByRole('region', { name: '내 라인업' })).toBeNull()
+    expect(screen.queryByText('로그인해 주세요')).toBeNull()
   })
 
-  it('데모 계정: 닉네임과 Lv.3 열성 팬 배지(35점에서 시작), 누르면 다음 레벨까지 남은 점수와 점수표', async () => {
+  it('데모 계정: 닉네임, Lv.3 열성 팬 배지(35점에서 시작), 다음 레벨까지 남은 점수와 점수표', async () => {
     const user = userEvent.setup()
     renderApp('/', await demoAuth())
-    const p = await profile()
-    expect(await p.findByText(DEMO_ACCOUNT_NICKNAME)).toBeTruthy()
-    const badge = await p.findByRole('button', { name: 'Lv.3 열성 팬' })
-    await user.click(badge)
-    const pop = within(await screen.findByRole('dialog', { name: '팬 레벨' }))
-    expect(pop.getByRole('heading').textContent).toBe('팬 레벨 · 35점')
-    expect(pop.getByText(/다음 레벨/).textContent).toBe('다음 레벨 Lv.4 골수 팬까지 25점')
-    const rows = pop.getAllByRole('row').slice(1).map((r) => [...r.children].map((c) => c.textContent))
+    const m = await menu(user)
+    expect(m.getByText(DEMO_ACCOUNT_NICKNAME, { selector: '.pm-name' })).toBeTruthy()
+    expect(m.getByText('열성 팬', { exact: false, selector: '.lv-badge' }).textContent).toBe('Lv.3 열성 팬')
+    expect(m.getByText(/Lv\.4 골수 팬까지/).textContent).toBe('35점 · Lv.4 골수 팬까지 25점')
+    await user.click(m.getByText('점수표 보기'))
+    const rows = m.getAllByRole('row').slice(1).map((r) => [...r.children].map((c) => c.textContent))
     expect(rows).toEqual([
       ['응원하기', '1점', '하루 10번'], ['응원 메시지', '2점', '하루 3번'], ['커뮤니티 글', '3점', '하루 3번'], ['판매글', '3점', '하루 2번'], ['라인업 저장', '5점', '1번'],
     ])
   })
 
-  it('라인업을 저장했으면: 라인업 총 가치·이번 주 응원 숫자, 띠에 총 가치·총 WAR·채운 자리, 「라인업 편집」. 저장은 5점', async () => {
+  it('라인업이 없으면 「라인업 만들기」, 저장했으면 총 예상 가치(실제 연봉과 무관합니다.)와 「라인업 편집」. 저장은 5점', async () => {
     const user = userEvent.setup()
+    renderApp('/', await demoAuth())
+    let lineup = within((await menu(user)).getByRole('region', { name: '내 라인업' }))
+    expect(lineup.getByText('아직 저장한 라인업이 없어요.')).toBeTruthy()
+    expect(lineup.getByText('실제 연봉과 무관합니다.')).toBeTruthy()
+    expect(lineup.getByRole('link', { name: '라인업 만들기' }).getAttribute('href')).toBe('/lineup')
+    cleanup()
+
     const picked = await saveDemoLineup()
     renderApp('/', await demoAuth())
     const value = picked.reduce((s, p) => s + ranked.find((r) => r.player.id === p.id)!.value.total, 0)
-    const b = await band()
-    expect(await b.findByText('12자리 중 3자리')).toBeTruthy()
-    expect(b.getByText(formatWon(value))).toBeTruthy()
-    expect(b.getByText(picked.reduce((s, p) => s + p.m.WAR, 0).toFixed(2))).toBeTruthy()
-    expect(b.getByRole('link', { name: '라인업 편집' }).getAttribute('href')).toBe('/lineup')
-    const p = await profile()
-    const chip = p.getByRole('link', { name: /라인업 총 가치/ })
-    expect(chip.textContent).toContain(formatWon(value))
-    expect(p.getByRole('link', { name: /이번 주 응원 0번/ })).toBeTruthy()
-    await user.click(await p.findByRole('button', { name: /Lv\.3/ }))
-    expect((await screen.findByRole('dialog', { name: '팬 레벨' })).querySelector('h2')!.textContent).toBe('팬 레벨 · 40점')
+    const m = await menu(user)
+    lineup = within(m.getByRole('region', { name: '내 라인업' }))
+    expect(await lineup.findByText(formatWon(value))).toBeTruthy()
+    expect(lineup.getByText(`12자리 중 3자리 · WAR ${picked.reduce((s, p) => s + p.m.WAR, 0).toFixed(2)}`)).toBeTruthy()
+    expect(lineup.getByText('실제 연봉과 무관합니다.')).toBeTruthy()
+    await waitFor(() => expect(m.getByText(/Lv\.4 골수 팬까지/).textContent).toBe('40점 · Lv.4 골수 팬까지 20점'))
+    await user.click(lineup.getByRole('link', { name: '라인업 편집' }))
+    expect(await screen.findByRole('heading', { level: 1, name: '나만의 라인업' })).toBeTruthy()
+    expect(screen.queryByRole('dialog', { name: '내 프로필' })).toBeNull()
   })
 
-  it('「이번 주 응원」: 응원 팀이 없으면 전체 가치 1위 선수의 응원방으로', async () => {
-    const user = userEvent.setup()
-    renderApp('/', await demoAuth())
-    await user.click(await (await profile()).findByRole('link', { name: new RegExp(`이번 주 응원 0번 — ${ranked[0].player.name} 응원방으로`) }))
-    expect(await screen.findByRole('heading', { level: 1, name: new RegExp(ranked[0].player.name) })).toBeTruthy()
-  })
-
-  it('응원 팀이 있으면: 그 구단 엠블럼, 「이번 주 응원」과 가치 순위 카드는 응원 팀 가치 1위 선수', async () => {
+  it('응원 팀이 있으면 그 구단 엠블럼이 동그라미와 창에 보인다', async () => {
     const team = teams[3]
     const auth = createMemoryAuth({ iterations: 1_000 })
     await auth.signUp({ nickname: '반딧불팬', password: 'secret123', team })
+    const user = userEvent.setup()
     renderApp('/', auth)
-    const p = await profile()
-    expect(await p.findByRole('img', { name: `${team} 엠블럼` })).toBeTruthy()
-    const top = ranked.find((r) => r.player.team === team)!
-    expect(p.getByRole('link', { name: new RegExp(`${top.player.name} 응원방으로`) }).getAttribute('href')).toBe(`/player/${enc(top.player.id)}/cheer`)
-    const card = (await cards()).getByRole('link', { name: /선수 가치 순위/ })
-    expect(card.textContent).toContain(`${team} 1위 · 전체 ${top.rank}위`)
-    expect(card.textContent).toContain(top.player.name)
+    const avatar = await (await quick()).findByRole('button', { name: '내 프로필 메뉴 (반딧불팬)' })
+    expect(await within(avatar).findByRole('img', { name: `${team} 엠블럼` })).toBeTruthy()
+    const m = await menu(user)
+    expect(m.getByRole('img', { name: `${team} 엠블럼` })).toBeTruthy()
+    expect(m.getByText(team)).toBeTruthy()
   })
 
-  it('엠블럼을 누르면 「프로필 이미지 바꾸기」: 사진을 올리면 사진으로, 「기본 엠블럼으로」로 되돌린다. 사진이 아니면 이유를 알려 준다', async () => {
+  it('「프로필 이미지 바꾸기」: 사진을 올리면 동그라미가 사진으로, 「기본 엠블럼으로」로 되돌린다. 사진이 아니면 이유를 알려 준다', async () => {
     const user = userEvent.setup({ applyAccept: false })
     renderApp('/', await demoAuth())
-    const p = await profile()
-    await user.click(await p.findByRole('button', { name: '프로필 이미지 바꾸기' }))
+    await user.click((await menu(user)).getByRole('button', { name: '프로필 이미지 바꾸기' }))
+    expect(screen.queryByRole('dialog', { name: '내 프로필' })).toBeNull()
     const d = within(await screen.findByRole('dialog', { name: '프로필 이미지 바꾸기' }))
     const input = d.getByLabelText('프로필 사진 파일')
     await user.upload(input, new File(['gif'], 'a.gif', { type: 'image/gif' }))
     expect((await d.findByRole('status')).textContent).toContain('PNG, JPG, WEBP 사진만')
     await user.upload(input, new File(['png'], 'me.png', { type: 'image/png' }))
     await waitFor(() => expect(d.getByRole('status').textContent).toBe('프로필 사진을 바꿨어요.'))
-    const emblemBtn = within(p.getByRole('button', { name: '프로필 이미지 바꾸기' }))
-    expect(await emblemBtn.findByRole('img', { name: '내 프로필 사진' })).toBeTruthy()
+    const avatar = within((await quick()).getByRole('button', { name: /^내 프로필 메뉴/ }))
+    expect(await avatar.findByRole('img', { name: '내 프로필 사진' })).toBeTruthy()
     await user.click(d.getByRole('button', { name: '기본 엠블럼으로' }))
     await waitFor(() => expect(d.getByRole('status').textContent).toBe('기본 엠블럼으로 되돌렸어요.'))
-    expect(emblemBtn.getByRole('img', { name: '기본 엠블럼' })).toBeTruthy()
+    expect(avatar.getByRole('img', { name: '기본 엠블럼' })).toBeTruthy()
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog', { name: '프로필 이미지 바꾸기' })).toBeNull()
-    expect(document.activeElement).toBe(p.getByRole('button', { name: '프로필 이미지 바꾸기' }))
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^내 프로필 메뉴/)
+  })
+
+  it('「로그아웃」은 창 안에: 누르면 로그아웃되고 그 자리에 「로그인」', async () => {
+    const user = userEvent.setup()
+    renderApp('/ranking', await demoAuth())
+    await user.click((await menu(user)).getByRole('button', { name: '로그아웃' }))
+    expect(await (await quick()).findByRole('link', { name: '로그인' })).toBeTruthy()
+  })
+
+  it('Esc로 닫으면 동그라미 버튼으로 초점이 돌아간다', async () => {
+    const user = userEvent.setup()
+    renderApp('/ranking', await demoAuth())
+    await menu(user)
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: '내 프로필' })).toBeNull()
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^내 프로필 메뉴/)
+  })
+})
+
+describe('홈: 안내 한 줄 · 검색 · 오늘의 소식', () => {
+  const banner = async () => within(await screen.findByRole('region', { name: '오늘의 소식' }))
+
+  it('안내 문구는 한 줄, ⓘ를 누르면 자세한 설명. 선수 검색 칸이 그 바로 아래', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    const info = await screen.findByRole('button', { name: '데이터 안내 자세히 보기' })
+    expect(info.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByText('가상 데이터로 만든 시연판이에요')).toBeTruthy()
+    expect(screen.queryByText(today.meta.notice!)).toBeNull()
+    await user.click(info)
+    expect(screen.getByText(today.meta.notice!)).toBeTruthy()
+    // 화면 순서: 안내 → 검색 칸 → 오늘의 소식 → 카드 메뉴
+    const order = [info, await screen.findByRole('combobox', { name: '선수 이름 검색' }), (await screen.findByRole('region', { name: '오늘의 소식' })), screen.getByRole('region', { name: '홈 메뉴' })]
+    for (let i = 1; i < order.length; i++) expect(order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('카드 4장: 오늘의 급상승(순위·금액 변화) · 블라인드 퀴즈 · 세이버 픽 챌린지(마감까지) · 오늘의 응원, 점 4개', async () => {
+    renderApp('/')
+    const b = await banner()
+    const links = await b.findAllByRole('link')
+    expect(links.map((a) => a.querySelector('.today-kind')!.textContent)).toEqual(['오늘의 급상승', '오늘의 블라인드 퀴즈', '세이버 픽 챌린지', '오늘의 응원'])
+    const yesterday = buildLeague(await getDataSource('demo').loadDay!(shiftDayKey(dayKeyKST(new Date()), -1)))
+    const up = movers(valueRanking(today, yesterday)).up[0]
+    await waitFor(() => expect(links[0].textContent).toContain(up.player.name), { timeout: 3000 })
+    expect(b.getAllByRole('link')[0].textContent).toContain(`${up.prev!.rank}위 → ${up.rank}위`)
+    expect(b.getAllByRole('link')[0].textContent).toContain(valueChangeLabel(up.valueChange))
+    expect(b.getAllByRole('link')[0].getAttribute('href')).toBe(`/player/${enc(up.player.id)}?tab=value`)
+    expect(links[1].getAttribute('href')).toBe('/games/blind')
+    expect(links[1].textContent).toContain('이 지표 카드의 주인공은?')
+    expect(links[2].getAttribute('href')).toBe('/games/challenge')
+    expect(links[2].textContent).toMatch(/마감까지 .+|제출 마감 · 일요일 경기 뒤 채점/)
+    const dots = within(b.getByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    expect(dots.map((d) => d.getAttribute('aria-label'))).toEqual([1, 2, 3, 4].map((n) => `${n}번째 소식 보기 (4장 중)`))
+    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual(['true', null, null, null])
+  })
+
+  it('점을 누르면 그 카드가 현재 카드가 된다', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    const b = await banner()
+    const dots = within(b.getByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    await user.click(dots[2])
+    expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual([null, null, 'true', null])
+  })
+
+  it('블라인드 퀴즈: 누르면 퀴즈로, 오늘 문제를 끝내면 「오늘 퀴즈 완료」', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    await user.click((await banner()).getByRole('link', { name: /오늘의 블라인드 퀴즈/ }))
+    expect(await screen.findByRole('heading', { level: 1, name: '블라인드 스탯 퀴즈' })).toBeTruthy()
+    // 정답이 나올 때까지 보기를 누른다 (틀려도 힌트가 다 열리면 끝난다)
+    for (let i = 0; i < 4 && !screen.queryByRole('status'); i++) {
+      const opt = screen.getAllByRole('button').find((x) => x.className.includes('opt') && !(x as HTMLButtonElement).disabled)
+      if (!opt) break
+      await user.click(opt)
+    }
+    expect(await screen.findByRole('status')).toBeTruthy()
+    await user.click(screen.getByRole('link', { name: '홈' }))
+    expect((await banner()).getByRole('link', { name: /오늘의 블라인드 퀴즈/ }).textContent).toContain('오늘 퀴즈 완료')
+  })
+
+  it('세이버 픽 챌린지: 이번 주 문제를 제출하면 「제출 완료」', async () => {
+    const user = userEvent.setup()
+    renderApp('/games/challenge')
+    await screen.findByRole('button', { name: '제출하기' })
+    for (const q of document.querySelectorAll('.q')) await user.click(within(q as HTMLElement).getAllByRole('button')[0])
+    await user.click(screen.getByRole('button', { name: '제출하기' }))
+    await user.click(screen.getByRole('link', { name: '홈' }))
+    const card = (await banner()).getByRole('link', { name: /세이버 픽 챌린지/ })
+    expect(card.textContent).toContain('제출 완료')
+    expect(card.textContent).not.toMatch(/마감까지/)
   })
 })
 
@@ -290,6 +376,50 @@ describe('홈: 카드 메뉴', () => {
     expect(await screen.findByRole('combobox', { name: '선수 이름 검색' })).toBeTruthy()
     expect(screen.getByText('오늘 많이 찾은 선수')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'WAR 상위 타자' })).toBeTruthy()
+  })
+})
+
+describe('홈: 오늘의 응원 카드', () => {
+  const cheerCard = async () => within(await screen.findByRole('region', { name: '오늘의 소식' })).getByRole('link', { name: /^오늘의 응원/ })
+
+  it('로그아웃: 전체 가치 1위 선수, 누르면 그 선수 응원방 (점 없음)', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+    const card = await cheerCard()
+    const top = ranked[0].player
+    expect(card.getAttribute('href')).toBe(`/player/${enc(top.id)}/cheer`)
+    expect(card.textContent).toContain(top.name)
+    expect(card.textContent).toContain('전체 가치 1위')
+    expect(card.textContent).toContain('로그인하고 응원하기')
+    expect(card.querySelector('.dot')).toBeNull()
+    await user.click(card)
+    expect(await screen.findByRole('heading', { level: 1, name: new RegExp(top.name) })).toBeTruthy()
+  })
+
+  it('응원 팀이 있으면 그 팀 가치 1위 선수', async () => {
+    const team = teams[2]
+    const auth = createMemoryAuth({ iterations: 1_000 })
+    await auth.signUp({ nickname: '해오라기팬', password: 'secret123', team })
+    renderApp('/', auth)
+    const top = ranked.find((r) => r.player.team === team)!.player
+    const card = await cheerCard()
+    await waitFor(() => expect(card.getAttribute('href')).toBe(`/player/${enc(top.id)}/cheer`))
+    expect(card.textContent).toContain('우리 팀 가치 1위')
+  })
+
+  it('로그인했는데 오늘 아직 응원하지 않았으면 점, 응원방에서 응원하고 돌아오면 「오늘 응원 완료」', async () => {
+    const user = userEvent.setup()
+    renderApp('/', await demoAuth())
+    let card = await cheerCard()
+    await waitFor(() => expect(card.textContent).toContain('오늘 아직 응원하지 않았어요'), { timeout: 3000 })
+    expect(card.querySelector('.dot')).toBeTruthy()
+    await user.click(card)
+    await user.click(await screen.findByRole('button', { name: /응원하기/ }))
+    expect(await screen.findByRole('button', { name: '오늘 응원했어요' })).toBeTruthy()
+    await user.click(screen.getAllByRole('link', { name: /^홈/ })[0])
+    card = await cheerCard()
+    await waitFor(() => expect(card.textContent).toContain('오늘 응원 완료'))
+    expect(card.querySelector('.dot')).toBeNull()
   })
 })
 
@@ -339,6 +469,21 @@ describe('아래쪽 탭 바 (휴대폰 폭)', () => {
     await waitFor(() => expect(t.getByRole('link', { name: /^커뮤니티/ }).textContent).toBe('커뮤니티'))
   })
 
+  it('홈 탭의 응원 점을 누르면 홈 「오늘의 소식」이 「오늘의 응원」 카드로 넘어간다 (점이 없으면 첫 카드 그대로)', async () => {
+    phone(true)
+    const user = userEvent.setup()
+    renderApp('/ranking', await demoAuth())
+    const t = await tabs()
+    await user.click(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요/ }, { timeout: 3000 }))
+    const dots = within(await screen.findByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    await waitFor(() => expect(dots.map((d) => d.getAttribute('aria-current'))).toEqual([null, null, null, 'true']))
+    cleanup()
+    renderApp('/ranking')
+    await user.click(await (await tabs()).findByRole('link', { name: /^홈/ }))
+    const dots2 = within(await screen.findByRole('group', { name: '소식 카드 넘기기' })).getAllByRole('button')
+    expect(dots2.map((d) => d.getAttribute('aria-current'))).toEqual(['true', null, null, null])
+  })
+
   it('홈 탭: 로그인했는데 오늘 아직 응원하지 않았으면 점, 응원하면 꺼진다. 로그아웃이면 점 없음', async () => {
     phone(true)
     const user = userEvent.setup()
@@ -349,7 +494,7 @@ describe('아래쪽 탭 바 (휴대폰 폭)', () => {
     cleanup()
     renderApp(`/player/${enc(today.hitters[0].id)}/cheer`, await demoAuth())
     const t = await tabs()
-    expect(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요\)$/ }, { timeout: 3000 })).toBeTruthy()
+    expect(await t.findByRole('link', { name: /^홈\s*\(오늘 아직 응원하지 않았어요 — 오늘의 응원 카드로\)$/ }, { timeout: 3000 })).toBeTruthy()
     await user.click(await screen.findByRole('button', { name: /응원하기/ }))
     await waitFor(() => expect(t.getByRole('link', { name: /^홈/ }).textContent).toBe('홈'))
   })

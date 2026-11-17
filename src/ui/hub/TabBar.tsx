@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router'
-import { cheeredAnyToday, hasNewSince } from '../../domain/hub/news'
+import { hasNewSince } from '../../domain/hub/news'
 import { useNow } from '../shared/useNow'
 import { BagIcon, ChatIcon, DiamondIcon, HomeIcon, PodiumIcon } from './icons'
+import { useCheerToday } from './useCheerToday'
 import { useHubData } from './useHubData'
 
 type Tab = { to: string; label: string; icon: React.ReactNode; match: (p: string) => boolean; home?: boolean }
@@ -23,14 +24,14 @@ export default function TabBar() {
   const userId = d.account?.id ?? null
   // 프로필 저장소가 열려 「마지막으로 본 때」를 알 때만 점을 단다
   const newPosts = d.seen !== null && d.postsReady && !pathname.startsWith('/community') && hasNewSince(d.posts, userId, d.seen.community ?? null, now)
-  const notCheered = userId !== null && d.cheerReady && !cheeredAnyToday(d.cheers, userId, now)
-  const dot: Record<string, string | null> = { '/community': newPosts ? '새 글 있음' : null, '/': notCheered ? '오늘 아직 응원하지 않았어요' : null }
+  const { nudge: notCheered } = useCheerToday()
+  const dot: Record<string, string | null> = { '/community': newPosts ? '새 글 있음' : null, '/': notCheered ? '오늘 아직 응원하지 않았어요 — 오늘의 응원 카드로' : null }
   return (
     <nav className="tabbar" aria-label="아래 탭">
       {TABS.map((t) => {
         const note = dot[t.to] ?? null
         return (
-          <Link key={t.to} to={t.to} className={`tab${t.home ? ' tab-home' : ''}`} aria-current={t.match(pathname) ? 'page' : undefined}>
+          <Link key={t.to} to={t.to} state={t.to === '/' && note ? { today: 'cheer' } : undefined} className={`tab${t.home ? ' tab-home' : ''}`} aria-current={t.match(pathname) ? 'page' : undefined}>
             <span className="tab-icon">
               {t.icon}
               {note && <span className="dot tab-dot" aria-hidden="true" />}

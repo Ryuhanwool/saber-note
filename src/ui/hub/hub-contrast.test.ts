@@ -41,6 +41,12 @@ describe('홈·아이콘 줄·탭 바 글자 대비', () => {
           for (const back of [bar, surface, CHIP[mode]]) expect(contrastRatio(accent, back), `강조 ${accent} on ${back}`).toBeGreaterThanOrEqual(GRAPHIC)
           // 가운데 홈 탭 동그라미는 탭 바와 구분된다
           expect(contrastRatio(ink, bar)).toBeGreaterThanOrEqual(GRAPHIC)
+          // 화면 바탕 위에 바로 놓이는 것: 맨 위 안내 한 줄·ⓘ(본문색 4.5:1), 「오늘의 소식」 넘기기 점(지금 점은 본문색, 나머지는 보조색 — 3:1)
+          const bg = themeBackground(theme, strength)?.[mode]
+          for (const back of bg ? [bg.top, bg.bottom] : [BASE_COLORS[mode].paper]) {
+            expect(contrastRatio(ink, back), `안내 글자 on ${back}`).toBeGreaterThanOrEqual(AA)
+            for (const dot of [ink, soft]) expect(contrastRatio(dot, back), `점 ${dot} on ${back}`).toBeGreaterThanOrEqual(GRAPHIC)
+          }
         })
       }
     }
