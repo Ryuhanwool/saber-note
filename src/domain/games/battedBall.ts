@@ -3,6 +3,7 @@ import type { FieldPosition } from '../../data/types'
 import { metricAvailable } from '../availability'
 import type { HitterPlayer, League } from '../players'
 import { pick, type Rand } from '../random'
+import { isOverFence } from './ballFlight'
 
 export const BALLS_PER_ROUND = 10
 export type Direction = 'L' | 'C' | 'R'
@@ -90,7 +91,7 @@ export function makePlay(league: League, batters: readonly HitterPlayer[], rand:
   const fielderPos = fielderPosition(la, dir, rand)
   const fielder = primaryFielder(league, team, fielderPos)
   const base = baseXba(ev, la)
-  const homeRunZone = ev >= 158 && la >= 22 && la <= 35
+  const homeRunZone = isOverFence(ev, la)
   const popup = la > 50
 
   // 출처에 없는 기록(스프린트 스피드·OAA)은 보정하지 않는다
