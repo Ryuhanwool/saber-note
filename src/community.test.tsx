@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openFold } from './testing/folds'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -174,6 +175,7 @@ describe('선수 카드 연동', () => {
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText(/최근 24시간 1개/)).toBeTruthy()
     expect(panel.getByText('2개')).toBeTruthy()
+    await openFold(user, '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     await user.click(panel.getByRole('button', { name: '관련 글 모두 보기' }))
     expect(await screen.findByRole('button', { name: `${kim.name} 관련 글 ✕` })).toBeTruthy()
   })
@@ -183,6 +185,7 @@ describe('선수 카드 연동', () => {
     renderAt(`/player/${enc(kim.id)}`)
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText('아직 이 선수 이야기가 없어요. 첫 글을 남겨 보세요.')).toBeTruthy()
+    await openFold(user, '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     await user.click(panel.getByRole('button', { name: '이 선수 글쓰기' }))
     expect(await screen.findByRole('button', { name: `${kim.name} 태그 빼기` })).toBeTruthy()
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: '글 내용' }))

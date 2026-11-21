@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openFold } from './testing/folds'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -126,6 +127,7 @@ describe('가치 순위표 화면', () => {
     const r = [...rows].reverse().find((x) => !x.value.floorApplied && x.value.total > 30_000_000)!
     renderAt(`/player/${encodeURIComponent(r.player.id)}?tab=value`)
     const panel = await screen.findByRole('tabpanel', { name: '선수 가치' })
+    await openFold(user, '스탯 조절', panel)
     const plus = within(panel).getByRole('button', { name: r.player.type === 'H' ? '홈런 늘리기' : '탈삼진 늘리기' })
     for (let i = 0; i < 30; i++) await user.click(plus)
     await user.click(within(panel).getByRole('button', { name: '클러치 점수(승) 늘리기' }))

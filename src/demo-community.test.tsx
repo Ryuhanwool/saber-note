@@ -4,6 +4,7 @@ import 'fake-indexeddb/auto'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { IDBFactory } from 'fake-indexeddb'
+import { openFold } from './testing/folds'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { seedStars } from './data/seedPlayers'
@@ -64,6 +65,7 @@ describe('시연 첫 화면: 커뮤니티', () => {
     renderApp(`/player/${encodeURIComponent(slugger.id)}`)
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText(/이 선수 관련 글/)).toBeTruthy()
+    await openFold(userEvent.setup(), '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     expect(panel.getAllByText(/데모 게시글/).length).toBeGreaterThan(0)
   })
 })

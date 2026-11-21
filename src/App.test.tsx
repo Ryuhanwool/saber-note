@@ -13,6 +13,7 @@ import { formatMetric } from './domain/format'
 import { dailyBlind } from './domain/games/blind'
 import { dayKeyKST } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
+import { openFold } from './testing/folds'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
 
@@ -116,9 +117,12 @@ describe('화면 2. 선수 지표 카드', () => {
     const ss = league.pool.H.find((p) => p.raw.pos === 'SS')!
     renderAt(`/player/${enc(ss.id)}`)
     await user.click(await screen.findByRole('tab', { name: '수비' }))
-    const panel = within(screen.getByRole('tabpanel'))
+    const tabpanel = screen.getByRole('tabpanel')
+    const panel = within(tabpanel)
+    // 네 묶음은 처음엔 요약 한 줄 — 펼쳐서 본다
+    for (const t of ['종합 수비 지표', '세부 구성', '전통 기록', '스카우팅 능력치']) await openFold(user, t, tabpanel)
     for (const name of ['DRS', 'UZR', 'OAA', 'ZR', '범위 득점', '병살 득점']) expect(panel.getByRole('button', { name: new RegExp(`^${name}`) })).toBeTruthy()
-    const trad = panel.getByText('전통 기록').nextElementSibling as HTMLElement
+    const trad = panel.getByRole('button', { name: /^전통 기록/ }).closest('section')!.querySelector('.fold-body') as HTMLElement
     expect(within(trad).getByText('병살 처리')).toBeTruthy()
     expect(panel.getAllByRole('img', { name: /점, / })).toHaveLength(ss.raw.fielding.ratings!.length)
     expect(panel.getByText(/데이터 출처: 가상 데이터/)).toBeTruthy()
@@ -218,6 +222,7 @@ describe('MLB 출처: 없는 지표 줄은 숨긴다', () => {
     renderAt(`/player/${id(9001)}`, mlbSource)
     await user.click(await screen.findByRole('tab', { name: '수비' }))
     const panel = within(screen.getByRole('tabpanel'))
+    await openFold(user, '종합 수비 지표', screen.getByRole('tabpanel'))
     expect(panel.getByRole('button', { name: /^OAA/ })).toBeTruthy()
     for (const name of ['DRS', 'UZR', 'ZR', '범위 득점']) expect(panel.queryByRole('button', { name: new RegExp(`^${name}`) }), name).toBeNull()
     expect(panel.queryByText('전통 기록')).toBeNull()

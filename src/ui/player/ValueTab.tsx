@@ -8,6 +8,7 @@ import {
 } from '../../domain/value/adjust'
 import { clutchScore, evidenceSummary, type ClutchResult } from '../../domain/value/clutch'
 import { CLUTCH_POINTS_PER_WIN } from '../../domain/value/scoring'
+import Fold from '../shared/Fold'
 import { formatWon, playerValue, valueFormula, type ValueBreakdown } from '../../domain/value/value'
 import { useLeague } from '../shared/LeagueContext'
 import './value.css'
@@ -142,9 +143,11 @@ export default function ValueTab({ player: p }: { player: Player }) {
 
       {clutch && <ClutchEvidence c={clutch} />}
 
-      <section className="value-sec" aria-labelledby="adj-h">
+      <Fold
+        id="value:adjust" level={2} className="value-sec adj-fold" title="스탯 조절"
+        summary={touched ? <>바꾼 기록이 있어요 · 예상 가치 <b>{formatWon(v.total)}</b> (원래 {formatWon(original.total)})</> : '기록을 바꿔 보며 예상 가치가 어떻게 달라지는지 봐요'}
+      >
         <div className="adj-head">
-          <h2 id="adj-h">스탯 조절</h2>
           <button
             type="button" className="btn ghost" disabled={!touched}
             onClick={() => { setStats(origStats); setClutchWins(origClutch) }}
@@ -192,7 +195,7 @@ export default function ValueTab({ player: p }: { player: Player }) {
             </tr>
           </tbody>
         </table>
-      </section>
+      </Fold>
     </div>
   )
 }

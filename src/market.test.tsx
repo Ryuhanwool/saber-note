@@ -3,6 +3,7 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openFold } from './testing/folds'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -166,6 +167,7 @@ describe('판매글 쓰기', () => {
     renderAt(`/player/${enc(slugger.id)}`, seeded())
     const panel = within(await screen.findByLabelText('이 선수 관련 상품'))
     expect(await panel.findByText('2개')).toBeTruthy()
+    await openFold(user, '이 선수 관련 상품', screen.getByLabelText('이 선수 관련 상품'))
     await user.click(panel.getByRole('button', { name: '이 선수 상품 팔기' }))
     expect(await screen.findByRole('button', { name: `${slugger.name} 태그 빼기` })).toBeTruthy()
   })
@@ -237,6 +239,7 @@ describe('응원방 연동과 시연 데이터 (앱이 여는 브라우저 저�
     renderAt(`/player/${enc(slugger.id)}/cheer`)
     const panel = within(await screen.findByLabelText('이 선수 관련 상품'))
     expect(await panel.findByText('2개')).toBeTruthy()
+    await openFold(user, '이 선수 관련 상품', screen.getByLabelText('이 선수 관련 상품'))
     await user.click(panel.getAllByRole('button', { name: new RegExp(seeds[0].title.replace(/[()]/g, '\\$&')) })[0])
     await user.click(await screen.findByRole('button', { name: '장바구니에 담기' }))
     expect(await screen.findByRole('link', { name: '장바구니 1' })).toBeTruthy()

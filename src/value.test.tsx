@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openFold } from './testing/folds'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -35,7 +36,10 @@ async function openValueTab(path: string, source?: LeagueDataSource) {
   const user = userEvent.setup()
   renderAt(path, source)
   await user.click(await screen.findByRole('tab', { name: '선수 가치' }))
-  return { user, panel: await screen.findByRole('tabpanel', { name: '선수 가치' }) }
+  const panel = await screen.findByRole('tabpanel', { name: '선수 가치' })
+  // 스탯 조절은 처음엔 요약 한 줄 — 펼친다
+  await openFold(user, '스탯 조절', panel)
+  return { user, panel }
 }
 
 afterEach(cleanup)

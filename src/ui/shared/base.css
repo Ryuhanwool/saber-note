@@ -66,3 +66,18 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .ac button:hover,.ac button:focus-visible,.ac button[aria-selected="true"]{background:var(--chip)}
 /* 화면 읽기 프로그램에만 읽히는 글자 */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* 접었다 펴는 묶음 (선수 카드 수비·스탯 조절, 커뮤니티 이야기·관련 상품): 제목 + 요약 한 줄 → 누르면 펼침 */
+.fold{border-top:1px solid var(--line)}
+.fold:first-child{border-top:0}
+.fold-h{margin:0;font-size:1rem}
+.fold-btn{display:grid;grid-template-columns:1fr auto;grid-template-areas:"t c" "s c";align-items:center;gap:2px 12px;width:100%;min-height:52px;padding:10px 0;border:0;background:none;color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+.fold-title{grid-area:t;font-weight:700}
+.fold-sum{grid-area:s;font-size:.85rem;color:var(--soft);font-weight:400;overflow-wrap:anywhere}
+.fold-chev{grid-area:c;font-size:.8rem;color:var(--soft);font-weight:700;white-space:nowrap}
+.fold-btn:hover .fold-title{text-decoration:underline;text-underline-offset:3px}
+.fold-body{padding:0 0 12px}
+.fold-note{display:block;font-weight:400;font-size:.8rem;color:var(--soft)}
+.fold-panel{margin-top:16px;padding-top:4px;padding-bottom:4px}
+.fold-actions{gap:8px;margin-bottom:8px}
+.adj-fold .adj-head{justify-content:flex-end}
