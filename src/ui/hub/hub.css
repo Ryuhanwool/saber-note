@@ -141,9 +141,9 @@
 /* ---------- 오늘의 소식: 넓은 화면은 4장 나란히(조금 좁으면 2장씩 두 줄), 휴대폰 폭은 밀어 넘기기 + 점 ---------- */
 .today{display:grid;gap:8px}
 .today-title{margin:0;font-size:1.05rem}
-.today-track{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.today-track{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media (max-width:960px) and (min-width:721px){.today-track{grid-template-columns:repeat(2,1fr)}}
-.today-card{display:grid;gap:2px;align-content:start;min-height:112px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
+.today-card{position:relative;display:grid;gap:2px;align-content:start;min-height:112px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
 .today-card:hover{border-color:var(--ink);border-top-color:var(--seam)}
 .today-card:hover .today-main{text-decoration:underline;text-underline-offset:4px}
 .today-card.done{border-top-color:var(--line)}
