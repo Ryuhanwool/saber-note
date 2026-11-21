@@ -41,8 +41,8 @@ header nav a[aria-current="page"]::after{
 @media (max-width:1080px){.demo-date{margin:8px 20px 0}}
 .notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
 
-main{max-width:1040px;margin:0 auto;padding:8px 20px 64px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 64px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:var(--panel-pad)}
 .row{display:flex;gap:16px;flex-wrap:wrap}
 .muted{color:var(--soft)}
 .btn{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:4px;cursor:pointer;font-weight:700}
@@ -102,3 +102,30 @@ h2{font-size:1.05rem;margin:0 0 10px}
 /* 「더 보기」 (긴 목록을 20개씩) */
 .more-row{display:flex;justify-content:center;margin:12px 0 4px}
 .more-btn{min-height:44px;width:min(360px,100%)}
+
+/* 바깥 여백(--gutter)·패널 안 여백(--panel-pad): 휴대폰 폭에서는 조금 줄인다 */
+:root{--gutter:20px;--panel-pad:20px;--sticky-top:calc(var(--header-h,62px) + env(safe-area-inset-top,0px))}
+@media (max-width:720px){
+  :root{--gutter:12px;--panel-pad:14px}
+  .back{margin-bottom:8px}
+  .comm{gap:12px}
+}
+
+/* 스크롤해도 머리줄 바로 아래에 붙어 있는 선수 카드 탭·순위표 필터 (머리줄 높이는 Layout이 --header-h로 알린다) */
+.player-tabs{position:sticky;top:var(--sticky-top);z-index:3;background:var(--surface);margin-left:calc(-1 * var(--panel-pad));margin-right:calc(-1 * var(--panel-pad));padding:0 var(--panel-pad)}
+.ranking .rk-filters{position:sticky;top:var(--sticky-top);z-index:3;background:var(--surface);margin:0 calc(-1 * var(--panel-pad));padding:8px var(--panel-pad);border-bottom:1px solid var(--line)}
+
+/* 「맨 위로」 (화면 2개보다 긴 화면에서 내려왔을 때). 휴대폰 폭에서는 아래쪽 탭 바 위에 */
+.to-top{position:fixed;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:1px solid var(--ink);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);cursor:pointer}
+.to-top:hover{background:var(--chip)}
+@media (max-width:720px){.to-top{bottom:calc(var(--tabbar-h,64px) + 16px + env(safe-area-inset-bottom,0px))}}
+/* 붙어 있는 탭: 이름이 한 줄로 (좁으면 가로로 밀어 본다) */
+.player-tabs{overflow-x:auto;scrollbar-width:none}
+.player-tabs button{flex:none;white-space:nowrap}
+@media (max-width:720px){
+  .player-tabs button{padding:8px 10px}
+  /* 순위표 필터: 구분 버튼과 팀 고르기를 한 줄에 */
+  .ranking .rk-filters{flex-wrap:nowrap;gap:8px}
+  .ranking .rk-team{min-width:0;flex:1}
+  .ranking .rk-team select{min-width:0;width:100%}
+}

@@ -44,6 +44,7 @@
 
 /* ---------- 홈 ---------- */
 .hub-home{display:grid;gap:16px;padding-top:0}
+@media (max-width:720px){.hub-home{gap:12px}}
 /* 검색 */
 .hub-home .hub-search-hero{padding:0}
 .hub-home .hub-search-hero h2{font-size:clamp(1.3rem,4vw,1.7rem);margin:0 0 10px}
@@ -159,7 +160,7 @@
 .today-sub .rk-chg{font-size:.9rem}
 .today-dots{display:none}
 @media (max-width:720px){
-  .today-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin:0 -20px;padding:2px 20px 6px;scroll-padding:0 20px}
+  .today-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin:0 calc(-1 * var(--gutter));padding:2px var(--gutter) 6px;scroll-padding:0 var(--gutter)}
   .today-track::-webkit-scrollbar{display:none}
   .today-card{flex:0 0 84%;scroll-snap-align:start}
   .today-dots{display:flex;justify-content:center;gap:2px}
