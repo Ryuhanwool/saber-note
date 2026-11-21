@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router'
-import { formatMetric } from '../../domain/format'
 import type { Player } from '../../domain/players'
 import { topByWar } from '../../domain/search'
 import { useLeague } from '../shared/LeagueContext'
@@ -7,28 +6,10 @@ import { playerPath } from '../shared/labels'
 import SearchBox from '../shared/SearchBox'
 import HomeCards from '../hub/HomeCards'
 import TodayBanner from '../hub/TodayBanner'
+import TopValueLine from '../hub/TopValueLine'
 import './player.css'
 
-function RankList({ title, players, onPick }: { title: string; players: Player[]; onPick: (p: Player) => void }) {
-  return (
-    <div className="panel">
-      <h2>{title}</h2>
-      <ol className="rank">
-        {players.map((p, i) => (
-          <li key={p.id}>
-            <button onClick={() => onPick(p)}>
-              <span className="n">{i + 1}</span>
-              <span>{p.name} <span className="muted">{p.team}</span></span>
-              <b>{formatMetric('WAR', p.m.WAR)}</b>
-            </button>
-          </li>
-        ))}
-      </ol>
-    </div>
-  )
-}
-
-/** 화면 1. 홈: 선수 검색 · 오늘의 소식 · 카드 메뉴 · WAR 상위 목록 (내 프로필은 아이콘 줄 끝의 엠블럼 메뉴) */
+/** 화면 1. 홈: 선수 검색 · 오늘의 소식 · 카드 메뉴 · 가치 순위 TOP 3 한 줄 (내 프로필은 아이콘 줄 끝의 엠블럼 메뉴) */
 export default function HomePage() {
   const league = useLeague()
   const navigate = useNavigate()
@@ -58,10 +39,7 @@ export default function HomePage() {
       </section>
       <TodayBanner />
       <HomeCards />
-      <div className="lists">
-        <RankList title="WAR 상위 타자" players={topH} onPick={open} />
-        <RankList title="WAR 상위 투수" players={topP} onPick={open} />
-      </div>
+      <TopValueLine />
     </div>
   )
 }

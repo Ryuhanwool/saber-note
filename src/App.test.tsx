@@ -13,7 +13,6 @@ import { formatMetric } from './domain/format'
 import { dailyBlind } from './domain/games/blind'
 import { dayKeyKST } from './domain/games/calendar'
 import { buildLeague } from './domain/league'
-import { topByWar } from './domain/search'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
 
@@ -66,12 +65,10 @@ describe('화면 1. 검색 홈', () => {
     expect(screen.getByText(/“없는선수”와 맞는 선수가 없어요/)).toBeTruthy()
   })
 
-  it('WAR 상위 타자·투수 5명과 데이터 안내 문구를 보여 준다', async () => {
+  it('가치 순위 TOP 3 한 줄과 데이터 안내 문구를 보여 준다', async () => {
     renderAt('/')
-    const topH = topByWar(league.hitters, 5)
-    const panel = (await screen.findByRole('heading', { name: 'WAR 상위 타자' })).parentElement!
-    expect(within(panel).getAllByRole('listitem')).toHaveLength(5)
-    expect(within(panel).getAllByRole('listitem')[0].textContent).toContain(formatMetric('WAR', topH[0].m.WAR))
+    const top = within(await screen.findByRole('region', { name: '가치 순위 TOP 3' }))
+    expect(top.getAllByRole('listitem')).toHaveLength(3)
     // 데이터 안내는 한 줄로 줄이고, ⓘ를 누르면 자세한 설명이 펼쳐진다
     expect(screen.getByText('가상 데이터로 만든 시연판이에요')).toBeTruthy()
     expect(screen.queryByText(league.meta.notice!)).toBeNull()

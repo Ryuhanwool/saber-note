@@ -343,22 +343,33 @@ describe('홈: 안내 한 줄 · 검색 · 오늘의 소식', () => {
 })
 
 describe('홈: 카드 메뉴', () => {
-  it('넓은 카드 2개(가치 순위·미니게임) + 반쪽 카드 2개(커뮤니티·마켓)와 「선수 비교하기 ›」, 카드마다 SVG 그림', async () => {
+  it('카드는 탭 바에 없는 기능 위주: 가치 순위·미니게임(넓은 카드) + 선수 비교·응원 순위(반쪽 카드), 카드마다 SVG 그림. 커뮤니티·마켓은 한 줄로', async () => {
     renderApp('/')
     const c = await cards()
-    const links = c.getAllByRole('link')
-    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/ranking', '/games', '/community', '/market', '/compare'])
-    expect(links.slice(0, 4).map((a) => a.className)).toEqual(['hub-card wide', 'hub-card wide', 'hub-card half', 'hub-card half'])
-    for (const a of links.slice(0, 4)) expect(a.querySelector('svg.card-art')).toBeTruthy()
-    expect(links[4].textContent).toContain('선수 비교하기')
+    const cardLinks = c.getAllByRole('link').filter((a) => a.className.startsWith('hub-card'))
+    expect(cardLinks.map((a) => a.querySelector('.card-title')!.textContent)).toEqual(['선수 가치 순위', '미니게임', '선수 비교', '응원 순위'])
+    expect(cardLinks.map((a) => a.className)).toEqual(['hub-card wide', 'hub-card wide', 'hub-card half', 'hub-card half'])
+    expect(cardLinks.slice(0, 3).map((a) => a.getAttribute('href'))).toEqual(['/ranking', '/games', '/compare'])
+    for (const a of cardLinks) expect(a.querySelector('svg.card-art')).toBeTruthy()
     // 가치 순위: 로그아웃이면 전체 1위
-    expect(links[0].textContent).toContain('전체 1위')
-    expect(links[0].textContent).toContain(ranked[0].player.name)
+    expect(cardLinks[0].textContent).toContain('전체 1위')
+    expect(cardLinks[0].textContent).toContain(ranked[0].player.name)
     // 미니게임: 이번 주 챌린지 마감 (화요일 18:30)
-    expect(links[1].textContent).toMatch(/마감까지 .+|제출 마감 · 일요일 경기 뒤 채점/)
+    expect(cardLinks[1].textContent).toMatch(/마감까지 .+|제출 마감일요일 경기 뒤 채점/)
+    // 커뮤니티·마켓은 카드가 아니라 한 줄 링크
+    expect(c.queryByText('커뮤니티', { selector: '.card-title' })).toBeNull()
+    expect(c.getByRole('link', { name: /커뮤니티 새 글/ }).getAttribute('href')).toBe('/community')
+    expect(c.getByRole('link', { name: /마켓 새 판매글/ }).getAttribute('href')).toBe('/market')
   })
 
-  it('커뮤니티·마켓 카드: 최근 24시간 새 글·판매글 수 (가려진 글 제외)', async () => {
+  it('응원 순위 카드: 이번 주 응원 1위 선수의 응원방으로', async () => {
+    renderApp('/')
+    const card = (await cards()).getAllByRole('link').find((a) => a.querySelector('.card-title')?.textContent === '응원 순위')!
+    await waitFor(() => expect(card.textContent).toMatch(/이번 주 응원 1위 · \d+번/), { timeout: 3000 })
+    expect(card.getAttribute('href')).toMatch(/^\/player\/.+\/cheer$/)
+  })
+
+  it('커뮤니티·마켓 한 줄: 최근 24시간 새 글·판매글 수 (가려진 글 제외)', async () => {
     renderApp('/')
     const c = await cards()
     const comm = c.getByRole('link', { name: /커뮤니티/ })
@@ -371,11 +382,20 @@ describe('홈: 카드 메뉴', () => {
     void recentCount
   })
 
-  it('기존 홈의 선수 검색·많이 찾은 선수·WAR 상위 목록은 그대로', async () => {
+  it('선수 검색·많이 찾은 선수는 그대로, 예전 WAR 상위 목록은 가치 순위 TOP 3 한 줄로', async () => {
     renderApp('/')
     expect(await screen.findByRole('combobox', { name: '선수 이름 검색' })).toBeTruthy()
     expect(screen.getByText('오늘 많이 찾은 선수')).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'WAR 상위 타자' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'WAR 상위 타자' })).toBeNull()
+    const top = within(screen.getByRole('region', { name: '가치 순위 TOP 3' }))
+    const items = top.getAllByRole('listitem')
+    expect(items).toHaveLength(3)
+    items.forEach((li, i) => {
+      expect(li.textContent).toContain(ranked[i].player.name)
+      expect(li.textContent).toContain(formatWon(ranked[i].value.total))
+      expect(within(li).getByRole('link').getAttribute('href')).toBe(`/player/${enc(ranked[i].player.id)}?tab=value`)
+    })
+    expect(top.getByRole('link', { name: /전체 순위/ }).getAttribute('href')).toBe('/ranking')
   })
 })
 
