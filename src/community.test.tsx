@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
+import { openFold } from './testing/folds'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -46,7 +48,7 @@ const otherPost = (over: Partial<CommunityPost> = {}): CommunityPost => ({
 afterEach(cleanup)
 
 async function write(user: ReturnType<typeof userEvent.setup>, text: string) {
-  await user.type(await screen.findByRole('textbox', { name: '글 내용' }), text)
+  await user.type(await openWriteBox(user), text)
 }
 
 describe('화면 7. 커뮤니티 글쓰기', () => {
@@ -101,6 +103,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
   it('파일: 허용 형식만 미리보기에 붙고, 올리면 피드에 사진이 나온다', async () => {
     const user = userEvent.setup({ applyAccept: false })
     renderAt('/community')
+    await openWriteBox(user)
     const input = (await screen.findByText('사진 · 움짤 · 영상 추가')).querySelector('input')!
     await user.upload(input, [new File(['png'], 'a.png', { type: 'image/png' }), new File(['txt'], 'b.txt', { type: 'text/plain' })])
     expect(screen.getByText(/b.txt: PNG, JPG, WEBP, GIF, MP4, WEBM 파일만/)).toBeTruthy()
@@ -112,6 +115,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
   it('선수 태그를 검색해 달고 뺄 수 있다', async () => {
     const user = userEvent.setup()
     renderAt('/community')
+    await openWriteBox(user)
     await user.type(await screen.findByRole('combobox', { name: '선수 태그 검색' }), kim.name)
     await user.click(screen.getByRole('option', { name: new RegExp(kim.name) }))
     const chip = screen.getByRole('button', { name: `${kim.name} 태그 빼기` })
@@ -121,6 +125,17 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
 })
 
 describe('화면 7. 커뮤니티 피드', () => {
+  it('피드는 처음 20개만, 「더 보기」로 나머지를 이어 본다', async () => {
+    const user = userEvent.setup()
+    const posts = Array.from({ length: 25 }, (_, i) => otherPost({ id: `p${i}`, text: `글 ${i}`, createdAt: Date.now() - (i + 1) * 60_000 }))
+    renderAt('/community', createMemoryCommunity({ posts }))
+    const feed = within(await screen.findByLabelText('글 목록'))
+    expect(await feed.findAllByRole('article')).toHaveLength(20)
+    await user.click(feed.getByRole('button', { name: '더 보기 (5개 더 · 전체 25개)' }))
+    expect(feed.getAllByRole('article')).toHaveLength(25)
+    expect(feed.queryByRole('button', { name: /^더 보기/ })).toBeNull()
+  })
+
   it('좋아요를 켜고 끈다', async () => {
     const user = userEvent.setup()
     renderAt('/community', createMemoryCommunity({ posts: [otherPost()] }))
@@ -174,6 +189,7 @@ describe('선수 카드 연동', () => {
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText(/최근 24시간 1개/)).toBeTruthy()
     expect(panel.getByText('2개')).toBeTruthy()
+    await openFold(user, '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     await user.click(panel.getByRole('button', { name: '관련 글 모두 보기' }))
     expect(await screen.findByRole('button', { name: `${kim.name} 관련 글 ✕` })).toBeTruthy()
   })
@@ -183,6 +199,7 @@ describe('선수 카드 연동', () => {
     renderAt(`/player/${enc(kim.id)}`)
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText('아직 이 선수 이야기가 없어요. 첫 글을 남겨 보세요.')).toBeTruthy()
+    await openFold(user, '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     await user.click(panel.getByRole('button', { name: '이 선수 글쓰기' }))
     expect(await screen.findByRole('button', { name: `${kim.name} 태그 빼기` })).toBeTruthy()
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: '글 내용' }))

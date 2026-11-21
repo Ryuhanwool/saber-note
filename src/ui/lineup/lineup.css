@@ -122,10 +122,14 @@
 .pick-nums{grid-column:2;grid-row:1/3;display:grid;justify-items:end;font-size:.82rem;font-variant-numeric:tabular-nums}
 .pick-nums span:first-child{font-weight:700;font-size:.92rem}
 @media (max-width:560px){
-  .picker-backdrop{place-items:end stretch;padding:0}
-  .picker{width:100%;max-height:85vh;border-radius:14px 14px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   .lineup-total{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+/* 휴대폰 폭(720px 이하, 아래쪽 탭 바와 같은 기준): 선수 고르기 창은 아래에서 올라오는 시트 */
+@media (max-width:720px){
+  .picker-backdrop{place-items:end stretch;padding:0}
+  .picker{width:100%;max-height:85vh;border-radius:16px 16px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));animation:sheet-up .2s ease-out}
+}
+@media (max-width:720px) and (prefers-reduced-motion:reduce){.picker{animation:none}}
 
 /* 라인업 화면 탭 (선수 카드 .tabs 모양을 쓴다) */
 .lineup-tabs{margin:4px 0 0}

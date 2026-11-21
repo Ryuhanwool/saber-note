@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openFold } from './testing/folds'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -37,7 +38,15 @@ function renderAt(path: string, src?: LeagueDataSource) {
 }
 
 const table = async () => within(await screen.findByRole('table'))
-const bodyRows = async () => (await table()).getAllByRole('row').slice(1)
+/** 「더 보기」를 끝까지 눌러 모든 줄을 펼친다 (순위표는 처음 20명만 보여 준다) */
+const expandAll = async () => {
+  await table()
+  for (let b = screen.queryByRole('button', { name: /^더 보기/ }); b; b = screen.queryByRole('button', { name: /^더 보기/ })) fireEvent.click(b)
+}
+const bodyRows = async () => {
+  await expandAll()
+  return (await table()).getAllByRole('row').slice(1)
+}
 
 afterEach(cleanup)
 
@@ -92,6 +101,19 @@ describe('가치 순위표 화면', () => {
     expect(up.length).toBeLessThanOrEqual(3)
   })
 
+  it('처음 20명만 보여 주고 「더 보기」로 20명씩 이어 본다. 필터를 바꾸면 다시 20명', async () => {
+    const user = userEvent.setup()
+    renderAt('/ranking')
+    const t = await table()
+    expect(t.getAllByRole('row').slice(1)).toHaveLength(20)
+    const more = screen.getByRole('button', { name: /^더 보기/ })
+    expect(more.textContent).toBe(`더 보기 (20명 더 · 전체 ${rows.length}명)`)
+    await user.click(more)
+    expect((await table()).getAllByRole('row').slice(1)).toHaveLength(Math.min(40, rows.length))
+    await user.click(screen.getByRole('button', { name: '타자' }))
+    expect((await table()).getAllByRole('row').slice(1)).toHaveLength(20)
+  })
+
   it('전체·타자·투수 필터와 팀 필터 (필터 안에서 다시 순위)', async () => {
     const user = userEvent.setup()
     renderAt('/ranking')
@@ -126,11 +148,13 @@ describe('가치 순위표 화면', () => {
     const r = [...rows].reverse().find((x) => !x.value.floorApplied && x.value.total > 30_000_000)!
     renderAt(`/player/${encodeURIComponent(r.player.id)}?tab=value`)
     const panel = await screen.findByRole('tabpanel', { name: '선수 가치' })
+    await openFold(user, '스탯 조절', panel)
     const plus = within(panel).getByRole('button', { name: r.player.type === 'H' ? '홈런 늘리기' : '탈삼진 늘리기' })
     for (let i = 0; i < 30; i++) await user.click(plus)
     await user.click(within(panel).getByRole('button', { name: '클러치 점수(승) 늘리기' }))
     expect(panel.querySelector('.value-amount')!.textContent).not.toBe(formatWon(r.value.total))
     await user.click(screen.getByRole('link', { name: '가치 순위' }))
+    await expandAll() // 낮은 순위 선수라 「더 보기」로 펼친다
     const tr = (await table()).getByRole('link', { name: r.player.name }).closest('tr')!
     expect(within(tr).getAllByRole('cell')[0].textContent).toBe(String(r.rank))
     expect(within(tr).getAllByRole('cell')[4].textContent).toBe(formatWon(r.value.total))

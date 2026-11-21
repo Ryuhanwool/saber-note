@@ -7,6 +7,7 @@ import { playerPath } from '../shared/labels'
 import { useRequireLogin } from '../auth/login'
 import { useCommunity } from './CommunityContext'
 import { authorName, useShownText } from './labels'
+import ClampText from './ClampText'
 import PostMedia from './PostMedia'
 
 const CONFIRM_MS = 4000
@@ -59,7 +60,7 @@ export default function PostCard({ post, now }: { post: CommunityPost; now: numb
         {post.caution && <span className="tag caution" title="애매하다는 경고를 받고도 그대로 올린 글이에요">주의</span>}
         {(post.masked || shown !== post.text) && <span className="tag">일부 가림</span>}
       </header>
-      {post.text && <p className="ptext">{shown}</p>}
+      {post.text && <ClampText text={shown} />}
       <PostMedia media={post.media} />
       {post.players.length > 0 && (
         <div className="ptags">

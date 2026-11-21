@@ -4,6 +4,8 @@ import { useCheer } from '../cheer/CheerContext'
 import { useProfile } from '../hub/ProfileContext'
 import { useLineupStore } from '../lineup/LineupContext'
 import { useMarket } from '../market/MarketContext'
+import Fold from '../shared/Fold'
+import { PHONE_QUERY, useMediaQuery } from '../shared/useMediaQuery'
 import { useCommunity } from './CommunityContext'
 
 /**
@@ -19,6 +21,7 @@ export default function DemoReset() {
   const lineup = useLineupStore()
   const profile = useProfile()
   const auth = useAuth()
+  const phone = useMediaQuery(PHONE_QUERY)
   const [withAccounts, setWithAccounts] = useState(false)
   const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle')
   const [message, setMessage] = useState<{ text: string; warn: boolean } | null>(null)
@@ -44,9 +47,8 @@ export default function DemoReset() {
     }
   }
 
-  return (
-    <section className="panel" aria-label="시연 데이터 초기화" style={{ marginTop: 16 }}>
-      <h2>시연 데이터 초기화</h2>
+  const body = (
+    <>
       {step === 'idle' ? (
         <>
           <p className="muted" style={{ fontSize: '.85rem', margin: '0 0 10px' }}>
@@ -76,6 +78,22 @@ export default function DemoReset() {
           {message.text}
         </p>
       )}
+    </>
+  )
+  // 휴대폰 폭에서는 접어 두고 요약 한 줄만 (화면 길이를 줄이려고)
+  if (phone) {
+    return (
+      <section className="panel fold-panel" aria-label="시연 데이터 초기화">
+        <Fold id="demo-reset" level={2} title="시연 데이터 초기화" summary="내가 남긴 기록을 지우고 처음 상태로">
+          {body}
+        </Fold>
+      </section>
+    )
+  }
+  return (
+    <section className="panel" aria-label="시연 데이터 초기화" style={{ marginTop: 16 }}>
+      <h2>시연 데이터 초기화</h2>
+      {body}
     </section>
   )
 }

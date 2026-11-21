@@ -41,8 +41,8 @@ header nav a[aria-current="page"]::after{
 @media (max-width:1080px){.demo-date{margin:8px 20px 0}}
 .notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
 
-main{max-width:1040px;margin:0 auto;padding:8px 20px 64px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 64px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:var(--panel-pad)}
 .row{display:flex;gap:16px;flex-wrap:wrap}
 .muted{color:var(--soft)}
 .btn{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:4px;cursor:pointer;font-weight:700}
@@ -66,3 +66,66 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .ac button:hover,.ac button:focus-visible,.ac button[aria-selected="true"]{background:var(--chip)}
 /* 화면 읽기 프로그램에만 읽히는 글자 */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* 접었다 펴는 묶음 (선수 카드 수비·스탯 조절, 커뮤니티 이야기·관련 상품): 제목 + 요약 한 줄 → 누르면 펼침 */
+.fold{border-top:1px solid var(--line)}
+.fold:first-child{border-top:0}
+.fold-h{margin:0;font-size:1rem}
+.fold-btn{display:grid;grid-template-columns:1fr auto;grid-template-areas:"t c" "s c";align-items:center;gap:2px 12px;width:100%;min-height:52px;padding:10px 0;border:0;background:none;color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+.fold-title{grid-area:t;font-weight:700}
+.fold-sum{grid-area:s;font-size:.85rem;color:var(--soft);font-weight:400;overflow-wrap:anywhere}
+.fold-chev{grid-area:c;font-size:.8rem;color:var(--soft);font-weight:700;white-space:nowrap}
+.fold-btn:hover .fold-title{text-decoration:underline;text-underline-offset:3px}
+.fold-body{padding:0 0 12px}
+.fold-note{display:block;font-weight:400;font-size:.8rem;color:var(--soft)}
+.fold-panel{margin-top:16px;padding-top:4px;padding-bottom:4px}
+.fold-actions{gap:8px;margin-bottom:8px}
+.adj-fold .adj-head{justify-content:flex-end}
+
+/* 아래에서 올라오는 창 (글쓰기). 넓은 화면에서도 아래 가운데에 붙는다 */
+.sheet-root[hidden]{display:none}
+.sheet-backdrop{position:fixed;inset:0;z-index:20;background:var(--overlay)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;margin:0 auto;width:min(640px,100%);max-height:calc(100vh - 48px - env(safe-area-inset-top,0px));overflow:auto;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:var(--shadow);
+  padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:sheet-up .2s ease-out}
+@keyframes sheet-up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-head{display:flex;align-items:center;gap:8px;position:relative;padding-top:10px}
+.sheet-head h2{margin:0;flex:1}
+.sheet-grip{position:absolute;top:0;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:999px;background:var(--line)}
+.sheet-body{margin-top:10px}
+.sheet-body .composer{border:0;padding:0;margin:0 !important;box-shadow:none;background:none}
+.write-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}
+.write-bar .btn{min-height:44px}
+.write-note{margin:0;font-size:.9rem}
+
+/* 「더 보기」 (긴 목록을 20개씩) */
+.more-row{display:flex;justify-content:center;margin:12px 0 4px}
+.more-btn{min-height:44px;width:min(360px,100%)}
+
+/* 바깥 여백(--gutter)·패널 안 여백(--panel-pad): 휴대폰 폭에서는 조금 줄인다 */
+:root{--gutter:20px;--panel-pad:20px;--sticky-top:calc(var(--header-h,62px) + env(safe-area-inset-top,0px))}
+@media (max-width:720px){
+  :root{--gutter:12px;--panel-pad:14px}
+  .back{margin-bottom:8px}
+  .comm{gap:12px}
+}
+
+/* 스크롤해도 머리줄 바로 아래에 붙어 있는 선수 카드 탭·순위표 필터 (머리줄 높이는 Layout이 --header-h로 알린다) */
+.player-tabs{position:sticky;top:var(--sticky-top);z-index:3;background:var(--surface);margin-left:calc(-1 * var(--panel-pad));margin-right:calc(-1 * var(--panel-pad));padding:0 var(--panel-pad)}
+.ranking .rk-filters{position:sticky;top:var(--sticky-top);z-index:3;background:var(--surface);margin:0 calc(-1 * var(--panel-pad));padding:8px var(--panel-pad);border-bottom:1px solid var(--line)}
+
+/* 「맨 위로」 (화면 2개보다 긴 화면에서 내려왔을 때). 휴대폰 폭에서는 아래쪽 탭 바 위에 */
+.to-top{position:fixed;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:1px solid var(--ink);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);cursor:pointer}
+.to-top:hover{background:var(--chip)}
+@media (max-width:720px){.to-top{bottom:calc(var(--tabbar-h,64px) + 16px + env(safe-area-inset-bottom,0px))}}
+/* 붙어 있는 탭: 이름이 한 줄로 (좁으면 가로로 밀어 본다) */
+.player-tabs{overflow-x:auto;scrollbar-width:none}
+.player-tabs button{flex:none;white-space:nowrap}
+@media (max-width:720px){
+  .player-tabs button{padding:8px 10px}
+  /* 순위표 필터: 구분 버튼과 팀 고르기를 한 줄에 */
+  .ranking .rk-filters{flex-wrap:nowrap;gap:8px}
+  .ranking .rk-team{min-width:0;flex:1}
+  .ranking .rk-team select{min-width:0;width:100%}
+}

@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import { availableKeys } from '../../domain/availability'
 import { metricDef, type MetricKey } from '../../domain/catalog'
 import { defenseParts, OVERALL_DEFENSE, ratingWord, traditionalFielding } from '../../domain/defense'
+import { formatMetric } from '../../domain/format'
 import { metricValue } from '../../domain/percentile'
 import type { HitterPlayer } from '../../domain/players'
 import { useLeague } from '../shared/LeagueContext'
+import Fold from '../shared/Fold'
 import SourceNote from './SourceNote'
 
 type Props = { player: HitterPlayer; rows: (keys: MetricKey[]) => ReactNode }
@@ -22,36 +24,34 @@ export default function DefenseTab({ player: p, rows }: Props) {
   const parts = shown(defenseParts(p.raw.pos))
   const trad = traditionalFielding(league, p)
   const ratings = league.meta.available.fielding.ratings ? p.raw.fielding.ratings : null
+  // 접혀 있을 때 보이는 요약: 지표 이름과 값
+  const brief = (keys: MetricKey[]) => keys.map((k) => `${metricDef(k).label} ${formatMetric(k, metricValue(p, k))}`).join(' · ')
   const nothing = !overall.length && !parts.length && !trad.length && !ratings?.length
 
   return (
     <>
       {nothing && <p className="empty">이 선수는 제공되는 수비 기록이 없어요.</p>}
       {overall.length > 0 && (
-        <>
-          <h3 className="sub">종합 수비 지표<small>평균 수비수 대비 몇 점을 더 막았는지</small></h3>
+        <Fold id="defense:overall" title={<>종합 수비 지표<small className="fold-note">평균 수비수 대비 몇 점을 더 막았는지</small></>} summary={brief(overall)}>
           {rows(overall)}
-        </>
+        </Fold>
       )}
       {parts.length > 0 && (
-        <>
-          <h3 className="sub">세부 구성<small>UZR을 이루는 점수</small></h3>
+        <Fold id="defense:parts" title={<>세부 구성<small className="fold-note">UZR을 이루는 점수</small></>} summary={brief(parts)}>
           {rows(parts)}
-        </>
+        </Fold>
       )}
       {trad.length > 0 && (
-        <>
-          <h3 className="sub">전통 기록</h3>
+        <Fold id="defense:traditional" title="전통 기록" summary={trad.slice(0, 3).map((t) => `${t.label} ${t.value}`).join(' · ')}>
           <div className="statgrid">
             {trad.map((t) => (
               <div key={t.label} className="stat"><b>{t.value}</b><span>{t.label}</span></div>
             ))}
           </div>
-        </>
+        </Fold>
       )}
       {ratings && ratings.length > 0 && (
-        <>
-          <h3 className="sub">스카우팅 능력치<small>OOTP식 20~80 등급, 50이 평균</small></h3>
+        <Fold id="defense:ratings" title={<>스카우팅 능력치<small className="fold-note">OOTP식 20~80 등급, 50이 평균</small></>} summary={ratings.slice(0, 3).map((r) => `${r.label} ${r.grade}`).join(' · ')}>
           {ratings.map(({ label, grade }) => (
             <div key={label} className="rt">
               <span>{label}</span>
@@ -62,7 +62,7 @@ export default function DefenseTab({ player: p, rows }: Props) {
               <span className="w muted">{ratingWord(grade)}</span>
             </div>
           ))}
-        </>
+        </Fold>
       )}
       <p className="muted" style={{ fontSize: '.85rem', margin: '12px 0 0' }}>
         {overall.length > 1 && `수비 지표는 같은 선수라도 계산 방식(${overall.map((k) => metricDef(k).label).join(', ')})에 따라 값이 달라요. `}

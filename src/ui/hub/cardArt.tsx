@@ -50,3 +50,24 @@ export const MarketArt = () => (
     <path d="M48 48 l3.5 7 7.5 1 -5.5 5.2 1.4 7.6 -6.9 -3.7 -6.9 3.7 1.4 -7.6 -5.5 -5.2 7.5 -1 z" fill="var(--seam)" />
   </Art>
 )
+
+/** 선수 비교: 나란한 막대 두 묶음 */
+export const CompareArt = () => (
+  <Art>
+    <rect x="20" y="40" width="10" height="34" rx="2" fill="var(--ink)" opacity=".6" />
+    <rect x="33" y="28" width="10" height="46" rx="2" fill="var(--seam)" />
+    <rect x="53" y="34" width="10" height="40" rx="2" fill="var(--seam)" />
+    <rect x="66" y="46" width="10" height="28" rx="2" fill="var(--ink)" opacity=".6" />
+    <path d="M18 76 h60" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" />
+    <path d="M48 18 v60" stroke="var(--ink)" strokeWidth="2" strokeDasharray="3 3" />
+  </Art>
+)
+
+/** 응원: 메가폰 */
+export const CheerArt = () => (
+  <Art>
+    <path d="M24 42 h10 l28 -14 v40 l-28 -14 h-10 z" fill="var(--surface)" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
+    <path d="M30 56 l4 14 h8 l-3 -14" fill="var(--ink)" />
+    <path d="M68 38 q6 10 0 20 M74 32 q10 16 0 32" fill="none" stroke="var(--seam)" strokeWidth="3.5" strokeLinecap="round" />
+  </Art>
+)

@@ -67,7 +67,7 @@ function PlayerCard({ player: p }: { player: Player }) {
             {constants.qualifiedPA}타석 미만이라 백분위는 참고용이에요. 막대는 {constants.qualifiedPA}타석 이상 타자들 사이의 위치입니다.
           </p>
         )}
-        <div className="tabs" role="tablist">
+        <div className="tabs player-tabs" role="tablist">
           {tabs.map((t, i) => (
             <button
               key={t.label}

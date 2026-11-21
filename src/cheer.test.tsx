@@ -3,6 +3,7 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -113,7 +114,7 @@ describe('응원하기', () => {
 
 describe('응원 메시지 (커뮤니티와 같은 작성 제한)', () => {
   const type = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
-    const box = await screen.findByRole('textbox', { name: '응원 메시지 내용' })
+    const box = await openWriteBox(user, '응원 메시지 내용')
     await user.clear(box)
     await user.type(box, text)
   }

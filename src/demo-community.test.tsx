@@ -3,7 +3,9 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
 import { IDBFactory } from 'fake-indexeddb'
+import { openFold } from './testing/folds'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { seedStars } from './data/seedPlayers'
@@ -64,6 +66,7 @@ describe('시연 첫 화면: 커뮤니티', () => {
     renderApp(`/player/${encodeURIComponent(slugger.id)}`)
     const panel = within(await screen.findByLabelText('커뮤니티 이야기'))
     expect(await panel.findByText(/이 선수 관련 글/)).toBeTruthy()
+    await openFold(userEvent.setup(), '커뮤니티 이야기', screen.getByLabelText('커뮤니티 이야기'))
     expect(panel.getAllByText(/데모 게시글/).length).toBeGreaterThan(0)
   })
 })
@@ -92,7 +95,7 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
     const user = userEvent.setup()
     renderApp('/community')
     await loaded()
-    await user.type(screen.getByRole('textbox', { name: '글 내용' }), '시연 중에 쓴 글')
+    await user.type(await openWriteBox(user), '시연 중에 쓴 글')
     await user.click(screen.getByRole('button', { name: '게시하기' }))
     await feed().findByText('시연 중에 쓴 글')
     await user.click(screen.getByRole('button', { name: '시연 데이터 초기화' }))
@@ -106,7 +109,7 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
     renderApp('/community')
     await loaded()
     // 시연 중에 글을 쓰고, 좋아요를 누르고, 신고 시연용 글을 가린다
-    await user.type(screen.getByRole('textbox', { name: '글 내용' }), '시연 중에 쓴 글')
+    await user.type(await openWriteBox(user), '시연 중에 쓴 글')
     await user.click(screen.getByRole('button', { name: '게시하기' }))
     await feed().findByText('시연 중에 쓴 글')
     await user.click(feed().getAllByRole('button', { name: '좋아요 0' })[1])

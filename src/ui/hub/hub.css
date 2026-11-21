@@ -44,12 +44,13 @@
 
 /* ---------- 홈 ---------- */
 .hub-home{display:grid;gap:16px;padding-top:0}
+@media (max-width:720px){.hub-home{gap:12px}}
 /* 검색 */
 .hub-home .hub-search-hero{padding:0}
 .hub-home .hub-search-hero h2{font-size:clamp(1.3rem,4vw,1.7rem);margin:0 0 10px}
 
 /* 카드 메뉴: 넓은 화면은 왼쪽 ⅔에 넓은 카드 2개, 오른쪽 ⅓에 반쪽 카드 2개 */
-.hub-cards{display:grid;gap:12px;grid-template-columns:2fr 1fr;grid-template-areas:"rank comm" "games market"}
+.hub-cards{display:grid;gap:12px;grid-template-columns:2fr 1fr;grid-template-areas:"rank comp" "games cheer"}
 .hub-card{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:132px;padding:16px 16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-bottom:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow);overflow:hidden}
 .hub-card:hover{border-color:var(--ink);border-bottom-color:var(--seam)}
 .hub-card:hover .card-title{text-decoration:underline;text-underline-offset:4px}
@@ -68,9 +69,14 @@
 
 /* 휴대폰 폭: 넓은 카드는 한 줄씩, 반쪽 카드는 둘이 나란히 */
 @media (max-width:720px){
-  .hub-cards{grid-template-columns:1fr 1fr;grid-template-areas:"rank rank" "games games" "comm market"}
-  .hub-card.half{flex-direction:column-reverse;align-items:flex-start;min-height:0}
-  .hub-card.half .card-art{width:52px;height:52px}
+  /* 휴대폰 폭: 넷 다 반쪽 카드 2×2 (그림은 위, 글은 아래) */
+  .hub-cards{grid-template-columns:1fr 1fr;gap:10px;grid-template-areas:"rank games" "comp cheer"}
+  .hub-card,.hub-card.half{flex-direction:column-reverse;align-items:flex-start;justify-content:flex-end;min-height:0;padding:12px 12px 14px;gap:6px}
+  .hub-card .card-art,.hub-card.half .card-art{width:44px;height:44px}
+  .card-title{font-size:1.1rem}
+  .card-big{font-size:1.05rem}
+  .card-big small{font-size:.8rem}
+  .card-sub,.card-line{font-size:.78rem}
 }
 @media (max-width:420px){
   .card-art{width:64px;height:64px}
@@ -141,9 +147,9 @@
 /* ---------- 오늘의 소식: 넓은 화면은 4장 나란히(조금 좁으면 2장씩 두 줄), 휴대폰 폭은 밀어 넘기기 + 점 ---------- */
 .today{display:grid;gap:8px}
 .today-title{margin:0;font-size:1.05rem}
-.today-track{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.today-track{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media (max-width:960px) and (min-width:721px){.today-track{grid-template-columns:repeat(2,1fr)}}
-.today-card{display:grid;gap:2px;align-content:start;min-height:112px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
+.today-card{position:relative;display:grid;gap:2px;align-content:start;min-height:112px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--seam);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
 .today-card:hover{border-color:var(--ink);border-top-color:var(--seam)}
 .today-card:hover .today-main{text-decoration:underline;text-underline-offset:4px}
 .today-card.done{border-top-color:var(--line)}
@@ -154,7 +160,7 @@
 .today-sub .rk-chg{font-size:.9rem}
 .today-dots{display:none}
 @media (max-width:720px){
-  .today-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin:0 -20px;padding:2px 20px 6px;scroll-padding:0 20px}
+  .today-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin:0 calc(-1 * var(--gutter));padding:2px var(--gutter) 6px;scroll-padding:0 var(--gutter)}
   .today-track::-webkit-scrollbar{display:none}
   .today-card{flex:0 0 84%;scroll-snap-align:start}
   .today-dots{display:flex;justify-content:center;gap:2px}
@@ -163,3 +169,17 @@
   .today-dot::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--soft);transition:width .2s}
   .today-dot[aria-current="true"]::before{width:22px;background:var(--ink)}
 }
+
+/* 커뮤니티·마켓 새 글 수 한 줄 (아래쪽 탭 바에 있는 기능이라 카드 대신) */
+.hub-news-line{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:10px 0 0;font-size:.9rem}
+.hub-news-line a{color:var(--ink);text-decoration:none;min-height:32px;display:inline-flex;align-items:center;gap:4px}
+.hub-news-line a:hover{text-decoration:underline}
+
+/* 가치 순위 TOP 3 한 줄 */
+.top-value{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.top-value-title{margin:0;font-size:.9rem}
+.top-value-list{display:flex;flex-wrap:wrap;gap:4px 12px;list-style:none;margin:0;padding:0;flex:1;min-width:0}
+.top-value-list a{color:var(--ink);text-decoration:none;font-size:.9rem;min-height:32px;display:inline-flex;align-items:center;gap:4px}
+.top-value-list a:hover{text-decoration:underline}
+.tv-rank{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:.75rem;font-weight:700}
+.top-value-more{color:var(--ink);font-weight:700;font-size:.9rem;text-decoration:none;min-height:32px;display:inline-flex;align-items:center}

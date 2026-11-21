@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { AlreadyCheeredError } from '../../data/source'
 import type { PlayerId } from '../../data/types'
@@ -11,6 +11,10 @@ import { playerPath, positionLabel } from '../shared/labels'
 import { useNow } from '../shared/useNow'
 import { useRequireLogin } from '../auth/login'
 import { useCheer } from './CheerContext'
+import { peekDraft } from '../auth/login'
+import MoreButton from '../shared/MoreButton'
+import Sheet from '../shared/Sheet'
+import { usePaged } from '../shared/usePaged'
 import CheerComposer from './CheerComposer'
 import CheerMessageCard from './CheerMessageCard'
 import CheerRanking from './CheerRanking'
@@ -62,6 +66,16 @@ function CheerRoom({ player: p }: { player: Player }) {
   const state = useCheer()
   const now = useNow()
   const list = state.status === 'ready' ? messagesFor(state.snapshot.messages, p.id) : []
+  // 응원 메시지 타임라인도 처음 20개만, 「더 보기」로 20개씩
+  const paged = usePaged(list, p.id)
+  // 응원 메시지 쓰기 창: 로그인하러 갔다 와서 써 두던 응원이 있으면 바로 열어 둔다
+  const [sheetOpen, setSheetOpen] = useState(() => peekDraft(`cheer:${p.id}`) !== '')
+  const [posted, setPosted] = useState<string | null>(null)
+  const writeBtn = useRef<HTMLButtonElement>(null)
+  const closeSheet = useCallback(() => {
+    setSheetOpen(false)
+    writeBtn.current?.focus()
+  }, [])
 
   return (
     <>
@@ -76,10 +90,19 @@ function CheerRoom({ player: p }: { player: Player }) {
             </div>
             <CheerBox player={p} />
           </div>
-          <CheerComposer playerId={p.id} playerName={p.name} />
+          <div className="write-bar" style={{ marginTop: 16 }}>
+            <button type="button" ref={writeBtn} className="btn" aria-haspopup="dialog" onClick={() => { setPosted(null); setSheetOpen(true) }}>응원 메시지 쓰기</button>
+            <p className="muted write-note" role="status">{posted ?? ''}</p>
+          </div>
+          <Sheet open={sheetOpen} onClose={closeSheet} title="응원 메시지 쓰기">
+            <CheerComposer playerId={p.id} playerName={p.name} onPosted={(m) => { setPosted(m); closeSheet() }} />
+          </Sheet>
           <section aria-label="응원 메시지 목록" style={{ marginTop: 16 }}>
             {state.status === 'ready' && (list.length ? (
-              list.map((m) => <CheerMessageCard key={m.id} message={m} now={now} />)
+              <>
+                {paged.shown.map((m) => <CheerMessageCard key={m.id} message={m} now={now} />)}
+                <MoreButton rest={paged.rest} total={paged.total} unit="개" onMore={paged.more} />
+              </>
             ) : (
               <p className="empty">아직 응원 메시지가 없어요. 첫 응원을 남겨 보세요.</p>
             ))}

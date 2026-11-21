@@ -1,5 +1,6 @@
 /* 커뮤니티 (7단계에서 사용) */
 .comm{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+.comm > *{min-width:0}
 @media (max-width:820px){.comm{grid-template-columns:1fr}}
 .composer textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);resize:vertical;line-height:1.5}
 .modmsg{font-size:.85rem;margin-top:6px;min-height:0}
@@ -35,3 +36,50 @@ label.btn{display:inline-block}
 .linkbtn{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;cursor:pointer}
 .mini{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem;display:flex;flex-direction:column;gap:2px}
 .tag.caution{color:var(--warn);font-weight:700}
+
+/* 글에 붙은 사진·영상: 누르면 크게 보기 */
+.mitem{position:relative;display:block;min-width:0}
+.mbtn{padding:0;border:0;background:none;cursor:zoom-in;width:100%}
+.mzoom{position:absolute;top:6px;right:6px;min-height:32px;padding:2px 10px;border:0;border-radius:999px;background:var(--overlay);color:var(--on-accent);font-size:.8rem;font-weight:700;cursor:pointer}
+.lightbox{position:fixed;inset:0;z-index:30;background:var(--media-bg);display:grid;place-items:center;padding:calc(56px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.lightbox-body{display:grid;place-items:center;max-width:100%;max-height:100%}
+.lightbox-body img,.lightbox-body video{max-width:100%;max-height:calc(100vh - 80px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));object-fit:contain}
+.lightbox .lightbox-close{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;min-height:44px;background:var(--surface);color:var(--ink);border-color:var(--surface)}
+
+/* 휴대폰 폭: 사진·영상 높이 제한, 화제의 선수 한 줄(밀어 보기), 글쓰기 창 안의 작성 규칙 */
+@media (max-width:720px){
+  .mgrid img,.mgrid video{max-height:200px}
+  .mgrid.n1 img{object-fit:cover}
+}
+.trend-row{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin:0 calc(-1 * var(--gutter)) 10px;padding:2px var(--gutter) 4px}
+.trend-row::-webkit-scrollbar{display:none}
+.trend-group{display:flex;align-items:center;gap:6px;flex:none}
+.trend-label{font-size:.78rem;font-weight:700;color:var(--soft);white-space:nowrap}
+.trend-chip{flex:none;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;gap:4px;color:var(--ink);text-decoration:none;font-size:.88rem}
+.trend-chip small{color:var(--soft);font-size:.75rem}
+.write-rules h2{margin:0 0 6px}
+.write-rules p{font-size:.85rem;margin:0}
+.write-rules.compact{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.write-rules.compact h2{font-size:.95rem}
+.write-bar .filters{margin:0}
+.ptext-more{margin-top:2px;font-size:.85rem}
+@media (max-width:720px){
+  /* 글 카드를 조금 촘촘하게, 본문은 3줄까지(넘치면 「더 보기」) */
+  .post{padding:12px;margin-bottom:8px}
+  .ptext{margin-top:6px}
+  .ptext.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .ptags{margin-top:6px}
+  .pact{margin-top:8px;padding-top:6px}
+  .mgrid{margin-top:6px}
+  .mgrid img,.mgrid video{max-height:150px}
+}
+@media (max-width:720px){
+  /* 휴대폰 폭 글 카드: 한 줄 더 아끼기 */
+  .post{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center}
+  .post > *{grid-column:1 / -1}
+  /* 좋아요·신고는 맨 윗줄 오른쪽(글쓴이·시간 옆)에 — 버튼만 있는 줄을 없앤다 */
+  .post > .ph2{grid-column:1;grid-row:1;font-size:.85rem}
+  .post > .pact{grid-column:2;grid-row:1;justify-self:end;align-self:start;border-top:0;padding-top:0;margin-top:0}
+  .post > .ptags{margin-top:8px}
+  .pact button{min-height:32px;padding:2px 10px}
+}

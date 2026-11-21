@@ -8,6 +8,8 @@ import {
 } from '../../domain/value/ranking'
 import { formatWon } from '../../domain/value/value'
 import { useLeague, useLeagueDay } from '../shared/LeagueContext'
+import MoreButton from '../shared/MoreButton'
+import { usePaged } from '../shared/usePaged'
 import { useYesterday } from './useYesterday'
 import { playerPath, positionLabel } from '../shared/labels'
 import './ranking.css'
@@ -78,6 +80,8 @@ export default function RankingPage() {
   const teams = useMemo(() => rankingTeams(league), [league])
   const rows = useMemo(() => valueRanking(league, yesterday.league, filter), [league, yesterday.league, filter])
   const { up, down } = useMemo(() => movers(rows), [rows])
+  // 처음 20명만, 「더 보기」로 20명씩 (필터·날짜가 바뀌면 다시 20명)
+  const paged = usePaged(rows, `${filter.group}|${filter.team ?? ''}|${date ?? ''}`)
   const compare = date !== null // 날짜별 기록이 있으면 전일과 비교한다
 
   return (
@@ -147,7 +151,7 @@ export default function RankingPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {paged.shown.map((r) => (
                 <tr key={r.player.id}>
                   <td className="rk-rank">{r.rank}</td>
                   {compare && <td><RankChange r={r} /></td>}
@@ -163,6 +167,7 @@ export default function RankingPage() {
               ))}
             </tbody>
           </table>
+          <MoreButton rest={paged.rest} total={paged.total} unit="명" onMore={paged.more} />
         </div>
       )}
       <p className="muted rk-legend">

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import BackgroundLayer from '../settings/BackgroundLayer'
 import AccountMenu from '../auth/AccountMenu'
@@ -8,6 +8,7 @@ import SearchButton from '../hub/SearchButton'
 import SeenTracker from '../hub/SeenTracker'
 import TabBar from '../hub/TabBar'
 import DemoNotice from '../hub/DemoNotice'
+import ToTop from './ToTop'
 import { PHONE_QUERY, useMediaQuery } from './useMediaQuery'
 import '../hub/hub.css'
 import { formatDayKey } from '../../domain/games/calendar'
@@ -28,6 +29,17 @@ export default function Layout() {
   const state = useLeagueState()
   const { pathname } = useLocation()
   const phone = useMediaQuery(PHONE_QUERY)
+  // 위쪽 머리줄 높이를 CSS 변수(--header-h)로 알린다: 스크롤해도 붙어 있는 탭·필터가 머리줄 바로 아래에 붙도록
+  const headerRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el || typeof ResizeObserver !== 'function') return
+    const set = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`)
+    set()
+    const ro = new ResizeObserver(set)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   // 화면이 바뀌면 맨 위로 (데모 go()와 같은 동작)
   useEffect(() => {
@@ -41,7 +53,7 @@ export default function Layout() {
     <>
       <BackgroundLayer />
       <SeenTracker />
-      <header>
+      <header ref={headerRef}>
         <div className="bar">
           <div className="brand display">세이버 노트<small>데모</small></div>
           <nav aria-label="주요 메뉴">
@@ -77,6 +89,7 @@ export default function Layout() {
         {state.status === 'ready' && <Outlet />}
       </main>
       {phone && <TabBar />}
+      <ToTop />
     </>
   )
 }
