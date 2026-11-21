@@ -2,6 +2,7 @@
 // 커뮤니티 표현 범위: 경고 후 선택, 「주의」 표시, 읽는 사람의 「거친 표현 가리기」
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -44,7 +45,7 @@ const feed = () => within(screen.getByLabelText('글 목록'))
 /** 커뮤니티가 열릴 때까지 기다린 뒤의 글 목록 */
 const loadedFeed = async () => within(await screen.findByLabelText('글 목록'))
 const write = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
-  const box = await screen.findByRole('textbox', { name: '글 내용' })
+  const box = await openWriteBox(user)
   await user.clear(box)
   await user.type(box, text)
 }

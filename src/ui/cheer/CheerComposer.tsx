@@ -17,7 +17,7 @@ const STORAGE_NOTE = {
 const currentTime = () => Date.now()
 
 /** 응원 메시지 쓰기: 커뮤니티 글쓰기와 같은 작성 제한(차단 안내, 애매하면 경고 후 선택, 30초 도배 제한), 글만 200자 */
-export default function CheerComposer({ playerId, playerName }: { playerId: PlayerId; playerName: string }) {
+export default function CheerComposer({ playerId, playerName, onPosted }: { playerId: PlayerId; playerName: string; onPosted?: (message: string) => void }) {
   const league = useLeague()
   const state = useCheer()
   const requireLogin = useRequireLogin()
@@ -46,7 +46,11 @@ export default function CheerComposer({ playerId, playerName }: { playerId: Play
     try {
       await repo.postMessage({ playerId, text: prepared.text, caution: prepared.caution })
       setText('')
-      setNote({ text: prepared.caution ? '응원을 남겼어요. 「주의」 표시가 붙었어요.' : '응원을 남겼어요.', warn: false })
+      const done = prepared.caution ? '응원을 남겼어요. 「주의」 표시가 붙었어요.' : '응원을 남겼어요.'
+      if (onPosted) {
+        setNote(null)
+        onPosted(done)
+      } else setNote({ text: done, warn: false })
     } catch {
       setNote({ text: '남기지 못했어요. 잠시 뒤 다시 시도해 주세요.', warn: true })
     } finally {

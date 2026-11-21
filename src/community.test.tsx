@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
 import { openFold } from './testing/folds'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
@@ -47,7 +48,7 @@ const otherPost = (over: Partial<CommunityPost> = {}): CommunityPost => ({
 afterEach(cleanup)
 
 async function write(user: ReturnType<typeof userEvent.setup>, text: string) {
-  await user.type(await screen.findByRole('textbox', { name: '글 내용' }), text)
+  await user.type(await openWriteBox(user), text)
 }
 
 describe('화면 7. 커뮤니티 글쓰기', () => {
@@ -102,6 +103,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
   it('파일: 허용 형식만 미리보기에 붙고, 올리면 피드에 사진이 나온다', async () => {
     const user = userEvent.setup({ applyAccept: false })
     renderAt('/community')
+    await openWriteBox(user)
     const input = (await screen.findByText('사진 · 움짤 · 영상 추가')).querySelector('input')!
     await user.upload(input, [new File(['png'], 'a.png', { type: 'image/png' }), new File(['txt'], 'b.txt', { type: 'text/plain' })])
     expect(screen.getByText(/b.txt: PNG, JPG, WEBP, GIF, MP4, WEBM 파일만/)).toBeTruthy()
@@ -113,6 +115,7 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
   it('선수 태그를 검색해 달고 뺄 수 있다', async () => {
     const user = userEvent.setup()
     renderAt('/community')
+    await openWriteBox(user)
     await user.type(await screen.findByRole('combobox', { name: '선수 태그 검색' }), kim.name)
     await user.click(screen.getByRole('option', { name: new RegExp(kim.name) }))
     const chip = screen.getByRole('button', { name: `${kim.name} 태그 빼기` })

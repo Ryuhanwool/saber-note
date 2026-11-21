@@ -1,7 +1,10 @@
+import { useCallback, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { PlayerId } from '../../data/types'
 import { relatedPosts, REPORT_HIDE_THRESHOLD, topDiscussed } from '../../domain/community/posts'
 import { useLeague } from '../shared/LeagueContext'
+import { peekDraft } from '../auth/login'
+import Sheet from '../shared/Sheet'
 import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
 import CheerRanking from '../cheer/CheerRanking'
@@ -19,6 +22,17 @@ export default function CommunityPage() {
   const playerId = params.get('player') as PlayerId | null
   const mediaOnly = params.get('media') === '1'
   const writeFor = params.get('write') as PlayerId | null
+  // 글쓰기 창: 「이 선수 글쓰기」로 왔거나, 로그인하러 갔다 와서 써 두던 글이 있으면 바로 열어 둔다
+  const [sheet, setSheet] = useState(() => ({ for: writeFor, open: Boolean(writeFor) || peekDraft('community') !== '' }))
+  if (sheet.for !== writeFor) setSheet({ for: writeFor, open: Boolean(writeFor) || sheet.open })
+  const sheetOpen = sheet.open
+  const setSheetOpen = (open: boolean) => setSheet((x) => ({ ...x, open }))
+  const [posted, setPosted] = useState<string | null>(null)
+  const writeBtn = useRef<HTMLButtonElement>(null)
+  const closeSheet = useCallback(() => {
+    setSheet((x) => ({ ...x, open: false }))
+    writeBtn.current?.focus()
+  }, [])
   const filterPlayer = playerId ? league.byId.get(playerId) : undefined
 
   const setFilter = (next: { player?: PlayerId | null; media?: boolean }) => {
@@ -49,8 +63,19 @@ export default function CommunityPage() {
   return (
     <div className="comm">
       <div>
-        {/* "이 선수 글쓰기"로 오면 그 선수 태그를 미리 달고 글 칸에 바로 쓸 수 있게 한다 */}
-        <Composer key={writeFor ?? 'new'} initialTags={writeFor && league.byId.has(writeFor) ? [writeFor] : []} autoFocus={Boolean(writeFor)} />
+        <div className="write-bar">
+          <button type="button" ref={writeBtn} className="btn" aria-haspopup="dialog" onClick={() => { setPosted(null); setSheetOpen(true) }}>글쓰기</button>
+          <p className="muted write-note" role="status">{posted ?? ''}</p>
+        </div>
+        <Sheet open={sheetOpen} onClose={closeSheet} title="글쓰기">
+          {/* "이 선수 글쓰기"로 오면 그 선수 태그를 미리 달고 글 칸에 바로 쓸 수 있게 한다 */}
+          <Composer
+            key={writeFor ?? 'new'}
+            initialTags={writeFor && league.byId.has(writeFor) ? [writeFor] : []}
+            autoFocus={Boolean(writeFor)}
+            onPosted={(m) => { setPosted(m); closeSheet() }}
+          />
+        </Sheet>
         <div className="filters">
           <button className="chip" aria-pressed={!filterPlayer && !mediaOnly} onClick={() => setParams(new URLSearchParams())}>전체</button>
           <button className="chip" aria-pressed={mediaOnly} onClick={() => setFilter({ media: !mediaOnly })}>사진·영상만</button>

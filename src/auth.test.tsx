@@ -4,6 +4,7 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openWriteBox } from './testing/write'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -188,7 +189,7 @@ describe('로그인이 필요한 동작: 로그인 화면으로 안내하고, �
   it('커뮤니티 글쓰기: 써 두던 글이 남아 있고, 올리면 닉네임이 보인다', async () => {
     const user = userEvent.setup()
     renderApp('/community')
-    await user.type(await screen.findByRole('textbox', { name: '글 내용' }), '로그인 전에 쓴 글')
+    await user.type(await openWriteBox(user), '로그인 전에 쓴 글')
     await user.click(screen.getByRole('button', { name: '게시하기' }))
     await loginHeading()
     await demoLogin(user)
@@ -216,7 +217,7 @@ describe('로그인이 필요한 동작: 로그인 화면으로 안내하고, �
     await demoLogin(user)
     await user.click(await screen.findByRole('button', { name: '📣 응원하기' }))
     expect(await screen.findByRole('button', { name: '오늘 응원했어요' })).toBeTruthy()
-    await user.type(screen.getByRole('textbox', { name: '응원 메시지 내용' }), '화이팅!')
+    await user.type(await openWriteBox(user, '응원 메시지 내용'), '화이팅!')
     await user.click(screen.getByRole('button', { name: '응원 남기기' }))
     const list = within(screen.getByLabelText('응원 메시지 목록'))
     const card = (await list.findByText('화이팅!')).closest('article')!

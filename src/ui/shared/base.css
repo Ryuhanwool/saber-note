@@ -81,3 +81,20 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .fold-panel{margin-top:16px;padding-top:4px;padding-bottom:4px}
 .fold-actions{gap:8px;margin-bottom:8px}
 .adj-fold .adj-head{justify-content:flex-end}
+
+/* 아래에서 올라오는 창 (글쓰기). 넓은 화면에서도 아래 가운데에 붙는다 */
+.sheet-root[hidden]{display:none}
+.sheet-backdrop{position:fixed;inset:0;z-index:20;background:var(--overlay)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;margin:0 auto;width:min(640px,100%);max-height:calc(100vh - 48px - env(safe-area-inset-top,0px));overflow:auto;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:var(--shadow);
+  padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:sheet-up .2s ease-out}
+@keyframes sheet-up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-head{display:flex;align-items:center;gap:8px;position:relative;padding-top:10px}
+.sheet-head h2{margin:0;flex:1}
+.sheet-grip{position:absolute;top:0;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:999px;background:var(--line)}
+.sheet-body{margin-top:10px}
+.sheet-body .composer{border:0;padding:0;margin:0 !important;box-shadow:none;background:none}
+.write-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}
+.write-bar .btn{min-height:44px}
+.write-note{margin:0;font-size:.9rem}

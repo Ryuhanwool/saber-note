@@ -25,7 +25,7 @@ const previewOf = (file: File) => (typeof URL.createObjectURL === 'function' ? U
 const revoke = (f: DraftFile) => f.preview && URL.revokeObjectURL(f.preview)
 
 /** 글쓰기: 본문 · 작성 제한 안내 · 선수 태그 · 파일(최대 4개, 20MB) · 게시 */
-export default function Composer({ initialTags = [], autoFocus = false }: { initialTags?: PlayerId[]; autoFocus?: boolean }) {
+export default function Composer({ initialTags = [], autoFocus = false, onPosted }: { initialTags?: PlayerId[]; autoFocus?: boolean; onPosted?: (message: string) => void }) {
   const league = useLeague()
   const state = useCommunity()
   const requireLogin = useRequireLogin()
@@ -92,7 +92,12 @@ export default function Composer({ initialTags = [], autoFocus = false }: { init
       setText('')
       setTags([])
       setFiles([])
-      setNote({ text: prepared.caution ? '게시했어요. 「주의」 표시가 붙었어요.' : '게시했어요.', warn: false })
+      const done = prepared.caution ? '게시했어요. 「주의」 표시가 붙었어요.' : '게시했어요.'
+      // 글쓰기 창에서 쓰면 창을 닫고 바깥에 알린다 (같은 문구가 두 번 보이지 않게)
+      if (onPosted) {
+        setNote(null)
+        onPosted(done)
+      } else setNote({ text: done, warn: false })
     } catch (e) {
       setNote({
         text: e instanceof StorageFullError
