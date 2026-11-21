@@ -125,6 +125,17 @@ describe('화면 7. 커뮤니티 글쓰기', () => {
 })
 
 describe('화면 7. 커뮤니티 피드', () => {
+  it('피드는 처음 20개만, 「더 보기」로 나머지를 이어 본다', async () => {
+    const user = userEvent.setup()
+    const posts = Array.from({ length: 25 }, (_, i) => otherPost({ id: `p${i}`, text: `글 ${i}`, createdAt: Date.now() - (i + 1) * 60_000 }))
+    renderAt('/community', createMemoryCommunity({ posts }))
+    const feed = within(await screen.findByLabelText('글 목록'))
+    expect(await feed.findAllByRole('article')).toHaveLength(20)
+    await user.click(feed.getByRole('button', { name: '더 보기 (5개 더 · 전체 25개)' }))
+    expect(feed.getAllByRole('article')).toHaveLength(25)
+    expect(feed.queryByRole('button', { name: /^더 보기/ })).toBeNull()
+  })
+
   it('좋아요를 켜고 끈다', async () => {
     const user = userEvent.setup()
     renderAt('/community', createMemoryCommunity({ posts: [otherPost()] }))

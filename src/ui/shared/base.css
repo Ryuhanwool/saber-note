@@ -98,3 +98,7 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .write-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:12px}
 .write-bar .btn{min-height:44px}
 .write-note{margin:0;font-size:.9rem}
+
+/* 「더 보기」 (긴 목록을 20개씩) */
+.more-row{display:flex;justify-content:center;margin:12px 0 4px}
+.more-btn{min-height:44px;width:min(360px,100%)}

@@ -5,6 +5,8 @@ import { won } from '../../domain/market/catalog'
 import { useMarket } from './MarketContext'
 import { useAddToCart, useCatalog } from './hooks'
 import { GoodsImage, MarketNav, MarketStatus } from './shared'
+import MoreButton from '../shared/MoreButton'
+import { usePaged } from '../shared/usePaged'
 import './market.css'
 
 /** 화면 9. 공식 스토어: 가상 구단 6개의 상품, 구단별로 골라 보기 (?team=…) */
@@ -17,6 +19,8 @@ export default function StorePage() {
   const teams = [...new Set(catalog.map((p) => p.team))]
   const team = params.get('team')
   const shown = team && teams.includes(team) ? catalog.filter((p) => p.team === team) : catalog
+  // 상품도 처음 20개만, 「더 보기」로 20개씩 (구단을 바꾸면 다시 20개)
+  const paged = usePaged(shown, team ?? '')
 
   return (
     <div>
@@ -34,7 +38,7 @@ export default function StorePage() {
       </div>
       <p className="muted" role="status" style={{ fontSize: '.85rem', minHeight: '1.2em', margin: '0 0 8px' }}>{note}</p>
       <div className="ggrid" aria-label="상품 목록">
-        {shown.map((p) => {
+        {paged.shown.map((p) => {
           const line = { kind: 'store' as const, productId: p.id, qty: 1 }
           const added = state.status === 'ready' && inCart(state.snapshot.cart, line)
           return (
@@ -57,6 +61,7 @@ export default function StorePage() {
           )
         })}
       </div>
+      <MoreButton rest={paged.rest} total={paged.total} unit="개" onMore={paged.more} />
     </div>
   )
 }

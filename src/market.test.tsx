@@ -60,6 +60,9 @@ describe('공식 스토어', () => {
     const user = userEvent.setup()
     renderAt('/market', seeded())
     const list = within(await screen.findByLabelText('상품 목록'))
+    // 처음 20개, 「더 보기」로 나머지
+    expect(list.getAllByRole('article')).toHaveLength(20)
+    await user.click(screen.getByRole('button', { name: /^더 보기 \(16개 더 · 전체 36개\)/ }))
     expect(list.getAllByRole('article')).toHaveLength(36)
     const teams = within(screen.getByRole('group', { name: '구단 고르기' })).getAllByRole('button')
     expect(teams).toHaveLength(7) // 전체 + 6

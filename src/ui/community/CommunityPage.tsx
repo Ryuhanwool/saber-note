@@ -4,7 +4,9 @@ import type { PlayerId } from '../../data/types'
 import { relatedPosts, REPORT_HIDE_THRESHOLD, topDiscussed } from '../../domain/community/posts'
 import { useLeague } from '../shared/LeagueContext'
 import { peekDraft } from '../auth/login'
+import MoreButton from '../shared/MoreButton'
 import Sheet from '../shared/Sheet'
+import { usePaged } from '../shared/usePaged'
 import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
 import CheerRanking from '../cheer/CheerRanking'
@@ -44,6 +46,12 @@ export default function CommunityPage() {
     setParams(q)
   }
 
+  // 피드: 걸러 본 글을 처음 20개만, 「더 보기」로 20개씩 (걸러 보기가 바뀌면 다시 20개)
+  let list = state.status === 'ready' ? state.posts : []
+  if (filterPlayer) list = relatedPosts(list, filterPlayer)
+  if (mediaOnly) list = list.filter((x) => x.media.length > 0)
+  const paged = usePaged(list, `${playerId ?? ''}|${mediaOnly}`)
+
   if (state.status === 'loading') return <p className="empty">커뮤니티를 불러오는 중이에요.</p>
   if (state.status === 'error') {
     return (
@@ -54,9 +62,6 @@ export default function CommunityPage() {
     )
   }
 
-  let list = state.posts
-  if (filterPlayer) list = relatedPosts(list, filterPlayer)
-  if (mediaOnly) list = list.filter((x) => x.media.length > 0)
   const players = [...league.hitters, ...league.pitchers]
   const top = topDiscussed(state.posts, players, now)
 
@@ -85,7 +90,10 @@ export default function CommunityPage() {
         </div>
         <div aria-label="글 목록">
           {list.length ? (
-            list.map((p) => <PostCard key={p.id} post={p} now={now} />)
+            <>
+              {paged.shown.map((p) => <PostCard key={p.id} post={p} now={now} />)}
+              <MoreButton rest={paged.rest} total={paged.total} unit="개" onMore={paged.more} />
+            </>
           ) : (
             <p className="empty">{filterPlayer ? '이 선수 이야기는 아직 없어요. 위에서 첫 글을 남겨 보세요.' : '아직 글이 없어요. 첫 글을 남겨 보세요.'}</p>
           )}
