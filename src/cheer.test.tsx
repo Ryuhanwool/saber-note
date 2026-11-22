@@ -20,6 +20,9 @@ import type { CheerRepository } from './data/source'
 import CheerProvider from './ui/cheer/CheerProvider'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
+import SettingsProvider from './ui/settings/SettingsProvider'
+import { createMemorySettings } from './data/settings/memory'
+import { openDemoReset } from './testing/reset'
 
 window.scrollTo = () => {}
 URL.createObjectURL = () => 'blob:test'
@@ -40,15 +43,17 @@ const signedInDemo = () => createMemoryAuth({ signedIn: { id: DEMO_ACCOUNT_ID, n
 function renderAt(path: string, cheer?: CheerRepository) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <LeagueProvider>
-        <AuthProvider repository={signedInDemo()}>
-          <CommunityProvider repository={cheer ? createMemoryCommunity() : undefined}>
-            <CheerProvider repository={cheer}>
-              <App />
-            </CheerProvider>
-          </CommunityProvider>
-        </AuthProvider>
-      </LeagueProvider>
+      <SettingsProvider store={createMemorySettings({ decorations: false })}>
+        <LeagueProvider>
+          <AuthProvider repository={signedInDemo()}>
+            <CommunityProvider repository={cheer ? createMemoryCommunity() : undefined}>
+              <CheerProvider repository={cheer}>
+                <App />
+              </CheerProvider>
+            </CommunityProvider>
+          </AuthProvider>
+        </LeagueProvider>
+      </SettingsProvider>
     </MemoryRouter>,
   )
 }
@@ -188,7 +193,7 @@ describe('시연 첫 화면과 초기화 (앱이 여는 브라우저 저장소 �
     await user.click(await screen.findByRole('button', { name: '📣 응원하기' }))
     await screen.findByRole('button', { name: '오늘 응원했어요' })
 
-    await user.click(screen.getByRole('button', { name: '시연 데이터 초기화' }))
+    await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
     const confirm = within(screen.getByRole('alertdialog', { name: '초기화 확인' }))
     expect(confirm.getByText(/응원 메시지와 「응원하기」/)).toBeTruthy()
     await user.click(confirm.getByRole('button', { name: '초기화' }))

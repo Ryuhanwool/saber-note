@@ -38,5 +38,9 @@
 .seg-item:has(input:focus-visible){outline:3px solid var(--seam);outline-offset:2px}
 @media (max-width:560px){
   .settings{position:static}
-  .settings-panel{position:fixed;left:16px;right:16px;top:auto;width:auto;margin-top:4px}
+  /* 휴대폰 폭: 머리줄 아래부터 탭 바·튀어나온 홈 버튼 위까지만 (맨 아래 「시연 데이터 초기화」가 가리지 않게), 탭 바보다 위 층 */
+  .settings-panel{position:fixed;left:16px;right:16px;top:calc(var(--sticky-top) + 4px);width:auto;margin-top:0;z-index:8;max-height:calc(100vh - var(--sticky-top) - var(--tabbar-reach,91px) - env(safe-area-inset-bottom,0px) - 16px)}
 }
+/* 화면 설정 창 맨 아래의 시연 데이터 초기화 */
+.settings-reset{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.settings-reset h3{margin:0 0 6px;font-size:.95rem}

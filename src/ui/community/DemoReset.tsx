@@ -4,15 +4,13 @@ import { useCheer } from '../cheer/CheerContext'
 import { useProfile } from '../hub/ProfileContext'
 import { useLineupStore } from '../lineup/LineupContext'
 import { useMarket } from '../market/MarketContext'
-import Fold from '../shared/Fold'
-import { PHONE_QUERY, useMediaQuery } from '../shared/useMediaQuery'
 import { useCommunity } from './CommunityContext'
 
 /**
  * 시연 데이터 초기화: 커뮤니티(내가 쓴 글, 좋아요·신고), 응원방(내 응원 메시지, 「응원하기」·신고),
- * 마켓(내 판매글·사진·신고, 장바구니)을 지우고 예시 글·예시 응원·예시 판매글을 처음 상태로 되돌린다. 커뮤니티 화면과 응원방 화면에 함께 둔다.
+ * 마켓(내 판매글·사진·신고, 장바구니)을 지우고 예시 글·예시 응원·예시 판매글을 처음 상태로 되돌린다. 
  * 계정은 기본으로 남기고, 확인 창의 「가입한 계정도 모두 지우기」를 고르면 데모 계정을 뺀 계정도 지우고 로그아웃한다.
- * 지우는 일이라 무엇이 지워지는지 보여 주고 한 번 더 확인받는다. 저장소가 지원할 때만 보인다.
+ * 지우는 일이라 무엇이 지워지는지 보여 주고 한 번 더 확인받는다. 저장소가 지원할 때만 보인다. 화면 설정 창 맨 아래에 있다.
  */
 export default function DemoReset() {
   const state = useCommunity()
@@ -21,7 +19,6 @@ export default function DemoReset() {
   const lineup = useLineupStore()
   const profile = useProfile()
   const auth = useAuth()
-  const phone = useMediaQuery(PHONE_QUERY)
   const [withAccounts, setWithAccounts] = useState(false)
   const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle')
   const [message, setMessage] = useState<{ text: string; warn: boolean } | null>(null)
@@ -80,19 +77,10 @@ export default function DemoReset() {
       )}
     </>
   )
-  // 휴대폰 폭에서는 접어 두고 요약 한 줄만 (화면 길이를 줄이려고)
-  if (phone) {
-    return (
-      <section className="panel fold-panel" aria-label="시연 데이터 초기화">
-        <Fold id="demo-reset" level={2} title="시연 데이터 초기화" summary="내가 남긴 기록을 지우고 처음 상태로">
-          {body}
-        </Fold>
-      </section>
-    )
-  }
+  // 화면 설정(톱니바퀴) 창 맨 아래에 둔다 — 각 화면 맨 아래 카드는 없앴다
   return (
-    <section className="panel" aria-label="시연 데이터 초기화" style={{ marginTop: 16 }}>
-      <h2>시연 데이터 초기화</h2>
+    <section className="settings-reset" aria-label="시연 데이터 초기화">
+      <h3>시연 데이터 초기화</h3>
       {body}
     </section>
   )

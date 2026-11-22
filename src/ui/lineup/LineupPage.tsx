@@ -1,7 +1,6 @@
 import { useSearchParams } from 'react-router'
 import { formatDayKey } from '../../domain/games/calendar'
 import { LINEUP_SLOTS, type LineupSlot } from '../../domain/lineup/slots'
-import DemoReset from '../community/DemoReset'
 import { useLeagueDay } from '../shared/LeagueContext'
 import MyLineup from './MyLineup'
 import PickRanking from './PickRanking'
@@ -41,7 +40,6 @@ export default function LineupPage() {
           {tab === 'mine' ? <MyLineup /> : <PickRanking slot={pos} onSlot={(s) => go({ pos: s })} />}
         </div>
       </div>
-      <DemoReset />
     </>
   )
 }

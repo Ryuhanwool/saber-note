@@ -84,26 +84,34 @@
 }
 
 /* ---------- 아래쪽 탭 바 (휴대폰 폭에서만 그린다 — Layout의 PHONE_QUERY) ---------- */
-:root{--tabbar-h:64px}
+:root{
+  --tabbar-h:64px;
+  /* 탭 바 위쪽 안 여백 + 위 경계선 */
+  --tabbar-edge:5px;
+  /* 가운데 홈 버튼이 탭 바 위로 튀어나온 높이 */
+  --tab-raise:22px;
+  /* 화면 아래에서 탭 바·홈 버튼이 차지하는 높이 (안전 영역 제외) */
+  --tabbar-reach:calc(var(--tabbar-h) + var(--tabbar-edge) + var(--tab-raise));
+}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;
-  padding:4px 4px env(safe-area-inset-bottom,0px);background:var(--bar-bg);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  padding:4px 4px env(safe-area-inset-bottom,0px);
+  /* 불투명한 바탕(뒤의 글자가 비치지 않게) + 위 경계선과 은은한 그림자로 내용과 자연스럽게 나눈다 */
+  background-color:var(--bar-bg);background-image:none;opacity:1;border-top:1px solid var(--line);box-shadow:0 -1px 0 var(--line),0 -6px 18px rgba(0,0,0,.10)}
 .tab{display:grid;justify-items:center;gap:2px;min-height:var(--tabbar-h);padding:8px 2px 6px;color:var(--soft);text-decoration:none;font-size:.75rem;font-weight:700;align-content:end}
 .tab[aria-current="page"]{color:var(--ink)}
 .tab[aria-current="page"]:not(.tab-home) .tab-label{text-decoration:underline;text-decoration-color:var(--seam);text-decoration-thickness:3px;text-underline-offset:4px}
 .tab-icon{position:relative;display:grid;place-items:center}
 .tab-dot{position:absolute;top:-2px;right:-6px;width:9px;height:9px}
 /* 가운데 홈: 위로 솟은 큰 동그라미 */
-.tab-home .tab-icon{width:56px;height:56px;margin-top:-22px;border-radius:50%;background:var(--ink);color:var(--paper);border:3px solid var(--bar-bg);box-shadow:var(--shadow)}
+.tab-home .tab-icon{width:56px;height:56px;margin-top:calc(-1 * var(--tab-raise));border-radius:50%;background:var(--ink);color:var(--paper);border:3px solid var(--bar-bg);box-shadow:var(--shadow)}
 .tab-home[aria-current="page"] .tab-icon{box-shadow:0 0 0 3px var(--seam),var(--shadow)}
 .tab-home .tab-dot{top:4px;right:4px;box-shadow:0 0 0 2px var(--ink)}
 .tab-home[aria-current="page"],.tab-home{color:var(--ink)}
 @media (max-width:720px){
-  /* 내용이 탭 바에 가리지 않게 아래 여백을 탭 바 높이 + 안전 영역만큼 */
-  main{padding-bottom:calc(var(--tabbar-h) + 32px + env(safe-area-inset-bottom,0px))}
   .acct-name{display:none}
   .icon-row{gap:4px}
   .icon-row a.acct{padding:0 12px}
-  .hub-pop{max-height:calc(100vh - 120px - var(--tabbar-h))}
+  .hub-pop{z-index:8;max-height:calc(100vh - var(--sticky-top) - var(--tabbar-reach) - env(safe-area-inset-bottom,0px) - 16px)}
 }
 
 /* ---------- 내 프로필 메뉴 (아이콘 줄 끝의 엠블럼 동그라미) ---------- */

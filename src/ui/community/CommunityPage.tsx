@@ -12,7 +12,6 @@ import { useNow } from '../shared/useNow'
 import { useCommunity } from './CommunityContext'
 import CheerRanking from '../cheer/CheerRanking'
 import Composer from './Composer'
-import DemoReset from './DemoReset'
 import PostCard from './PostCard'
 import TrendChips from './TrendChips'
 import WriteRules from './WriteRules'
@@ -105,7 +104,6 @@ export default function CommunityPage() {
             <p className="empty">{filterPlayer ? '이 선수 이야기는 아직 없어요. 위에서 첫 글을 남겨 보세요.' : '아직 글이 없어요. 첫 글을 남겨 보세요.'}</p>
           )}
         </div>
-        <DemoReset />
       </div>
       {!phone && (
       <aside className="panel">

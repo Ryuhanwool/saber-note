@@ -13,17 +13,18 @@ button,input,select{font:inherit;color:inherit}
 .display{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em}
 
 /* 상단 메뉴 — 데모의 nav button을 링크(a)로 바꿨다 */
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar-bg);border-bottom:1px solid var(--line)}
+/* 위쪽 머리줄 — 앱 머리줄(.app-header)에만. 글 카드 안의 <header>(글쓴이·시간 줄)에 번지지 않게 */
+.app-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar-bg);border-bottom:1px solid var(--line)}
 /* 넓은 화면: 로고 · 메뉴 · (오른쪽 끝) 로그인·설정이 한 줄. 휴대폰 폭에서만 메뉴가 둘째 줄로 내려간다 */
 .bar{max-width:1040px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:flex-end;gap:24px;flex-wrap:nowrap}
 .bar-end{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none;padding-bottom:8px}
 .brand{font-size:1.5rem;line-height:1;padding-bottom:12px;flex:none;white-space:nowrap}
 .brand small{font-family:var(--font-body);font-size:.75rem;color:var(--soft);margin-left:8px;font-weight:500}
-header nav{display:flex;gap:4px}
-header nav a{flex:none;white-space:nowrap}
-header nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
-header nav a[aria-current="page"]{color:var(--ink);font-weight:700}
-header nav a[aria-current="page"]::after{
+.app-header nav{display:flex;gap:4px}
+.app-header nav a{flex:none;white-space:nowrap}
+.app-header nav a{background:none;border:0;padding:8px 14px 12px;cursor:pointer;color:var(--soft);font-weight:500;position:relative;text-decoration:none}
+.app-header nav a[aria-current="page"]{color:var(--ink);font-weight:700}
+.app-header nav a[aria-current="page"]::after{
   content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:4px;
   background:repeating-linear-gradient(90deg,var(--seam) 0 6px,transparent 6px 10px);
 }
@@ -33,7 +34,7 @@ header nav a[aria-current="page"]::after{
   .bar-end{padding-bottom:0;gap:4px}
   .brand{padding-bottom:0;font-size:1.15rem}
   .brand small{margin-left:4px}
-  header nav{display:none}
+  .app-header nav{display:none}
 }
 /* 시연용 날짜 이동 중 안내 (모든 화면 위) */
 .demo-date{max-width:1040px;margin:8px auto 0;padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;background:var(--chip);border:2px solid var(--ink);border-radius:6px;font-size:.9rem;color:var(--ink)}
@@ -41,7 +42,12 @@ header nav a[aria-current="page"]::after{
 @media (max-width:1080px){.demo-date{margin:8px 20px 0}}
 .notice{max-width:1040px;margin:0 auto;padding:10px 20px;color:var(--soft);font-size:.85rem}
 
-main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 64px}
+main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 104px}
+/* 휴대폰 폭: 끝까지 내려도 마지막 내용이 탭 바·튀어나온 홈 버튼·「맨 위로」에 가리지 않게
+   아래 여백 = 탭 바 + 튀어나온 홈 버튼(--tabbar-reach, hub.css) + 하단 안전 영역 + 「맨 위로」 자리(12 + 48) + 여유 12px */
+@media (max-width:720px){
+  main{padding-bottom:calc(var(--tabbar-reach,91px) + env(safe-area-inset-bottom,0px) + 72px)}
+}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:var(--panel-pad)}
 .row{display:flex;gap:16px;flex-wrap:wrap}
 .muted{color:var(--soft)}
@@ -118,7 +124,7 @@ h2{font-size:1.05rem;margin:0 0 10px}
 /* 「맨 위로」 (화면 2개보다 긴 화면에서 내려왔을 때). 휴대폰 폭에서는 아래쪽 탭 바 위에 */
 .to-top{position:fixed;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;border:1px solid var(--ink);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);cursor:pointer}
 .to-top:hover{background:var(--chip)}
-@media (max-width:720px){.to-top{bottom:calc(var(--tabbar-h,64px) + 16px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:720px){.to-top{bottom:calc(var(--tabbar-reach,91px) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px}}
 /* 붙어 있는 탭: 이름이 한 줄로 (좁으면 가로로 밀어 본다) */
 .player-tabs{overflow-x:auto;scrollbar-width:none}
 .player-tabs button{flex:none;white-space:nowrap}

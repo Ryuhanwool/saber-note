@@ -2,6 +2,7 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openDemoReset } from './testing/reset'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -174,7 +175,7 @@ describe('나만의 라인업 화면', () => {
     await pickInto(user, '포수', catchers[0].name)
     await user.click(screen.getByRole('button', { name: '저장' }))
     await screen.findByText(/저장했어요/)
-    await user.click(await screen.findByRole('button', { name: '시연 데이터 초기화' }))
+    await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
     const confirm = within(screen.getByRole('alertdialog', { name: '초기화 확인' }))
     await user.click(confirm.getByRole('button', { name: '초기화' }))
     await waitFor(async () => expect(await slot(/^포수 — 비어 있음/)).toBeTruthy())

@@ -23,7 +23,16 @@ describe('hub.css는 색을 직접 쓰지 않는다 (tokens.css 변수만)', () 
   })
   it('탭 바는 하단 안전 영역을 피하고, 휴대폰 폭에서 내용 아래 여백을 탭 바 높이만큼 둔다', () => {
     expect(hubCss).toMatch(/\.tabbar\{[^}]*env\(safe-area-inset-bottom/)
-    expect(hubCss).toMatch(/main\{padding-bottom:calc\(var\(--tabbar-h\) \+ 32px \+ env\(safe-area-inset-bottom,0px\)\)\}/)
+    // 탭 바 + 튀어나온 홈 버튼 + 하단 안전 영역 + 「맨 위로」 자리까지 비워 둔다
+    expect(hubCss).toContain('--tabbar-reach:calc(var(--tabbar-h) + var(--tabbar-edge) + var(--tab-raise))')
+    // (아래 여백 규칙은 기본 main 규칙보다 뒤에 와야 이기므로 base.css에 있다)
+    const base = read('../src/ui/shared/base.css')
+    const after = base.slice(base.indexOf('main{max-width:1040px'))
+    expect(after).toMatch(/@media \(max-width:720px\)\{\n  main\{padding-bottom:calc\(var\(--tabbar-reach,91px\) \+ env\(safe-area-inset-bottom,0px\) \+ 72px\)\}/)
+    // 홈 버튼이 튀어나온 높이와 같은 변수
+    expect(hubCss).toContain('margin-top:calc(-1 * var(--tab-raise))')
+    // 탭 바는 불투명 + 위 경계선
+    expect(hubCss).toMatch(/\.tabbar\{[^}]*background-color:var\(--bar-bg\);background-image:none;opacity:1;border-top:1px solid var\(--line\)/)
   })
   it('아이콘 버튼과 탭은 손가락으로 누르기 충분한 크기 (44px 이상)', () => {
     expect(hubCss).toMatch(/\.icon-btn\{[^}]*width:44px;height:44px/)
