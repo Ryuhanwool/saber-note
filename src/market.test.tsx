@@ -20,6 +20,9 @@ import CheerProvider from './ui/cheer/CheerProvider'
 import CommunityProvider from './ui/community/CommunityProvider'
 import MarketProvider from './ui/market/MarketProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
+import SettingsProvider from './ui/settings/SettingsProvider'
+import { createMemorySettings } from './data/settings/memory'
+import { openDemoReset } from './testing/reset'
 
 window.scrollTo = () => {}
 URL.createObjectURL = () => 'blob:test'
@@ -36,15 +39,17 @@ function renderAt(path: string, market?: MarketRepository) {
   const mem = market !== undefined
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <LeagueProvider>
-        <CommunityProvider repository={mem ? createMemoryCommunity() : undefined}>
-          <CheerProvider repository={mem ? createMemoryCheer() : undefined}>
-            <MarketProvider repository={market}>
-              <App />
-            </MarketProvider>
-          </CheerProvider>
-        </CommunityProvider>
-      </LeagueProvider>
+      <SettingsProvider store={createMemorySettings({ decorations: false })}>
+        <LeagueProvider>
+          <CommunityProvider repository={mem ? createMemoryCommunity() : undefined}>
+            <CheerProvider repository={mem ? createMemoryCheer() : undefined}>
+              <MarketProvider repository={market}>
+                <App />
+              </MarketProvider>
+            </CheerProvider>
+          </CommunityProvider>
+        </LeagueProvider>
+      </SettingsProvider>
     </MemoryRouter>,
   )
 }
@@ -248,7 +253,7 @@ describe('응원방 연동과 시연 데이터 (앱이 여는 브라우저 저�
     expect(await screen.findByRole('link', { name: '장바구니 1' })).toBeTruthy()
 
     await user.click(screen.getByRole('link', { name: '커뮤니티' }))
-    await user.click(await screen.findByRole('button', { name: '시연 데이터 초기화' }))
+    await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
     const confirm = within(screen.getByRole('alertdialog', { name: '초기화 확인' }))
     expect(confirm.getByText(/판매글과 장바구니/)).toBeTruthy()
     await user.click(confirm.getByRole('button', { name: '초기화' }))

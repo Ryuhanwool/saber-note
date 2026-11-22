@@ -4,6 +4,7 @@
 import 'fake-indexeddb/auto'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { openDemoReset } from './testing/reset'
 import { openWriteBox } from './testing/write'
 import { IDBFactory } from 'fake-indexeddb'
 import { MemoryRouter } from 'react-router'
@@ -270,7 +271,7 @@ describe('로그인 기능 전에 쓴 글과 시연 데이터 초기화', () => 
     await auth.signUp({ nickname: '수달팬', password: 'secret123', team: null })
     renderApp('/community', { auth })
     const reset = async (withAccounts: boolean) => {
-      await user.click(await screen.findByRole('button', { name: '시연 데이터 초기화' }))
+      await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
       const dialog = within(screen.getByRole('alertdialog', { name: '초기화 확인' }))
       if (withAccounts) await user.click(dialog.getByRole('checkbox', { name: /가입한 계정도 모두 지우기/ }))
       await user.click(dialog.getByRole('button', { name: '초기화' }))

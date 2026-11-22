@@ -16,6 +16,9 @@ import AuthProvider from './ui/auth/AuthProvider'
 import { getDataSource } from './data/registry'
 import CommunityProvider from './ui/community/CommunityProvider'
 import LeagueProvider from './ui/shared/LeagueProvider'
+import SettingsProvider from './ui/settings/SettingsProvider'
+import { createMemorySettings } from './data/settings/memory'
+import { openDemoReset } from './testing/reset'
 
 window.scrollTo = () => {}
 URL.createObjectURL = () => 'blob:test'
@@ -30,13 +33,15 @@ const signedInDemo = () => createMemoryAuth({ signedIn: { id: DEMO_ACCOUNT_ID, n
 function renderApp(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <LeagueProvider>
-        <AuthProvider repository={signedInDemo()}>
-          <CommunityProvider>
-            <App />
-          </CommunityProvider>
-        </AuthProvider>
-      </LeagueProvider>
+      <SettingsProvider store={createMemorySettings({ decorations: false })}>
+        <LeagueProvider>
+          <AuthProvider repository={signedInDemo()}>
+            <CommunityProvider>
+              <App />
+            </CommunityProvider>
+          </AuthProvider>
+        </LeagueProvider>
+      </SettingsProvider>
     </MemoryRouter>,
   )
 }
@@ -98,7 +103,7 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
     await user.type(await openWriteBox(user), '시연 중에 쓴 글')
     await user.click(screen.getByRole('button', { name: '게시하기' }))
     await feed().findByText('시연 중에 쓴 글')
-    await user.click(screen.getByRole('button', { name: '시연 데이터 초기화' }))
+    await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
     expect(screen.getByRole('alertdialog', { name: '초기화 확인' }).textContent).toContain('되돌릴 수 없어요')
     await user.click(screen.getByRole('button', { name: '취소' }))
     expect(feed().getByText('시연 중에 쓴 글')).toBeTruthy()
@@ -119,7 +124,7 @@ describe('시연: 신고와 시연 데이터 초기화', () => {
     await user.click(card.getByRole('button', { name: /한 번 더 누르면 신고/ }))
     await feed().findByText(/신고가 누적돼 가려진 글이에요/)
 
-    await user.click(screen.getByRole('button', { name: '시연 데이터 초기화' }))
+    await user.click((await openDemoReset(user)).getByRole('button', { name: '시연 데이터 초기화' }))
     await user.click(screen.getByRole('button', { name: '초기화' }))
     expect(await screen.findByText(/^시연 데이터를 처음 상태로 되돌렸어요/)).toBeTruthy()
     expect(feed().queryByText('시연 중에 쓴 글')).toBeNull()

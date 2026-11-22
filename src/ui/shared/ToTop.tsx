@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 
-/** 「맨 위로」: 화면 2개보다 긴 화면에서, 한 화면쯤 내려왔을 때만 보인다 */
+/** 「맨 위로」: 화면 2개보다 긴 화면에서, 한 화면 넘게 내려왔을 때만 보인다 (맨 위 근처에서는 숨김) */
 export default function ToTop() {
   const [show, setShow] = useState(false)
   useEffect(() => {
     const check = () => {
       const long = document.documentElement.scrollHeight > window.innerHeight * 2
-      setShow(long && window.scrollY > window.innerHeight * 0.6)
+      setShow(long && window.scrollY > window.innerHeight)
     }
     window.addEventListener('scroll', check, { passive: true })
     window.addEventListener('resize', check)

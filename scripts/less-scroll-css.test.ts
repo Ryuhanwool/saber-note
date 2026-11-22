@@ -14,7 +14,7 @@ describe('스크롤해도 위에 붙어 있는 탭·필터', () => {
     expect(base).toMatch(/\.player-tabs\{position:sticky;top:var\(--sticky-top\);z-index:3;background:var\(--surface\)/)
     expect(base).toMatch(/\.ranking \.rk-filters\{position:sticky;top:var\(--sticky-top\);z-index:3;background:var\(--surface\)/)
     // 머리줄(z-index 5)보다 아래 층
-    expect(base).toMatch(/header\{position:sticky;top:env\(safe-area-inset-top,0px\);z-index:5/)
+    expect(base).toMatch(/\.app-header\{position:sticky;top:env\(safe-area-inset-top,0px\);z-index:5/)
   })
 })
 
@@ -32,11 +32,12 @@ describe('아래에서 올라오는 창', () => {
 })
 
 describe('휴대폰 폭 여백', () => {
-  it('바깥 여백 20px → 12px, 패널 안 여백 20px → 14px, 「맨 위로」는 탭 바 위에', () => {
+  it('바깥 여백 20px → 12px, 패널 안 여백 20px → 14px, 「맨 위로」는 탭 바·홈 버튼 위에', () => {
     expect(base).toContain(':root{--gutter:20px;--panel-pad:20px;')
     expect(base).toMatch(/@media \(max-width:720px\)\{\n  :root\{--gutter:12px;--panel-pad:14px\}/)
-    expect(base).toContain('main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 64px}')
-    expect(base).toMatch(/\.to-top\{bottom:calc\(var\(--tabbar-h,64px\) \+ 16px \+ env\(safe-area-inset-bottom,0px\)\)\}/)
+    expect(base).toContain('main{max-width:1040px;margin:0 auto;padding:8px var(--gutter) 104px}')
+    // 「맨 위로」는 탭 바·튀어나온 홈 버튼·안전 영역 위로 12px 띄운다
+    expect(base).toMatch(/\.to-top\{bottom:calc\(var\(--tabbar-reach,91px\) \+ env\(safe-area-inset-bottom,0px\) \+ 12px\)/)
     expect(strip(base)).not.toMatch(/\.(sheet|to-top|fold|more)[^{]*\{[^}]*#[0-9A-Fa-f]{3,6}\b/)
   })
 })

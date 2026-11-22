@@ -37,8 +37,8 @@ describe('가치 순위 색과 휴대폰 배치', () => {
 
   it('위쪽 메뉴 7개는 넓은 화면에서 한 줄 (줄바꿈으로 깨지지 않게), 휴대폰 폭(720px 이하)에서는 숨기고 아래쪽 탭 바를 쓴다', () => {
     const phone = base.slice(base.indexOf('@media (max-width:720px)'))
-    expect(base).toMatch(/header nav a\{flex:none;white-space:nowrap\}/)
+    expect(base).toMatch(/\.app-header nav a\{flex:none;white-space:nowrap\}/)
     expect(base).not.toMatch(/nav\{display:grid/)
-    expect(phone).toContain('header nav{display:none}')
+    expect(phone).toContain('.app-header nav{display:none}')
   })
 })

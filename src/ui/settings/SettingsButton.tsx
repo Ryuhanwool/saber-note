@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { BACKGROUND_TYPES } from '../../domain/theme/background'
 import { THEMES } from '../../domain/theme/themes'
 import { GearIcon } from '../hub/icons'
+import DemoReset from '../community/DemoReset'
 import { useSettings } from './SettingsContext'
 import './settings.css'
 import { BACKGROUND_STRENGTHS } from '../../data/types'
@@ -118,6 +119,7 @@ export default function SettingsButton() {
           {message && (
             <p className="hint" role="status" style={{ color: message.warn ? 'var(--seam)' : undefined }}>{message.text}</p>
           )}
+          <DemoReset />
         </div>
       )}
     </div>

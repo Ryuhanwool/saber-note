@@ -183,8 +183,12 @@ export default function MyLineup() {
           ) : (
             <p className="muted">타자 자리를 채우면 채운 순서대로 타순이 붙어요. ▲▼로 바꿀 수 있어요.</p>
           )}
+          {/* 「선발 투수 –」처럼 자리 이름과 선수를 한 덩어리로 묶어, 줄이 바뀌어도 「–」만 따로 넘어가지 않게 한다 */}
           <p className="muted order-pitchers">
-            투수는 타순이 없어요: {PITCHER_SLOTS.map((s) => `${SLOT_LABEL[s]} ${nameOf(lineup.slots[s]) ?? '–'}`).join(' · ')}
+            <span className="op-lead">투수는 타순이 없어요</span>
+            {PITCHER_SLOTS.map((s) => (
+              <span key={s} className="op-item">{SLOT_LABEL[s]} <b>{nameOf(lineup.slots[s]) ?? '–'}</b></span>
+            ))}
           </p>
         </section>
 

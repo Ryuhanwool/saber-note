@@ -4,7 +4,6 @@ import { AlreadyCheeredError } from '../../data/source'
 import type { PlayerId } from '../../data/types'
 import { cheerCount, cheeredToday, messagesFor } from '../../domain/cheer/cheer'
 import type { Player } from '../../domain/players'
-import DemoReset from '../community/DemoReset'
 import PlayerMarket from '../market/PlayerMarket'
 import { useLeague } from '../shared/LeagueContext'
 import { playerPath, positionLabel } from '../shared/labels'
@@ -108,7 +107,6 @@ function CheerRoom({ player: p }: { player: Player }) {
             ))}
           </section>
           <PlayerMarket player={p} />
-          <DemoReset />
         </div>
         <aside className="panel">
           <CheerRanking current={p.id} />

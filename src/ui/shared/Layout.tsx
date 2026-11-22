@@ -53,7 +53,7 @@ export default function Layout() {
     <>
       <BackgroundLayer />
       <SeenTracker />
-      <header ref={headerRef}>
+      <header ref={headerRef} className="app-header">
         <div className="bar">
           <div className="brand display">세이버 노트<small>데모</small></div>
           <nav aria-label="주요 메뉴">
