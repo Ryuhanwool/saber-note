@@ -15,7 +15,8 @@ import './ui/shared/base.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* 하위 경로에 배포해도(예: GitHub Pages의 /saber-note/) 주소가 맞도록 빌드의 base를 따른다. 보통은 '/' */}
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <SettingsProvider>
         <LeagueProvider>
           <AuthProvider>
